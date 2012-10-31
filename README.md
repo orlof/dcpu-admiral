@@ -58,7 +58,7 @@ You can use it to evaluate any one line statements.
 2
 3
 4
-</pre
+</pre>
 
 To ease writing software Admiral has built-in text editor. It is started by making
 a funtion call "edit()". You can give string as an argument. Ofcourse you should
