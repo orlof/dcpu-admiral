@@ -1,0 +1,412 @@
+;----------------------------------------------------------------
+; uint list_cmp(struct handle *array, struct handle *array)
+;----------------------------------------------------------------
+:list_cmp
+	set push, peek					; move return address down the stack
+	set [sp+1], list_comparator		; add comparator function to arguments
+	set pc, array_cmp
+
+:list_comparator
+	set push, [i+1]
+	set push, [j+1]
+	jsr val_cmp
+
+	set pc, pop
+
+;----------------------------------------------------------------
+; void list_set(struct handle *list, struct handle *index, struct handle *item)
+;----------------------------------------------------------------
+:list_set
+	set push, 3		; sizeof(args)
+	set push, 0		; sizeof(vars)
+	jsr preamble
+
+	set a, [z+12]		; struct handle *list
+
+	set push, [z+11]		; struct handle *int
+	jsr int_to_int16
+	set b, x
+	
+	set c, [z+10]
+	jsr array_set
+
+	jsr postamble
+		
+;----------------------------------------------------------------
+; void dict_set(struct handle *dict, struct handle *key, struct handle *value)
+;----------------------------------------------------------------
+:dict_set
+	set push, 3		; sizeof(args)
+	set push, 1		; sizeof(refs)
+	jsr preamble
+
+	; create item tuple
+	set push, 2
+	set push, TYPE_TUPLE
+	jsr alloc
+	set [z-1], x
+
+	set x, [x]
+	set [x], 2
+
+	; add key to tuple
+	set [x+1], [z+11]
+
+	; add value to tuple
+	set [x+2], [z+10]
+
+	; check if key exists in dict
+	set push, [z+12]
+	set push, dict_iterator_comparator
+	set push, [z+11]
+	jsr list_iterate
+
+	ifn x, -1
+		set pc, dict_set_to_index
+
+	set push, [z+12]
+	set push, -1
+	set push, [z-1]
+	jsr array_insert
+
+	jsr postamble
+
+:dict_set_to_index
+	set a, [z + 12]
+	set b, x
+	set c, [z-1]
+	jsr array_set
+
+	jsr postamble
+
+;----------------------------------------------------------------
+; struct handle *list_get(struct handle *list, struct handle *index)
+; index can be INT, BOOL, TUPLE[2] or TUPLE[3]
+;----------------------------------------------------------------
+:list_get
+	set push, 2		; sizeof(args)
+	set push, 0		; sizeof(refs)
+	jsr preamble
+
+	set a, [z+11]		; struct handle *list
+
+	set push, [z+10]		; struct handle *int
+	jsr int_to_int16
+	set b, x
+
+	jsr array_get
+
+	jsr postamble
+	
+;----------------------------------------------------------------
+; void list_del(struct handle *list, struct handle *index)
+;----------------------------------------------------------------
+:list_del
+	set push, 2		; sizeof(args)
+	set push, 0		; sizeof(refs)
+	jsr preamble
+
+	set a, [z+11]		; struct handle *list
+
+	set push, [z+10]	; struct handle *int
+	jsr int_to_int16
+	set b, x
+
+	jsr array_del
+
+	jsr postamble
+	
+;----------------------------------------------------------------
+; struct handle *dict_get(struct handle *dict, struct handle *key)
+; return x: struct handle *value or 0
+;----------------------------------------------------------------
+:dict_get
+	set push, 2
+	set push, 0
+	jsr preamble
+
+	set push, [z+11]
+	set push, dict_iterator_comparator
+	set push, [z+10]
+	jsr list_iterate
+
+	ifn x, -1
+		set pc, dict_get_item_from_index
+
+	set x, 0
+	jsr postamble
+
+:dict_get_item_from_index
+	set i, [z+11]		; struct handle *dict
+	sti i, [i]		; struct dict *
+	add i, x		; item[x] = struct handle *item
+
+	set i, [i]		; struct handle *item
+	set i, [i]		; struct list *kv_tuple
+
+	set x, [i + DICT_ITEM_VALUE]
+	jsr postamble
+
+;----------------------------------------------------------------
+; uint16 list_find(struct handle *list, struct handle *item)
+; return x: match index or -1
+;----------------------------------------------------------------
+:list_find
+	set push, 2
+	set push, 0
+	jsr preamble
+
+	set push, [z+11]
+	set push, list_iterator_comparator
+	set push, [z+10]
+	jsr list_iterate
+
+	jsr postamble
+
+;----------------------------------------------------------------
+; struct handle *dict_del(struct handle *dict, struct handle *key)
+; return x: struct handle *value or 0
+;----------------------------------------------------------------
+:dict_del
+	set push, 2
+	set push, 0
+	jsr preamble
+
+	set push, [z+11]
+	set push, dict_iterator_comparator
+	set push, [z+10]
+	jsr list_iterate
+
+	ifn x, -1
+		set pc, dict_del_item_from_index
+
+	set x, 0
+	jsr postamble
+
+:dict_del_item_from_index
+	set a, [z+11]
+	set b, x
+	jsr array_del
+
+	jsr postamble
+
+;----------------------------------------------------------------
+; int16 dict_iterator_comparator(struct handle *tuple, void param)
+; return x: compare result for tuple.key and param
+;----------------------------------------------------------------
+:dict_iterator_comparator
+	set push, 2
+	set push, 0
+	jsr preamble
+
+	set a, [z + 11]			; struct handle *tuple
+	set a, [a]				; struct tuple *
+
+	set push, [a +  DICT_ITEM_KEY]	; struct handle *key
+	set push, [z + 10]
+	jsr val_cmp
+
+	jsr postamble
+
+;----------------------------------------------------------------
+; int16 list_iterator_comparator(struct handle *item, struct handle *target)
+; return x: 
+;----------------------------------------------------------------
+:list_iterator_comparator
+	set push, 2
+	set push, 0
+	jsr preamble
+
+	set push, [z + 11]	; struct handle *key
+	set push, [z + 10]
+	jsr val_cmp
+
+	jsr postamble
+
+;----------------------------------------------------------------
+; int16 list_iterate(struct handle *list, *function map, void parameter)
+; return x: index of map()==0 or -1 if all map()!=0 
+;----------------------------------------------------------------
+:list_iterate
+	set push, 3
+	set push, 0
+	jsr preamble
+	
+	set a, [z + 12]				; struct handle *list
+	set b, [z + 11]				; map() *
+	set c, [z + 10]				; parameter
+
+	set i, 0					; index
+	set y, [a]					; struct list *
+	set y, [y]					; list.size
+
+:list_iterate_loop
+	ife i, y
+		set pc, list_iterate_done
+
+	set x, [a]
+	add x, i
+	
+	set push, [x+1]
+	set push, c
+	jsr b
+	
+	ife x, 0
+		set pc, list_iterate_break 
+
+	sti pc, list_iterate_loop
+		
+:list_iterate_done
+	set x, -1
+	jsr postamble
+	
+:list_iterate_break
+	set x, i
+	jsr postamble
+
+;----------------------------------------------------------------
+; struct handle *list_repr(struct handle *list)
+;----------------------------------------------------------------
+:list_repr
+	set push, 1
+	set push, 2
+	jsr preamble
+	
+	set y, [z+10]
+	
+	set push, 10
+	set push, TYPE_STRING
+	jsr alloc
+	set [z-1], x
+
+	set push, x
+	set push, -1
+	ife [y + HANDLE_TYPE], TYPE_TUPLE
+		set push, '('
+	ife [y + HANDLE_TYPE], TYPE_LIST
+		set push, '['
+	jsr array_insert
+
+	set i, 0					; index
+	set b, [y]					; struct list *
+	set b, [b]					; list.size
+
+:list_repr_loop
+	ife i, b
+		set pc, list_repr_finish
+
+	ife i, 0
+		set pc, list_repr_skip_comma
+
+	set push, [z-1]					; struct handle *str
+	set push, -1
+	set push, ','
+	jsr array_insert
+
+:list_repr_skip_comma
+	set x, [y]				; struct list *
+	add x, i				; current item
+	
+	set push, [x+1]			; get repr of next item
+	jsr repr
+	set [z-2], x
+	
+	set push, [z-1]
+	set push, [z-2]
+	jsr array_merge
+	set [z-1], x
+
+	sti pc, list_repr_loop
+		
+:list_repr_finish
+	set push, [z-1]
+	set push, -1
+	ife [y + HANDLE_TYPE], TYPE_TUPLE
+		set push, ')'
+	ife [y + HANDLE_TYPE], TYPE_LIST
+		set push, ']'
+	jsr array_insert
+
+	set x, [z-1]
+	jsr postamble
+;----------------------------------------------------------------
+; struct handle *dict_repr(struct handle *dict)
+;----------------------------------------------------------------
+:dict_repr
+	set push, 1
+	set push, 2
+	jsr preamble
+	
+	set y, [z+10]
+	
+	set push, 10
+	set push, TYPE_STRING
+	jsr alloc
+	set [z-1], x
+
+	set push, x
+	set push, -1
+	set push, '{'
+	jsr array_insert
+
+	set i, 0					; index
+	set b, [y]					; struct list *
+	set b, [b]					; list.size
+
+:dict_repr_loop
+	ife i, b
+		set pc, dict_repr_finish
+
+	ife i, 0
+		set pc, dict_repr_skip_comma
+
+	set push, [z-1]					; struct handle *str
+	set push, -1
+	set push, ','
+	jsr array_insert
+
+:dict_repr_skip_comma
+	set x, [y]				; struct dict *
+	add x, i				; current item
+
+	set c, [x+1]			; struct handle *tuple
+	set x, [c]				; struct tuple *
+	set x, [x+1]			; struct handle *key
+
+	set x, [c]				; struct tuple *
+	set push, [x+1]
+	jsr repr
+	set [z-2], x
+
+	set push, [z-1]
+	set push, [z-2]
+	jsr array_merge
+	set [z-1], x
+
+	set push, [z-1]
+	set push, -1
+	set push, ':'
+	jsr array_insert
+
+	set x, [c]				; struct tuple *
+	set push, [x+2]
+	jsr repr
+	set [z-2], x
+
+	set push, [z-1]
+	set push, [z-2]
+	jsr array_merge
+	set [z-1], x
+
+	sti pc, dict_repr_loop
+		
+:dict_repr_finish
+	set push, [z-1]
+	set push, -1
+	set push, '}'
+	jsr array_insert
+
+	set x, [z-1]
+	jsr postamble
+
+

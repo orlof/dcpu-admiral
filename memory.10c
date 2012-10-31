@@ -1,0 +1,304 @@
+;----------------------------------------------------------------
+; void create_heap(uint16 *start, uint16 len)
+;----------------------------------------------------------------
+:create_heap
+	set push, 2
+	set push, 0
+	jsr preamble
+
+	set [heap_free_list], 0
+	set [heap_alloc_counter], 0
+
+	set a, [z+11]			; addr
+	set b, [z+10]			; len
+
+	set [heap_start], a
+	set [heap_free_start], a
+
+	add a, b
+	set [heap_end], a
+
+	sub a, SIZEOF_HANDLE		; sizeof(handle)
+	set [a + HANDLE_PTR], 0		; create zero handle
+	set [a + HANDLE_SIZE], 0
+	set [a + HANDLE_TYPE], TYPE_NONE
+	set [a + HANDLE_PREV], a
+	set [a + HANDLE_NEXT], a
+
+	set [heap_handle_start], a
+	set [heap_zero], a
+
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *realloc(struct handle *handle, uint16 size, uint16 type)
+; return pointer to allocated handle or zero if error
+;----------------------------------------------------------------
+:realloc
+	set push, 3
+	set push, 0
+	jsr preamble
+
+	add [z+11], 1
+
+	; remove struct handle from ordered handle list
+	set y, [z+12]				; y: struct handle *
+	set b, [y + HANDLE_PREV]
+	set [b + HANDLE_NEXT], [y + HANDLE_NEXT]
+	set b, [y + HANDLE_NEXT]
+	set [b + HANDLE_PREV], [y + HANDLE_PREV]
+
+	set a, [z+11]				; a: required heap space
+
+	set c, [y + HANDLE_SIZE]		; c: number of words to copy
+
+	set pc, alloc_check_space
+
+;----------------------------------------------------------------
+; struct handle *alloc(uint16 size, uint16 type)
+; return pointer to allocated handle or zero if error
+;----------------------------------------------------------------
+:alloc
+	set push, 2
+	set push, 0
+	jsr preamble
+
+	add [z+11], 1
+
+	set c, 0				; c: number of words to copy
+
+	; check whether its time for periodic cleanup of handles
+	add [heap_alloc_counter], 1
+	ifl [heap_alloc_counter], HEAP_GC_TRIGGER
+		set pc, alloc_restart
+
+	set push, TRUE
+	jsr mark_and_compact
+
+:alloc_restart
+	ifn c, 0
+		set pc, alloc_check_space
+		
+	; calculate space requirement to a
+	set a, [z+11]				; a: required heap space
+
+	; search free slot for new handle
+	set y, [heap_free_list]
+	ifn y, 0
+		set pc, alloc_check_space
+
+	set y, [heap_handle_start]	
+	sub y, SIZEOF_HANDLE
+
+	add a, SIZEOF_HANDLE			; add space required for new handle
+
+:alloc_check_space
+	; y: struct handle *
+	; a: heap space required
+	; c: number of words to copy
+
+	set b, [heap_handle_start]		; b: available heap space
+	sub b, [heap_free_start]
+
+	ifl b, a				; available space < required space
+		set pc, alloc_gc		; run gc
+
+	ifl y, [heap_handle_start]
+		set [heap_handle_start], y
+
+	; init allocated space
+	set i, [heap_free_start]		; i: uint16 *to
+	add c, i				; c: copy end
+
+	set b, [z+11]
+	add b, i				; b: allocated memory end
+
+	set j, [y]				; uint16 *from (valid in realloc)
+
+:alloc_init_memory
+	ife i, b
+		set pc, alloc_finish
+
+	set a, 0				; default init with zero
+	ifl i, c
+		set a, [j]
+		
+	sti [i], a
+	
+	set pc, alloc_init_memory
+
+:alloc_finish
+	set [y], [heap_free_start]
+	set [heap_free_start], b
+
+	set [y + HANDLE_SIZE], [z+11]	; handle size
+	set [y + HANDLE_TYPE], [z+10]	; handle type
+	
+	; remove new handle from free list, if it was there
+	ife [heap_free_list], y
+		set [heap_free_list], [y + HANDLE_PREV]
+
+	; insert new handle as last heap space handle
+	set a, [heap_zero]	; zero handle
+
+	set b, [a + HANDLE_PREV]	; zero.prev -> next = new
+	set [b + HANDLE_NEXT], y
+	set [y + HANDLE_PREV], b	; new.prev = zero.prev
+	set [a + HANDLE_PREV], y	; zero.prev = new
+	set [y + HANDLE_NEXT], a	; new.next = zero
+
+	set x, y
+	set pc, postamble	
+
+:alloc_gc
+	set push, FALSE
+	jsr mark_and_compact
+	ife x, TRUE			; freed something, try again
+		set pc, alloc_restart
+
+	; nothing freed, must be bad
+	set pc, postamble
+
+;----------------------------------------------------------------
+; void mark_and_compact(uint16 quickrun)
+;----------------------------------------------------------------
+:mark_and_compact
+	set push, 1
+	set push, 0
+	jsr preamble
+
+	set [heap_alloc_counter], 0
+
+	set c, FALSE			; freed something?
+	set y, z				; y: temp fp
+
+:mac_process_frame
+	set i, y 
+	sub i, [y + 7]			; i: addr of first struct handle *
+
+:mac_loop_references
+	ife i, y
+		set pc, mac_next_frame
+
+	sti a, [i]			; a: struct handle *
+
+	ife a, 0			; empty slot
+		set pc, mac_loop_references
+		
+	ifb [a + HANDLE_SIZE], 0x8000	; is already marked?
+		set pc, mac_loop_references
+		
+	set push, a						; mark recursively
+	jsr mark
+
+	set pc, mac_loop_references
+
+:mac_next_frame
+	set y, [y]
+
+	ifn y, 0
+		set pc, mac_process_frame
+
+	; compact
+	set y, [z+10]				; quickrun T/F
+	
+	set i, [heap_start]
+	set a, [heap_zero]			; struct handle *zero
+	
+:compact_loop
+	set a, [a + HANDLE_NEXT]
+	ife a, [heap_zero]
+		set pc, compact_finish
+
+	ifb [a + HANDLE_SIZE], 0x8000	; marked?
+		set pc, compact_marked
+
+	; no mark = no references = free
+	; remove from handle list
+	set b, [a + HANDLE_PREV]
+	set [b + HANDLE_NEXT], [a + HANDLE_NEXT]
+	set b, [a + HANDLE_NEXT]
+	set [b + HANDLE_PREV], [a + HANDLE_PREV]
+
+	; add to free list
+	set [a + HANDLE_PREV], [heap_free_list]	; add to free list
+	set [heap_free_list], a
+
+	set c, TRUE
+
+	set pc, compact_loop
+
+:compact_marked
+	; marked = referenced = in use
+	xor [a + HANDLE_SIZE], 0x8000	; clear marked bit
+	
+	ife y, TRUE			; quickrun?
+		set pc, compact_loop
+
+	set j, [a + HANDLE_PTR]		; copy from
+
+	set b, i			; calculate end pointer
+	add b, [a + HANDLE_SIZE]
+
+	set [a + HANDLE_PTR], i
+
+:compact_copy_loop
+	ife i, b
+		set pc, compact_loop
+	sti [i], [j]
+	set pc, compact_copy_loop
+	
+:compact_finish
+	ife y, TRUE
+		set pc, compact_exit
+	ifn [heap_free_start], i
+		set c, TRUE
+	set [heap_free_start], i
+
+:compact_exit
+	set x, c
+	set pc, postamble
+
+
+:mark_it
+	set [sp], pop	; remove 2nd argument 
+
+;----------------------------------------------------------------
+;void mark(struct handle *item)
+;----------------------------------------------------------------
+:mark
+	set push, 1
+	set push, 0
+	jsr preamble
+	
+	set x, -1						; ok
+
+	set a, [z+10]	; struct handle *
+
+	ifl a, [heap_start]
+		set pc, postamble
+	ifg a, [heap_end]
+		set pc, postamble
+
+	ifb [a + HANDLE_SIZE], 0x8000	; is already marked?
+		set pc, postamble
+	bor [a + HANDLE_SIZE], 0x8000	; set as marked
+
+	ifb [a + HANDLE_TYPE], 0x86e0		; TYPE_CONTROL | TYPE_LIST | TYPE_TUPLE | TYPE_DICT | TYPE_SUBSCRIPTION | TYPE_REFERENCE
+		set pc, mark_list
+
+	set pc, postamble
+
+;----------------------------------------------------------------
+:mark_list
+; fast call
+; a: struct handle *list
+;----------------------------------------------------------------
+	set push, a
+	set push, mark_it		; map() function for iterate
+	set push, 0
+	jsr list_iterate
+
+	set x, -1						; ok
+	set pc, postamble
+
