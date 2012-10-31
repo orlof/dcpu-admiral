@@ -21,7 +21,7 @@
  - Interactive command prompt
  - Integrated text editor for editing sources
 
-<h6>NEXT IN PRODUCTION</h6>
+<h4>NEXT IN PRODUCTION</h4>
  - Screen library
  - Floating point numbers
  - Trigonometric functions
@@ -30,7 +30,7 @@
  - 200-400% speed improvements
  - Support for more HW
                      
-<h6>ON PLANNING BOARD</h6>
+<h4>ON PLANNING BOARD</h4>
  - Threading
 
 --
@@ -38,7 +38,7 @@
 <h4>INSTALLATION</h4>
 
 Admiral is currently distributed as DevKit project. Download it from Github and fire it up.
-Quick test also showed that Lettuce can run it, but for unknown reason Organic failed in the compilation.
+Quick test also showed that Lettuce can run Admiral, but Organic failed in the compilation.
 
 All tested web emulators failed:
 
@@ -80,7 +80,7 @@ cls
 reset
 </pre>
 
-<h6>BUILT-IN FUNCTIONS</h6>
+<h4>BUILT-IN FUNCTIONS</h4>
 <pre>
 int id(<id>)
 int int(item)
@@ -99,7 +99,7 @@ str input(str prompt)
 {} globals()
 </pre>
 
-<h6>PRECEDENCE TABLE</h6>
+<h4>EXPRESSION PRECEDENCE TABLE</h4>
 <table cellpadding="1">
 <tr><th>OPERATOR</th><th>DESCRIPTION</th><th>ASSOCIATIVITY</th></tr>
 <tr><td>=, +=, -=, *=, /=, %=, **=, &gt;&gt;=, &lt;&lt;=, &=, ^=, %=, ?=, :=</td><td>Assignment, augmented assignments, conditional assignment, prototype</td><td>Right</td></tr>
@@ -134,7 +134,7 @@ NOTES
  - Boolean operators both sides are always evaluated
  - INDENT and DEDENT must be exactly one space
 
-<h6>EXAMPLES</h6>
+<h4>EXAMPLES</h4>
 
 Simple expressions:
 <pre>
