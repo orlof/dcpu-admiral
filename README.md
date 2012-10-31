@@ -47,7 +47,18 @@ All tested web emulators failed:
 --
 <h4>USAGE</h4>
 When Admiral starts, it will show interactive prompt '>' and wait for your input. 
-You can evaluate any one line command.
+You can use it to evaluate any one line statements.
+
+<pre>
+&gt;5+5**2
+30
+&gt;for a in range(5): print a
+0
+1
+2
+3
+4
+</pre
 
 To ease writing software Admiral has built-in text editor. It is started by making
 a funtion call "edit()". You can give string as an argument. Ofcourse you should
