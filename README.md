@@ -1,4 +1,3 @@
-
 ---
 
 <h1>ADMIRAL programming language for DCPU-16</h1>
@@ -47,7 +46,58 @@ All tested web emulators failed:
 
 --
 
-<h4>USER GUIDE</h4>
+<h4>BUILT-IN STATEMENTS</h4>
+
+<pre>
+if &lt;expr&gt;: &lt;stmt&gt;
+[elif &lt;expr&gt;: &lt;stmt&gt;]
+[else: &lt;stmt&gt;]
+
+if &lt;expr&gt;:
+ &lt;stmts&gt;
+[elif &lt;expr&gt;:
+ &lt;stmts&gt;]
+[else:
+ &lt;stmts&gt;]
+
+while &lt;expr&gt;: &lt;stmt&gt;
+
+while &lt;expr&gt;:
+ &lt;stmts&gt;
+
+for &lt;id_list&gt; in &lt;expr&gt;: &lt;stmt&gt;
+
+for &lt;id_list&gt; in &lt;expr&gt;:
+ &lt;stmts&gt;
+
+break
+continue
+return [expr]
+pass
+del &lt;id&gt;
+print &lt;expr&gt;
+cls
+reset
+</pre>
+
+<h6>BUILT-IN FUNCTIONS</h6>
+<pre>
+int id(<id>)
+int int(item)
+str str(item)
+int len(item)
+int abs(int)
+int ord(str)
+str chr(int)
+int cmp(item, item)
+bool bool(item)
+str edit([str])
+str repr(item)
+[] range(int start, int end, int step)
+str input(str prompt)
+{} locals()
+{} globals()
+</pre>
 
 <h6>PRECEDENCE TABLE</h6>
 <table cellpadding="1">
