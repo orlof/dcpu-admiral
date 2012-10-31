@@ -1,7 +1,7 @@
 ---
 
 <h1>ADMIRAL programming language for DCPU-16</h1>
-<h6><i>"PURE INTERPRETED LANGUAGE FOR THE FRINGE COLONIES"</i></h6>
+<h5><i>"PURE INTERPRETED LANGUAGE FOR THE FRINGE COLONIES"</i></h5>
 
 ---
 
@@ -222,7 +222,7 @@ Example: ':=' prototype
 >car.spd=0
 0
 >car.accelerate=edit()
-'me.spd+=acceleration
+'me.spd+=me.acceleration
 '
 >vw:=car
 ...
