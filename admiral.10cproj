@@ -7,20 +7,20 @@
     <property name="code.generateHexOutput">false</property>
     <property name="code.hexOutputFilename">admiral.hex</property>
     <property name="code.setFirstFile">True</property>
-    <property name="code.firstFile">interpreter.10c</property>
+    <property name="code.firstFile">F:\dcpu-admiral\interpreter.10c</property>
   </properties>
   <references />
   <files>
-    <file path="memory.10c" />
-    <file path="stdlib.10c" />
-    <file path="integer.10c" />
-    <file path="list.10c" />
-    <file path="interpreter.10c" />
-    <file path="parser.10c" />
-    <file path="lexer2.10c" />
-    <file path="string2.10c" />
     <file path="array.10c" />
-    <file path="edit.10c" />
     <file path="data.10c" />
+    <file path="edit.10c" />
+    <file path="integer.10c" />
+    <file path="interpreter.10c" />
+    <file path="lexer2.10c" />
+    <file path="list.10c" />
+    <file path="memory.10c" />
+    <file path="parser.10c" />
+    <file path="stdlib.10c" />
+    <file path="string2.10c" />
   </files>
 </project>
