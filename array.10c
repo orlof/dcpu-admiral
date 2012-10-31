@@ -1,0 +1,378 @@
+;----------------------------------------------------------------
+:array_get
+; fastcall
+; a: struct handle *
+; b: index
+; return x: uint16 at specified index or 0
+;----------------------------------------------------------------
+	jsr array_element
+	set x, [x]
+	set pc, pop	
+
+;----------------------------------------------------------------
+:array_set
+; fastcall
+; a: struct handle *
+; b: index
+; c: uint16
+;----------------------------------------------------------------
+	jsr array_element
+	set [x], c
+	set pc, pop	
+
+;----------------------------------------------------------------
+:array_del
+; fastcall
+; a: struct handle *
+; b: index
+;----------------------------------------------------------------
+	jsr array_element
+
+	set push, a
+	set push, i
+	set push, [x]
+
+	set a, [a]
+	sub [a], 1
+	
+	add a, [a]
+	set i, x
+
+:loop	
+	ifg i, a
+		set pc, array_del_finish
+	sti [i], [i+1]
+	set pc, loop
+	
+:array_del_finish
+	set x, pop
+	set i, pop
+	set a, pop
+	set pc, pop	
+
+;----------------------------------------------------------------
+:array_element
+; fastcall
+; a: struct handle *
+; b: index
+;----------------------------------------------------------------
+	set push, y
+	set y, [a]			; array_data *
+	set x, b
+
+	ifb b, 0x8000
+		add x, [y]			; len
+		
+	ifb x, 0x8000
+		set pc, array_return_0
+
+	add x, 1
+	ifg x, [y]
+		set pc, array_return_0
+
+	add x, y
+	set y, pop
+	set pc, pop
+
+:array_return_0
+	set y, pop
+	set x, 0
+	add sp, 1
+	set pc, pop
+
+;----------------------------------------------------------------
+; extern struct handle *array_insert(struct handle *arr, uint index, void item)
+;----------------------------------------------------------------
+:array_insert
+	set push, 3
+	set push, 0
+	jsr preamble
+
+	set a, [z+12]		; handle *
+	set b, [a]			; array *
+
+	; check range
+	set c, [z+11]
+	
+	ifb c, 0x8000
+		set c, [b]
+		
+	ifg c, [b]
+		set pc, recover
+	
+	std i, [a + HANDLE_SIZE]
+
+	ifl [b], i
+		set pc, array_insert_prepare
+	    
+	; increase list capacity
+	add i, 10   ; increase capacity
+	
+	set push, a
+	set push, i
+	set push, [a+1]
+	jsr realloc
+
+	set b, [a]			; realloc has moved the memory
+		
+:array_insert_prepare
+	set i, b
+	add i, [b]
+
+	add [b], 1
+	add b, c	
+
+:array_insert_copy
+	ife i, b
+		set pc, array_insert_finish
+
+	std [i+1], [i]
+	set pc, array_insert_copy
+	
+:array_insert_finish
+	set [i+1], [z+10]
+
+	jsr postamble
+
+;----------------------------------------------------------------
+; extern struct handle *array_split(struct handle *orig, uint start, uint end)
+;----------------------------------------------------------------
+:array_split
+	set push, 3
+	set push, 1
+	jsr preamble
+
+	set a, [z+12]
+	set b, [a]
+
+	; start index
+	set j, [z+11]
+	ifb j, 0x8000
+		add j, [b]
+
+	; end index
+	set c, [z+10]
+	ifb c, 0x8000
+		add c, [b]
+
+	set y, c
+	sub y, j
+
+	set push, y
+	set push, [a + HANDLE_TYPE]
+	jsr alloc
+	set [z-1], x
+
+	add j, b
+	add c, b
+	
+	set i, [x]
+	set [i], y
+	
+:array_split_loop
+	ife j, c
+		jsr postamble
+	sti [i+1], [j+1]
+	set pc, array_split_loop
+
+;----------------------------------------------------------------
+; extern struct handle *array_merge(struct handle *left, struct handle *right)
+;----------------------------------------------------------------
+:array_merge
+	set push, 2
+	set push, 1
+	jsr preamble
+
+	set b, [z+11]		; struct handle *left
+	set j, [b]			; struct string *left
+
+	set a, [z+10]		; struct handle *right
+	set a, [a]			; struct string *right
+
+	set c, [j]
+	add c, [a]
+	
+	set push, c
+	set push, [b + HANDLE_TYPE]
+	jsr alloc
+	set [z-1], x		; struct handle *result
+
+	set i, [x]			; struct string *result
+	set [i], c			; set length
+
+	set c, j
+	add c, [j]
+
+:array_merge_left_loop
+	ife j, c
+		set pc, array_merge_right
+		
+	sti [i+1], [j+1]
+	set pc, array_merge_left_loop
+	
+:array_merge_right
+	set j, a
+	set c, j
+	add c, [j]
+
+:array_merge_right_loop
+	ife j, c
+		jsr postamble
+		
+	sti [i+1], [j+1]
+	set pc, array_merge_right_loop
+		
+;----------------------------------------------------------------
+; uint array_cmp(struct handle *array, struct handle *array, func *comparator)
+;----------------------------------------------------------------
+:array_cmp
+	set push, 3		; sizeof(args)
+	set push, 0		; sizeof(vars)
+	jsr preamble
+
+	set i, [z+12]	; struct handle *list1
+	set i, [i]		; struct list *list1
+
+	set a, i
+	add a, [a]		; *tail1
+	
+	set j, [z+11]	; struct handle *list2
+	set j, [j]		; struct list *list2
+
+	set b, j		; i: *head1, j: *head2
+	add b, [b]		; *tail2
+
+:array_cmp_loop
+	ife i, a
+	    set pc, array_cmp_loop_break
+	ife j, b
+	    set pc, array_cmp_loop_break
+
+	jsr [z+10]
+
+	ife x, 0
+	    sti pc, array_cmp_loop
+
+	jsr postamble
+
+:array_cmp_loop_break
+	set x, 0
+	ifl i, a
+	    set x, 1
+	ifl j, b
+	    set x, -1
+
+	jsr postamble
+
+;----------------------------------------------------------------
+; struct handle *array_repeat(struct handle *array, struct handle *int_times)
+;----------------------------------------------------------------
+:array_repeat
+	set push, 2
+	set push, 0
+	jsr preamble
+	
+	set push, [z+10]		; struct handle *int
+	jsr int_to_int16
+
+	set c, x			; store multiplier
+	ifb c, 0x8000
+		set c, 0
+
+	set a, [z+11]			; struct handle *
+	set b, [a]			; struct list *
+
+	set y, [b]			; list size
+	mul y, c			; space required
+
+	set push, y
+	set push, [a + HANDLE_TYPE]
+	jsr alloc
+
+	set c, [x]			; struct list *
+	set [c], y			; set size
+
+	set j, c
+	add j, [c]			; last item
+
+	set i, b
+
+:array_repeat_loop
+	ife j, c
+		jsr postamble
+	ife i, b
+		add i, [b]
+	std [j], [i]	
+	set pc, array_repeat_loop
+
+
+;----------------------------------------------------------------
+; void array_sort(struct handle *array, uint16 *comparator_func)
+; comparator_func(a,b) return TRUE if a is before b
+;----------------------------------------------------------------
+:array_sort
+    set push, 3
+    set push, 0
+    jsr preamble	
+
+    set a, [z+11]
+    set b, [z+10]
+
+    set a, [a]	; struct handle **i
+
+    set c, a
+    add c, [a]	; struct handle **last
+
+
+:array_sort_outer
+    add a, 1	; struct handle **first
+    ife a, c
+        jsr postamble
+
+    set y, a	; struct handle **min
+
+    sti j, a	; 
+
+:array_sort_inner
+    ifg j, c
+        set pc, array_sort_outer
+
+    set push, [j]
+    set push, [y]
+    jsr b
+
+    ife x, TRUE
+        sti pc, array_sort_inner
+
+    set x, [y]
+    set [y], [a]
+    set [a], x
+
+    sti pc, array_sort_inner
+    
+;----------------------------------------------------------------
+; struct handle *array_clone(struct handle *original)
+;----------------------------------------------------------------
+:array_clone
+	set push, 1
+    set push, 0
+    jsr preamble	
+
+    set a, [z+10]
+    set i, [a]
+
+	set push, [i]
+	set push, [a + HANDLE_TYPE]
+	jsr alloc
+
+	set j, [x]
+	set c, j
+	add c, [j]
+	
+:array_clone_loop
+	ifg j, c
+		jsr postamble
+		
+	set [j], [i]
+	sti pc, array_clone_loop
+

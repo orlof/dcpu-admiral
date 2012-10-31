@@ -1,0 +1,619 @@
+;----------------------------------------------------------------
+:edit_main
+;----------------------------------------------------------------
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	set [cur_x], 0
+	set [cur_y], 0
+	set [prev_char], 0
+
+; store screen
+	set push, 384
+	set push, TYPE_STRING
+	jsr alloc
+	set [z-2], x
+
+	set j, [x]
+	set [j], 384
+	add j, 1
+	
+	set i, 0x8000
+:cp_loop
+	sti [j], [i]
+	ifl i, 0x8180
+		set pc, cp_loop
+
+	set push, 1000
+	set push, TYPE_STRING
+	jsr alloc
+	set [z-1], x
+
+	set x, [x]
+	add x, 1
+	set [buf_start], x
+	set [gap_start], x
+	set [cur_pos], x
+	set [win_start], x
+	set [cur_line], x
+
+	add x, 1000
+	set [buf_end], x
+	set [gap_end], x
+
+	set x, [z+10]
+	set x, [x]
+	set y, x
+	add x, [x]
+
+:loop22
+	ife y, x
+		set pc, edit_main_loop
+
+	set c, [y+1]
+	jsr edit_insert_char
+	add y, 1
+	set pc, loop22
+
+:edit_main_loop	
+	jsr win_normalize
+	jsr edit_win_draw
+
+	set a, [cur_y]
+	set b, [cur_x]
+	jsr win_move
+
+	set c, [prev_char]
+
+	jsr win_show_cursor	
+	jsr win_getchar
+	jsr win_hide_cursor
+
+	set [prev_char], c
+
+	ife c, KEY_UP
+		set pc, edit_key_up
+	ife c, KEY_DOWN
+		set pc, edit_key_down
+	ife c, KEY_LEFT
+		set pc, edit_key_left
+	ife c, KEY_RIGHT
+		set pc, edit_key_right
+	ife c, KEY_DEL
+		set pc, edit_key_del
+	ife c, KEY_BS
+		set pc, edit_key_bs
+	ife c, KEY_NEWLINE
+		set pc, edit_key_newline
+	ife c, KEY_CTRL_X
+		set pc, edit_main_finish
+	ifg c, 0x19
+		ifl c, 0x7f
+			set pc, edit_key_character
+
+	set pc, edit_main_loop
+
+:edit_main_finish
+	set i, [z-2]
+	set i, [i]
+	add i, 1
+	
+	set j, 0x8000
+:cp_loop2
+	sti [j], [i]
+	ifl j, 0x8180
+		set pc, cp_loop2
+
+	set c, [buf_end]
+	sub c, [buf_start]
+	add c, [gap_start]
+	sub c, [gap_end]
+	
+	set push, c
+	set push, TYPE_STRING
+	jsr alloc
+
+	set j, [x]
+	set [j], c
+	add j, 1
+	
+	set i, [buf_start]
+
+:loop33
+	ife i, [gap_start]
+		set i, [gap_end]
+	ife i, [buf_end]
+		set pc, postamble	
+	sti [j], [i]
+	set pc, loop33	
+
+;----------------------------------------------------------------
+:edit_key_up
+;----------------------------------------------------------------
+	set a, [cur_line]
+	jsr prevline
+	set [cur_line], a
+	
+	set b, [cur_x]
+	add b, [win_shift]
+	jsr pos_x
+	set [cur_pos], a
+	
+	set pc, edit_main_loop
+
+	; void k_up (void) {
+	;	cur_line = prevline (cur_line);
+	;	cur_pos = pos_x (cur_line, cur_x + win_shift);
+	; }
+
+;----------------------------------------------------------------
+:edit_key_down
+;----------------------------------------------------------------
+	set a, [cur_pos]
+	jsr eol
+	ife a, [buf_end]
+		set pc, edit_main_loop
+
+	set a, [cur_line]
+	jsr nextline
+	set [cur_line], a
+	
+	set b, [cur_x]
+	add b, [win_shift]
+	jsr pos_x
+	set [cur_pos], a
+	
+	set pc, edit_main_loop
+
+	; void k_down (void) {
+	;	if (eol (cur_pos) < eof_pos) {
+	;		cur_line = nextline (cur_line);
+	;		cur_pos = pos_x (cur_line, cur_x + win_shift);
+	;	}
+	; }
+;----------------------------------------------------------------
+:edit_key_left
+;----------------------------------------------------------------
+	ife [cur_pos], [gap_end]
+		set [cur_pos], [gap_start]
+	ifg [cur_pos], [buf_start]
+		sub [cur_pos], 1
+	set pc, edit_main_loop
+;----------------------------------------------------------------
+:edit_key_right
+;----------------------------------------------------------------
+	ifl [cur_pos], [buf_end]
+		add [cur_pos], 1
+	ife [cur_pos], [gap_start]
+		set [cur_pos], [gap_end]
+	set pc, edit_main_loop
+;----------------------------------------------------------------
+:edit_key_del
+;----------------------------------------------------------------
+	ifl [cur_pos], [buf_end]
+		jsr edit_remove_char
+	set pc, edit_main_loop
+;----------------------------------------------------------------
+:edit_key_bs
+;----------------------------------------------------------------
+	ife [cur_pos], [gap_end]
+		set [cur_pos], [gap_start]
+	ife [cur_pos], [buf_start]
+		set pc, edit_main_loop
+	sub [cur_pos], 1
+	jsr edit_remove_char
+	set pc, edit_main_loop
+;----------------------------------------------------------------
+:edit_key_newline
+:edit_key_character
+;----------------------------------------------------------------
+	jsr edit_insert_char
+	
+	; void ins_ch (char ch) {
+	;	if (ins_mem (1))
+	;		text[cur_pos++] = ch;
+	; }
+
+	set pc, edit_main_loop
+	
+
+;----------------------------------------------------------------
+:edit_win_draw
+;----------------------------------------------------------------	
+	set i, [win_start]
+	set j, SCREEN_START
+
+:edit_win_draw_loop
+	jsr edit_line_draw
+
+	ifl j, SCREEN_END
+		set pc, edit_win_draw_loop
+
+	set pc, pop
+;----------------------------------------------------------------
+:edit_line_draw
+; fastcall
+;   i: buffer pointer to beginning of line
+;   j: screen pointer to beginning of line
+; return
+;   i: pointer to beginning of next line in buffer or buf_end
+;   j: pointer to beginning of next line in window of SCREEN_END
+;----------------------------------------------------------------
+	set c, 0
+:edit_line_skip_start
+	ife i, [gap_start]
+		set i, [gap_end]
+	ife c, [win_shift]
+		set pc, edit_line_chars
+	ife i, [buf_end]
+		set pc, edit_line_chars
+	ife [i], KEY_NEWLINE
+		set pc, edit_line_chars
+
+	add i, 1
+	add c, 1
+
+	set pc, edit_line_skip_start
+	
+:edit_line_chars
+	set c, j
+	add c, LINE_LEN
+
+:edit_line_chars_loop
+	set [j], 0
+	ife i, [buf_end]
+		set pc, edit_line_chars_loop_1
+	ife [i], KEY_NEWLINE
+		set pc, edit_line_chars_loop_1
+
+	set [j], [i]
+	bor [j], FONT_COLOR
+
+	
+	add i, 1
+	ife i, [gap_start]
+		set i, [gap_end]
+	
+:edit_line_chars_loop_1
+	add j, 1
+	ifl j, c
+		set pc, edit_line_chars_loop
+
+	set c, edit_line_skip_end
+:edit_line_skip_end
+	ife i, [buf_end]
+		set pc, pop
+	ife [i], KEY_NEWLINE
+		set c, pop
+
+	add i, 1
+	ife i, [gap_start]
+		set i, [gap_end]
+		
+	set pc, c
+
+;----------------------------------------------------------------
+:edit_gap_move
+;----------------------------------------------------------------
+	set i, [gap_start]
+	set j, [gap_end]
+	
+:edit_gap_move_loop
+	ifl j, [cur_pos]
+		sti [i], [j]
+	ifg i, [cur_pos]
+		std [j-1], [i-1]
+	ifn i, [cur_pos]
+		ifn j, [cur_pos]
+			set pc, edit_gap_move_loop
+
+	set [gap_start], i
+	set [gap_end], j
+
+	set [cur_pos], j
+	set pc, pop
+
+;----------------------------------------------------------------
+:edit_insert_char
+;----------------------------------------------------------------
+	ife [gap_start], [gap_end]
+		set pc, pop
+
+	jsr edit_gap_move	
+
+	set a, [gap_start]
+	set [a], c
+	add [gap_start], 1
+	set pc, pop
+
+;----------------------------------------------------------------
+:edit_remove_char
+;----------------------------------------------------------------
+	ife [cur_pos], [buf_end]
+		set pc, pop
+	ife [gap_start], [buf_start]
+		ife [gap_end], [buf_end]
+			set pc, pop
+
+	jsr edit_gap_move	
+
+	add [gap_end], 1
+	add [cur_pos], 1
+	set pc, pop
+;----------------------------------------------------------------
+:bol
+; fastcall
+; 	a: pos
+; return
+;   a: beginning of line pointer
+;----------------------------------------------------------------
+	ife a, [gap_end]
+		set a, [gap_start]
+
+	ife a, [buf_start]
+		set pc, pop
+		
+	sub a, 1
+	
+	ifn [a], KEY_NEWLINE
+		set pc, bol		
+
+	add a, 1
+	ife a, [gap_start]
+		set a, [gap_end]
+
+	set pc, pop	
+
+	; int bol (int pos) {
+	;	while (pos && text[pos - 1] != '\n')
+	;		pos--;
+	;	return pos;
+	; }
+;----------------------------------------------------------------
+:eol
+; fastcall
+; 	a: pos
+; return
+;   a: pointer to next newline or buf_end
+;----------------------------------------------------------------
+	ife a, [buf_end]
+		set pc, pop
+
+	ife [a], KEY_NEWLINE
+		set pc, pop		
+
+	add a, 1
+	ife a, [gap_start]
+		set a, [gap_end]
+
+	set pc, eol
+
+	; int eol (int pos) {
+	;	while (pos < eof_pos && text[pos] != '\n')
+	;		pos++;
+	;	return pos;
+	; }
+;----------------------------------------------------------------
+:prevline
+; fastcall
+; 	a: pos
+; return
+;   a: beginning of previous line
+;----------------------------------------------------------------
+	jsr bol
+	ife a, [buf_start]
+		set pc, pop
+
+	ife a, [gap_end]
+		set a, [gap_start]
+	sub a, 1
+		
+	jsr bol
+	set pc, pop
+
+	; int prevline (int pos) {
+	;	pos = bol (pos);
+	;	return pos ? bol (pos - 1) : 0;
+	; }
+
+;----------------------------------------------------------------
+:nextline
+; fastcall
+; 	a: pos
+; return
+;   a: beginning of next line
+;----------------------------------------------------------------
+	jsr eol
+	ifl a, [buf_end]
+		add a, 1
+
+	ife a, [gap_start]
+		set a, [gap_end]
+
+	set pc, pop
+
+	; int nextline (int pos) {
+	;	pos = eol (pos);
+	;	return pos < eof_pos ? pos + 1 : pos;
+	; }
+
+;----------------------------------------------------------------
+:pos_x
+; convert column to pointer
+; fastcall
+;   a: line beginning pointer
+;   b: column
+; return
+;   a: pointer to char in buf 
+;----------------------------------------------------------------
+	ife b, 0
+		set pc, pop
+	ife a, [buf_end]
+		set pc, pop
+	ife [a], KEY_NEWLINE
+		set pc, pop
+
+	sub b, 1
+	add a, 1
+	ife a, [gap_start]
+		set a, [gap_end]
+		
+	set pc, pos_x
+
+	; int pos_x (int line, int xx) {
+	;	int	i, x = 0;
+	;
+	;	for (i = line; i < eof_pos && x < xx; i++)
+	;		if (text[i] == '\n')
+	;			break;
+	;		else
+	;			x++;
+	;	return i;
+	; }
+
+
+
+
+
+
+
+;----------------------------------------------------------------
+:win_x
+; fastcall
+;   a: line beginning pointer
+;   b: pointer to char in buf
+; return
+;   c: column
+;----------------------------------------------------------------
+	set c, 0
+
+	ife a, b
+		set pc, pop
+:win_x_loop
+	ife a, [gap_start]
+		set a, [gap_end]
+
+	ife a, b
+		set pc, pop
+
+	add c, 1
+	add a, 1
+
+	set pc, win_x_loop
+
+	; int win_x (int line, int xx) {
+	;	int	i, x = 0;
+	;	for (i = line; i < eof_pos && i < line + xx; i++)
+	;		if (text[i] == '\n')
+	;			break;
+	;		else
+	;			x++;
+	;	return x;
+	; }
+
+
+
+
+:win_normalize
+	; cur_line = bol (cur_pos);
+	set a, [cur_pos]
+	jsr bol
+	set [cur_line], a
+
+	; while (cur_line < bow_line)
+	;	bow_line = prevline (bow_line);
+:win_normalize_2
+	ife [cur_line], [win_start]
+		set pc, win_normalize_1
+	ifg [cur_line], [win_start]
+		set pc, win_normalize_1
+	
+	set a, [win_start]
+	jsr prevline
+	set [win_start], a
+
+	set pc, win_normalize_2
+
+:win_normalize_1
+	; cur_y = 0;
+	set [cur_y], 0
+
+	; for (i = bow_line; i < cur_line; i = nextline (i))
+	;	cur_y++;
+
+	set a, [win_start]				; i = bow_line
+:win_normalize_4
+	ife a, [cur_line]				; i < cur_line
+		set pc, win_normalize_3
+
+	jsr nextline					; i = nextline(i)
+
+	add [cur_y], 1					; cur_y++
+	
+	set pc, win_normalize_4
+
+	; for (; cur_y >= LINES; cur_y--)
+:win_normalize_3
+	set a, [win_start]
+
+:win_normalize_6
+	ifl [cur_y], LINES				; cur_y >= LINES
+		set pc, win_normalize_5
+
+	; bow_line = nextline (bow_line);
+	jsr nextline					
+
+	sub [cur_y], 1					; cur_y--
+	set pc, win_normalize_6
+
+:win_normalize_5
+	set [win_start], a		
+;---
+	set a, [cur_line]
+	set b, [cur_pos]
+	jsr win_x
+	sub c, [win_shift]
+	set [cur_x], c
+	
+:win_normalize_8
+	ifc [cur_x], 0x8000
+		set pc, win_normalize_7
+			
+	add [cur_x], 8
+	sub [win_shift], 8
+	
+	set pc, win_normalize_8
+	
+:win_normalize_7
+	ifl [cur_x], LINE_LEN
+		set pc, pop
+	
+	sub [cur_x], 8
+	add [win_shift], 8
+	
+	set pc, win_normalize_7
+	
+	
+;void	norm_cur (void) {
+;	int	i;
+;	cur_line = bol (cur_pos);
+;	while (cur_line < bow_line)
+;		bow_line = prevline (bow_line);
+;	cur_y = 0;
+;	for (i = bow_line; i < cur_line; i = nextline (i))
+;		cur_y++;
+;	for (; cur_y >= LINES; cur_y--)
+;		bow_line = nextline (bow_line);
+;
+;	cur_x = win_x (cur_line, cur_pos - cur_line) - win_shift;
+;	while (cur_x < 0) {
+;		cur_x += TABSIZE;
+;		win_shift -= TABSIZE;
+;	}
+;	while (cur_x >= COLS) {
+;		cur_x -= TABSIZE;
+;		win_shift += TABSIZE;
+;	}
+;}
+

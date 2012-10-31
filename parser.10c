@@ -1,0 +1,2706 @@
+;----------------------------------------------------------------
+:parser_stmt
+;----------------------------------------------------------------
+	set push, 0
+	set push, 4
+	jsr preamble
+
+	set y, [lexer_token]
+	set pc, [y + PROTOTYPE_STD]
+
+;----------------------------------------------------------------
+:parser_simple_stmt
+;----------------------------------------------------------------
+	set push, 0
+	set push, 1
+	jsr preamble
+
+	set c, [lexer_token]
+	ife c, token_while
+		jsr recover
+	ife c, token_if
+		jsr recover
+	ife c, token_for
+		jsr recover
+
+	set y, [lexer_token]
+	set pc, [y + PROTOTYPE_STD]
+
+;----------------------------------------------------------------
+:std_newline
+; return struct handle *none
+;----------------------------------------------------------------
+	jsr lexer_next
+
+;----------------------------------------------------------------
+:std_eof
+; return struct handle *none
+;----------------------------------------------------------------
+	set x, NONE
+	set pc, postamble
+
+;----------------------------------------------------------------
+:std_indent
+:std_dedent
+; return struct handle *none
+;----------------------------------------------------------------
+	jsr recover
+
+;----------------------------------------------------------------
+:std_cls
+; return struct handle *none
+;----------------------------------------------------------------
+	jsr lexer_next		; skip 'cls'
+
+	jsr cls
+	set [cursor], SCREEN_START
+
+	set x, NONE
+	set pc, postamble
+
+;----------------------------------------------------------------
+:std_reset
+; return struct handle *none
+;----------------------------------------------------------------
+	jsr cls
+	set [cursor], SCREEN_START
+	set sp, 0
+	set z, 0
+	set pc, interpreter_main
+
+;----------------------------------------------------------------
+:std_print	
+; return struct handle *none
+;----------------------------------------------------------------
+	jsr lexer_next		; skip 'print'
+
+:std_print_loop
+	ife [lexer_token], token_newline
+		set pc, std_print_break_newline
+	ife [lexer_token], token_eof
+		set pc, std_print_break_eof
+
+	set push, 0
+	jsr expression
+	set [z-1], x
+
+	ife [x + HANDLE_TYPE], TYPE_TUPLE_COMMA
+		set pc, std_print_array
+		
+	set push, x
+	jsr eval
+	set [z-1], x
+
+	set push, x
+	jsr print
+	
+	set pc, std_print_loop
+
+:std_print_array
+	set push, x
+	jsr eval
+	set [z-1], x
+
+	set push, x
+	set push, std_print_iterator
+	set push, 0
+	jsr list_iterate
+
+	set pc, std_print_loop
+
+:std_print_iterator
+	set push, [sp+2]
+	jsr print
+
+	set c, ' '
+	jsr add_char
+
+	set x, [sp]
+	add sp, 3
+	set pc, x
+
+:std_print_break_newline
+	set push, token_newline
+	jsr lexer_advance
+
+:std_print_break_eof
+	set c, 10
+	jsr add_char
+
+	set x, NONE
+	set pc, postamble
+
+;----------------------------------------------------------------
+:std_return
+; return struct handle *control
+;----------------------------------------------------------------
+	jsr lexer_next		; skip return
+
+	set push, 2			; create struct control
+	set push, TYPE_CONTROL
+	jsr alloc
+	set [z-1], x
+
+	set a, [x]
+	set [a], 2
+	set [a + CONTROL_SIGNAL], token_return		; set control type
+	set [a + CONTROL_VALUE], NONE			; default: no return value
+
+	ife [lexer_token], token_newline
+		set pc, std_return_finish
+	
+	set push, 0
+	jsr expression
+
+	set a, [z-1]
+	set a, [a]
+	set [a + CONTROL_VALUE], x
+
+:std_return_finish
+	; keeping lexer up to date is not needed after return
+	; set push, token_newline
+	; jsr lexer_advance
+
+	set x, [z-1]
+	set pc, postamble
+	
+;----------------------------------------------------------------
+:std_break
+:std_continue
+; return struct handle *control
+;----------------------------------------------------------------
+	set b, [lexer_token]		; store token for control signal
+
+	jsr lexer_next			; advance 'break'
+
+	set push, token_newline		; verify newline
+	jsr lexer_advance
+
+	set push, 1			; create struct control
+	set push, TYPE_CONTROL
+	jsr alloc
+
+	set a, [x]
+	set [a], 1
+	set [a + CONTROL_SIGNAL], b 	; set control signal
+
+	set pc, postamble
+
+;----------------------------------------------------------------
+:std_pass
+; return struct handle *none
+;----------------------------------------------------------------
+	jsr lexer_next
+
+	set push, token_newline
+	jsr lexer_advance
+
+	set x, NONE
+	set pc, postamble
+
+;----------------------------------------------------------------
+:std_for
+; return struct handle *none
+; todo implement else
+;----------------------------------------------------------------
+	jsr lexer_next		; advance 'for'
+	jsr parser_fork_scope
+
+	; get the testlist (left side)
+	set push, 0x0000
+	jsr testlist
+	set [z-3], x
+
+	set push, token_in	; verify 'in'
+	jsr lexer_advance
+	
+	; get the exprlist (right side)
+	set push, 0x0000
+	jsr expression
+	set [z-4], x
+
+	set push, x
+	jsr eval
+	set [z-4], x
+
+	set push, token_colon		; verify colon
+	jsr lexer_advance
+	
+	jsr lexer_store				; store lexer position
+
+	set i, 0
+	
+:std_for_loop
+	set a, [z-3]	; struct handle *left
+	set b, [z-4]	; struct handle *right
+
+	set c, [b]		; struct data *right
+	ife i, [c]		; i == rightLen -> done
+		set pc, std_for_finish
+
+	add c, i		; c+1 = points to current item
+	ife [b + HANDLE_TYPE], TYPE_STRING
+		set pc, std_for_loop_string
+		
+	set push, a
+	set push, [c+1]
+	jsr assign
+
+:std_for_execute_suite
+	jsr parser_suite
+	ife [x + HANDLE_TYPE], TYPE_CONTROL
+		set pc, std_for_control
+;	ife [lexer_token], token_eof
+;		set pc, std_for_eof
+
+:std_for_control_continue
+	jsr lexer_restore				; restore lexer to loop condition
+	sti pc, std_for_loop
+
+:std_for_loop_string
+	ife [a + HANDLE_TYPE], TYPE_TUPLE
+		set pc, std_for_loop_string_tuple
+
+	set push, a
+	set push, [c+1]
+	jsr assign_from_string
+
+	set pc, std_for_execute_suite
+
+:std_for_loop_string_tuple
+	set push, a
+	set push, b
+	jsr assign
+	
+	set pc, std_for_execute_suite
+
+:std_for_control
+	set a, [x]
+	ife [a + CONTROL_SIGNAL], token_continue
+		set pc, std_for_control_continue
+	ife [a + CONTROL_SIGNAL], token_break
+		set pc, std_for_control_break
+	ife [a + CONTROL_SIGNAL], token_return
+		set pc, std_for_control_return
+
+	jsr recover
+
+:std_for_control_break
+	jsr lexer_restore
+
+:std_for_finish	
+	jsr parser_skip_suite
+:std_for_eof
+	set x, NONE
+
+:std_for_control_return
+	set [current_scope], [z-1]
+	set pc, postamble
+
+;----------------------------------------------------------------
+:std_del
+;----------------------------------------------------------------
+	jsr lexer_next			; advance 'del'
+
+:std_del_loop
+	ife [lexer_token], token_newline
+		set pc, std_del_break
+
+	set push, 0
+	jsr expression
+	set [z-1], x
+	
+	set push, x
+	jsr del
+	
+	set pc, std_del_loop
+
+:std_del_break
+	set x, NONE
+	set pc, postamble
+
+;----------------------------------------------------------------
+:std_if
+; return struct handle *none
+;----------------------------------------------------------------
+	jsr lexer_next			; advance 'if'
+
+	set push, 0			; evaluate if condition
+	jsr expression
+	set [z-3], x
+	
+	set push, x
+	jsr eval
+	set [z-3], x
+	
+	set push, token_colon		; verify colon
+	jsr lexer_advance
+
+	ife [z-3], BOOL_HANDLE_FALSE	; break if loop condition is false
+		set pc, std_if_false
+
+	jsr parser_suite
+	ife [x + HANDLE_TYPE], TYPE_CONTROL
+		set pc, postamble
+	ife [lexer_token], token_eof
+		set pc, std_if_eof
+
+	set pc, std_if_skip
+
+:std_if_skip_loop
+	set push, token_colon
+	jsr parser_skip_until_token
+
+	jsr lexer_next			; skip COLON
+
+	jsr parser_skip_suite
+	ife [lexer_token], token_eof
+		set pc, std_if_eof
+
+:std_if_skip
+	ife [lexer_token], token_elif
+		set pc, std_if_skip_loop
+	ife [lexer_token], token_else
+		set pc, std_if_skip_loop
+
+	set pc, std_if_eof
+
+:std_if_false
+	jsr parser_skip_suite
+	ife [lexer_token], token_elif
+		set pc, std_if
+	ife [lexer_token], token_else
+		set pc, std_if_else
+	
+	set pc, std_if_eof
+
+:std_if_else
+	jsr lexer_next		; skip else
+
+	set push, token_colon
+	jsr lexer_advance	; skip COLON
+	
+	jsr parser_suite
+
+	ife [x + HANDLE_TYPE], TYPE_CONTROL
+		set pc, postamble
+
+:std_if_eof
+	set x, NONE
+	set pc, postamble
+
+;----------------------------------------------------------------
+:parser_fork_scope
+;----------------------------------------------------------------
+	set [z-1], [current_scope]	; store current scope
+
+	;----------------------------------------------------------------
+	; comment to disabled block scope to mimic python's deficiencies
+	set push, 5			; create new scope for while block
+	set push, TYPE_DICT
+	jsr alloc
+	set [z-2], x
+	set [current_scope], x		; set new scope in effect
+
+	set push, x			; set parent scope
+	set push, STR_UNDERSCORE
+	set push, [z-1]
+	jsr dict_set
+	;----------------------------------------------------------------
+
+	set pc, pop
+
+;----------------------------------------------------------------
+:std_while
+; return struct handle *none
+; todo implement else
+;----------------------------------------------------------------
+	jsr lexer_next				; advance 'while'
+
+	jsr parser_fork_scope
+
+	jsr lexer_store				; store lexer position
+
+:std_while_loop
+	set push, 0					; evaluate loop condition
+	jsr expression
+	set [z-3], x
+	
+	set push, token_colon		; verify colon
+	jsr lexer_advance
+
+	ife [z-3], BOOL_HANDLE_FALSE	; break if loop condition is false
+		set pc, std_while_false
+
+	jsr parser_suite
+	ife [x + HANDLE_TYPE], TYPE_CONTROL
+		set pc, std_while_control
+;	ife [lexer_token], token_eof
+;		set pc, std_while_eof	
+
+:std_while_control_continue
+	jsr lexer_restore				; restore lexer to loop condition
+	set pc, std_while_loop
+
+:std_while_control
+	set a, [x]
+	ife [a + CONTROL_SIGNAL], token_continue
+		set pc, std_while_control_continue
+	ife [a + CONTROL_SIGNAL], token_break
+		set pc, std_while_control_break
+	ife [a + CONTROL_SIGNAL], token_return
+		set pc, std_while_control_return
+
+	jsr recover
+
+:std_while_control_break
+	jsr lexer_restore
+	
+	set push, token_colon
+	jsr parser_skip_until_token
+
+	jsr lexer_next		; skip colon
+
+:std_while_false
+	jsr parser_skip_suite
+:std_while_eof
+	set x, NONE
+
+:std_while_control_return
+	set [current_scope], [z-1]
+	set pc, postamble
+
+;----------------------------------------------------------------
+; void parser_skip_suite()
+;----------------------------------------------------------------
+:parser_skip_until_token
+	ife [lexer_token], [sp + 1]
+		set pc, parser_skip_until_token_finish
+	ife [lexer_token], token_eof
+		set pc, parser_skip_until_token_finish
+
+	jsr lexer_next
+	set pc, parser_skip_until_token
+
+:parser_skip_until_token_finish
+	set [sp], pop
+	set pc, pop
+
+;----------------------------------------------------------------
+; void parser_skip_suite()
+;----------------------------------------------------------------
+:parser_skip_suite
+	set push, 0
+	set push, 0
+	jsr preamble
+
+	ife [lexer_token], token_newline
+		jsr parser_skip_suite_block
+
+:parser_skip_suite_simple_stmt
+	set push, token_newline
+	jsr parser_skip_until_token
+
+:parser_skip_suite_simple_stmt_finish
+	jsr lexer_next		; skip newline
+	set pc, postamble
+
+:parser_skip_suite_block
+	jsr lexer_next		; skip newline
+
+	set push, token_indent	; verify indent
+	jsr lexer_advance
+
+	set a, 1
+
+:parser_skip_suite_block_loop
+	ife [lexer_token], token_indent
+		add a, 1
+	ife [lexer_token], token_dedent
+		sub a, 1		
+
+	jsr lexer_next
+
+	ife a, 0
+		set pc, postamble
+
+	set pc, parser_skip_suite_block_loop
+
+;----------------------------------------------------------------
+; void parser_suite()
+;----------------------------------------------------------------
+:parser_suite
+	set push, 0
+	set push, 0
+	jsr preamble
+
+	ife [lexer_token], token_newline
+		set pc, parser_suite_block
+
+:parser_suite_simple_stmt
+	jsr parser_simple_stmt
+	set pc, postamble
+
+:parser_suite_block
+	jsr lexer_next		; skip newline
+
+	set push, token_indent	; verify indent
+	jsr lexer_advance
+	
+:parser_suite_block_loop
+	jsr parser_stmt
+	
+	ife [x + HANDLE_TYPE], TYPE_CONTROL
+		set pc, postamble
+
+	ife [lexer_token], token_dedent
+		set pc, parser_suite_block_break
+
+	ife [lexer_token], token_eof
+		set pc, postamble
+
+	set pc, parser_suite_block_loop
+
+:parser_suite_block_break
+	jsr lexer_next	; skip dedent
+	set pc, postamble
+
+;----------------------------------------------------------------
+:std_expression
+;----------------------------------------------------------------
+	set push, 0
+	jsr expression
+
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *expression(uint16 rbp)
+;----------------------------------------------------------------
+:expression
+	set push, 1
+	set push, 1			; struct handle *left
+	jsr preamble
+
+	set b, [z+10]		; rbp
+
+	set c, [lexer_token]
+	jsr [c + PROTOTYPE_NUD]
+	
+	set [z-1], x		; struct handle *left
+
+:expr_loop
+	set c, [lexer_token]
+
+	ifg b, [c + PROTOTYPE_LBP]
+		set pc, expr_finish
+	ife b, [c + PROTOTYPE_LBP]
+		set pc, expr_finish
+
+	set push, [z-1]
+	jsr [c + PROTOTYPE_LED]
+:expression_callback
+	set [z-1], x		; struct handle *left
+
+	set pc, expr_loop
+
+:expr_finish
+	set x, [z-1]		; struct handle *left
+	set pc, postamble
+	
+;----------------------------------------------------------------
+; struct handle *testlist(uint16 rbp)
+;----------------------------------------------------------------
+:testlist
+	set push, 1
+	set push, 1			; struct handle *left
+	jsr preamble
+
+	set b, [z+10]		; rbp
+
+	set y, 0
+	ife [lexer_token], token_name
+		set y, nud_name
+	ife [lexer_token], token_lparen
+		set y, nud_lparen
+
+	ife y, 0
+		jsr recover
+		
+	jsr y
+	set [z-1], x		; struct handle *left
+
+:testlist_loop
+	set c, [lexer_token]
+
+	ifg b, [c + PROTOTYPE_LBP]
+		set pc, expr_finish
+	ife b, [c + PROTOTYPE_LBP]
+		set pc, expr_finish
+
+	set y, 0
+	ife c, token_lbrack
+		set y, led_lbrack
+	ife c, token_reference
+		set y, led_reference
+	ife c, token_comma
+		set y, led_comma
+	
+	ife y, 0
+		set pc, expr_finish
+	
+	set push, [z-1]
+	jsr y
+:testlist_callback
+	set [z-1], x		; struct handle *left
+
+	set pc, testlist_loop
+
+;----------------------------------------------------------------
+; struct handle *nud_int()
+;----------------------------------------------------------------
+:nud_int
+	set push, 0
+	set push, 1
+	jsr preamble
+
+	jsr lexer_get_token_as_string
+	set [z-1], x
+
+	set push, [z-1]
+	jsr int_parse
+	set [z-1], x
+		
+	jsr lexer_next
+
+	set x, [z-1]
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *nud_name()
+;----------------------------------------------------------------
+:nud_str
+:nud_name
+	set push, 0
+	set push, 1
+	jsr preamble
+
+	jsr lexer_get_token_as_string
+	set [z-1], x
+	
+	jsr lexer_next
+
+	set x, [z-1]
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *nud_none()
+;----------------------------------------------------------------
+:nud_none
+	jsr lexer_next
+	set x, NONE
+	set pc, pop
+
+;----------------------------------------------------------------
+; struct handle *nud_true()
+;----------------------------------------------------------------
+:nud_true
+	jsr lexer_next
+	set x, BOOL_HANDLE_TRUE
+	set pc, pop
+
+;----------------------------------------------------------------
+; struct handle *nud_false()
+;----------------------------------------------------------------
+:nud_false
+	jsr lexer_next
+	set x, BOOL_HANDLE_FALSE
+	set pc, pop
+
+;----------------------------------------------------------------
+; struct handle *nud_lparen()
+; expression or tuple
+;----------------------------------------------------------------
+:nud_lparen
+	set push, 0
+	set push, 1
+	jsr preamble
+
+	jsr lexer_next	; skip '('
+	
+	ife [lexer_token], token_rparen
+		set pc, nud_lparen_empty
+
+	set push, 0
+	jsr expression
+	set [z-1], x
+
+	ifb [x + HANDLE_TYPE], 0x0801	; TUPLE_COLON | TUPLE_COMMA
+		set [x + HANDLE_TYPE], TYPE_TUPLE
+
+	set push, token_rparen
+	jsr lexer_advance
+
+	set x, [z-1]
+	set pc, postamble
+
+:nud_lparen_empty
+	jsr lexer_next	; skip ')'
+
+	set push, 0
+	set push, TYPE_TUPLE
+	jsr alloc
+
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *nud_lbrack()
+; list
+;----------------------------------------------------------------
+:nud_lbrack
+	set push, 0
+	set push, 2
+	jsr preamble
+
+	jsr lexer_next	; skip '['
+	
+	ife [lexer_token], token_rbrack
+		set pc, nud_lbrack_empty
+
+	set push, 0
+	jsr expression
+	set [z-1], x
+
+	ife [x + HANDLE_TYPE], TYPE_TUPLE_COMMA
+		set pc, nud_lbrack_change_type
+	
+	set push, 5
+	set push, TYPE_LIST
+	jsr alloc
+	set [z-2], x
+
+	set a, [x]
+	set	[a], 1
+	set [a+1], [z-1]
+	set pc, nud_lbrack_continue
+	
+:nud_lbrack_change_type
+	set [x + HANDLE_TYPE], TYPE_LIST
+	set [z-2], x
+
+:nud_lbrack_continue
+	set push, token_rbrack
+	jsr lexer_advance
+
+	set x, [z-2]
+	set pc, postamble
+
+:nud_lbrack_empty
+	jsr lexer_next	; skip ']'
+
+	set push, 5
+	set push, TYPE_LIST
+	jsr alloc
+
+	set pc, postamble
+;----------------------------------------------------------------
+; struct handle *nud_lcurly()
+; dict
+;----------------------------------------------------------------
+:nud_lcurly
+	set push, 0
+	set push, 4
+	jsr preamble
+
+	set push, 5
+	set push, TYPE_DICT
+	jsr alloc
+	set [z-1], x
+
+:nud_lcurly_loop
+	jsr lexer_next	; skip '{' or ','
+
+	ife [lexer_token], token_rcurly
+		set pc, nud_lcurly_finish
+
+	; left side (key)
+	set push, 0
+	jsr expression
+	set [z-3], x
+
+	set push, x
+	jsr eval
+	set [z-3], x
+
+	set push, token_colon
+	jsr lexer_advance		; skip ':'
+
+	; right side (value)
+	set push, 0x0030		; break at comma
+	jsr expression
+	set [z-4], x
+
+	set push, x
+	jsr eval
+	set [z-4], x
+
+	; kv-pair
+	set push, 2
+	set push, TYPE_TUPLE
+	jsr alloc
+	set [z-2], x
+
+	set x, [x]
+	set [x], 2
+	set [x+1], [z-3]
+	set [x+2], [z-4]
+
+	set push, [z-1]
+	set push, -1
+	set push, [z-2]
+	jsr array_insert
+
+	ife [lexer_token], token_comma
+		set pc, nud_lcurly_loop
+
+:nud_lcurly_finish
+	set push, token_rcurly
+	jsr lexer_advance
+
+	set x, [z-1]
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *nud_plus()
+;----------------------------------------------------------------
+:nud_plus
+	jsr lexer_next
+
+	set push, 0x0150
+	jsr expression
+
+	set pc, pop
+
+;----------------------------------------------------------------
+; struct handle *nud_minus()
+;----------------------------------------------------------------
+:nud_minus
+	set push, 0
+	set push, 1
+	jsr preamble
+
+	jsr lexer_next
+
+	set push, 0x0150
+	jsr expression
+	set [z-1], x
+
+	set push, x
+	jsr eval
+	set [z-1], x
+
+	ife [x + HANDLE_TYPE], TYPE_INT
+		set pc, nud_minus_int
+		
+	jsr recover
+
+:nud_minus_int
+	set push, x
+	jsr int_negate
+
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *nud_tilde()
+;----------------------------------------------------------------
+:nud_tilde
+	set push, 0
+	set push, 1
+	jsr preamble
+
+	jsr lexer_next
+
+	set push, 0x0160
+	jsr expression
+	set [z-1], x
+
+	set push, x
+	jsr eval
+	set [z-1], x
+
+	ife [x + HANDLE_TYPE], TYPE_INT
+		set pc, nud_tilde_int
+		
+	jsr recover
+
+:nud_tilde_int
+	set push, x
+	jsr int_complement
+
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *nud_not()
+;----------------------------------------------------------------
+:nud_not
+	set push, 0
+	set push, 1
+	jsr preamble
+
+	jsr lexer_next
+
+	set push, 0x0055
+	jsr expression
+	set [z-1], x
+
+	set push, x
+	jsr eval
+	set [z-1], x
+
+	set push, x
+	jsr boolean
+	set a, x
+
+	set x, BOOL_HANDLE_FALSE
+	ife a, BOOL_HANDLE_FALSE
+		set x, BOOL_HANDLE_TRUE
+
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_and(struct handle *left)
+;----------------------------------------------------------------
+:led_and
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr boolean_operator
+
+	set x, BOOL_HANDLE_TRUE
+	ife [z-1], BOOL_HANDLE_FALSE	
+		set x, BOOL_HANDLE_FALSE
+	ife [z-2], BOOL_HANDLE_FALSE	
+		set x, BOOL_HANDLE_FALSE
+			
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_or(struct handle *left)
+;----------------------------------------------------------------
+:led_or
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr boolean_operator
+
+	set x, BOOL_HANDLE_FALSE
+	ife [z-1], BOOL_HANDLE_TRUE	
+		set x, BOOL_HANDLE_TRUE
+	ife [z-2], BOOL_HANDLE_TRUE	
+		set x, BOOL_HANDLE_TRUE
+			
+	set pc, postamble
+
+:boolean_operator
+	jsr lexer_next
+
+	; evaluate left side
+	set push, [z+10]
+	jsr eval
+	set [z-1], x
+
+	set push, x
+	jsr boolean
+	set [z-1], x
+
+	; right side
+	set c, [lexer_token]
+	set push, [c + PROTOTYPE_LBP]		; push for expression call
+	jsr expression
+	set [z-2], x
+
+	; evaluate right side
+	set push, [z-2]
+	jsr eval
+	set [z-2], x
+	
+	set push, x
+	jsr boolean
+	set [z-2], x
+
+	set pc, pop
+
+;----------------------------------------------------------------
+; struct handle *led_assign(struct handle *left)
+;----------------------------------------------------------------
+:led_is
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	set a, TRUE
+
+	jsr lexer_next
+	ifn [lexer_token], token_not
+		set a, FALSE
+	ife [lexer_token], token_not
+		jsr lexer_next
+	
+	; evaluate left side
+	set push, [z+10]
+	jsr eval
+	set [z-1], x
+
+	; parse right side
+	set push, 0x0070
+	jsr expression
+	set [z-2], x
+	
+	; evaluate right side
+	set push, [z-2]
+	jsr eval
+	set [z-2], x
+
+	ife a, TRUE
+		set pc, led_is_not
+
+	set x, BOOL_HANDLE_FALSE
+	ife x, [z-1]
+		set x, BOOL_HANDLE_TRUE
+
+	set pc, postamble
+
+:led_is_not
+	set x, BOOL_HANDLE_TRUE
+	ife x, [z-1]
+		set x, BOOL_HANDLE_FALSE
+
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_not(struct handle *left)
+;----------------------------------------------------------------
+:led_not
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr lexer_next	; advance not
+
+	set a, TRUE
+	set pc, led_in_1
+
+;----------------------------------------------------------------
+; struct handle *led_in(struct handle *left)
+;----------------------------------------------------------------
+:led_in
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	set a, FALSE
+
+:led_in_1
+	set push, token_in
+	jsr lexer_advance	; verify led
+
+; evaluate left side
+	set push, [z+10]
+	jsr eval
+	set [z-1], x
+
+	; parse right side
+	set push, 0x0060
+	jsr expression
+	set [z-2], x
+	
+	; evaluate right side
+	set push, [z-2]
+	jsr eval
+	set [z-2], x
+
+	ife [x + HANDLE_TYPE], TYPE_STRING
+		set pc, led_in_string
+
+	ife [x + HANDLE_TYPE], TYPE_DICT
+		set pc, led_in_dict
+
+	ifb [x + HANDLE_TYPE], 0x0060		; TYPE_TUPLE | TYPE_LIST
+		set pc, led_in_list
+
+	jsr recover
+
+:led_in_string
+	set push, x
+	set push, [z-1]
+	jsr str_search
+	ife x, -1
+		set pc, led_in_not_found
+	set pc, led_in_found
+
+:led_in_dict
+	set push, x
+	set push, [z-1]
+	jsr dict_get
+	ife x, 0
+		set pc, led_in_not_found
+	set pc, led_in_found
+
+:led_in_list
+	set push, x
+	set push, [z-1]
+	jsr list_find
+	ife x, -1
+		set pc, led_in_not_found
+	set pc, led_in_found
+
+:led_in_found
+	set x, BOOL_HANDLE_TRUE
+	ife a, TRUE
+		set x, BOOL_HANDLE_FALSE
+		
+	set pc, postamble
+
+:led_in_not_found
+	set x, BOOL_HANDLE_FALSE
+	ife a, TRUE
+		set x, BOOL_HANDLE_TRUE
+		
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_less_or_equal(struct handle *left)
+;----------------------------------------------------------------
+:led_less_or_equal
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr compare_operator
+
+	set x, BOOL_HANDLE_TRUE
+	ife a, 1
+		set x, BOOL_HANDLE_FALSE
+
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_less(struct handle *left)
+;----------------------------------------------------------------
+:led_less
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr compare_operator
+
+	set x, BOOL_HANDLE_FALSE
+	ife a, -1
+		set x, BOOL_HANDLE_TRUE
+
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_greater_or_equal(struct handle *left)
+;----------------------------------------------------------------
+:led_greater_or_equal
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr compare_operator
+
+	set x, BOOL_HANDLE_TRUE
+	ife a, -1
+		set x, BOOL_HANDLE_FALSE
+
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_greater(struct handle *left)
+;----------------------------------------------------------------
+:led_greater
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr compare_operator
+
+	set x, BOOL_HANDLE_FALSE
+	ife a, 1
+		set x, BOOL_HANDLE_TRUE
+
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_not_equal(struct handle *left)
+;----------------------------------------------------------------
+:led_not_equal
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr compare_operator
+
+	set x, BOOL_HANDLE_FALSE
+	ifn a, 0
+		set x, BOOL_HANDLE_TRUE
+
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_equal(struct handle *left)
+;----------------------------------------------------------------
+:led_equal
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr compare_operator
+
+	set x, BOOL_HANDLE_FALSE
+	ife a, 0
+		set x, BOOL_HANDLE_TRUE
+
+	set pc, postamble
+
+:compare_operator
+	jsr lexer_next
+
+	; right side
+	set push, 0x0080
+	jsr expression
+	set [z-2], x
+
+	; evaluate left side
+	set push, [z+10]
+	jsr eval
+	set [z-1], x
+
+	; evaluate right side
+	set push, [z-2]
+	jsr eval
+	set [z-2], x
+	
+	set push, [z-1]
+	set push, [z-2]
+	jsr val_cmp
+	set a, x
+
+	set pc, pop
+
+;----------------------------------------------------------------
+; struct handle *led_plus(struct handle *left)
+;----------------------------------------------------------------
+:led_plus
+	; todo str+str, tuple+tuple, list+list, int+int, float+int, int+float, float+float
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr infix
+	jsr led_plus_operation	
+	
+	set pc, postamble
+
+:led_plus_operation
+	ife c, TYPE_INT
+		set y, int_add
+	ife c, TYPE_STRING
+		set y, array_merge
+	ife c, TYPE_LIST
+		set y, array_merge
+	ife c, TYPE_TUPLE
+		set y, array_merge
+
+	ife y, 0
+		jsr recover
+
+	set push, a
+	set push, b
+	jsr y
+
+	set pc, pop
+
+;----------------------------------------------------------------
+; struct handle *led_minus(struct handle *left)
+;----------------------------------------------------------------
+:led_minus
+	; todo int+int, float+int, int+float, float+float
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr infix
+	jsr led_minus_operation	
+	
+	set pc, postamble
+
+:led_minus_operation
+	ife c, TYPE_INT
+		set y, int_sub
+
+	ife y, 0
+		jsr recover
+
+	set push, a
+	set push, b
+	jsr y
+	
+	set pc, pop
+
+;----------------------------------------------------------------
+; struct handle *led_star(struct handle *left)
+;----------------------------------------------------------------
+:led_star
+	; todo int*int, int*float, float*int, float*float, int*str, str*int, int*tuple, tuple*int, int*list, list*int
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr infix
+	jsr led_star_operation	
+	
+	set pc, postamble
+
+:led_star_operation
+	ife c, TYPE_INT
+		set y, int_mul
+	ife c, 0x0014
+		set y, array_repeat
+	ife c, 0x0024
+		set y, array_repeat
+	ife c, 0x0044
+		set y, array_repeat
+
+	ife y, 0
+		jsr recover
+
+	ife [a + HANDLE_TYPE], TYPE_INT
+		set push, b		
+	set push, a
+	ifn [a + HANDLE_TYPE], TYPE_INT
+		set push, b
+
+	jsr y
+	
+	set pc, pop
+
+;----------------------------------------------------------------
+; struct handle *led_power(struct handle *left)
+;----------------------------------------------------------------
+:led_power
+	; todo int*int, int*float, float*int, float*float
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr infixr
+	jsr led_power_operation	
+	
+	set pc, postamble
+
+:led_power_operation
+	ife c, TYPE_INT
+		set y, int_pow
+
+	ife y, 0
+		jsr recover
+
+	set push, a
+	set push, b
+	jsr y
+	
+	set pc, pop
+
+;----------------------------------------------------------------
+; struct handle *led_bitwise_or(struct handle *left)
+;----------------------------------------------------------------
+:led_bitwise_or
+	; int*int
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr infix
+	jsr led_bitwise_or_operation	
+	
+	set pc, postamble
+
+:led_bitwise_or_operation
+	ifn c, TYPE_INT
+		jsr recover
+
+	set push, a
+	set push, b
+	jsr int_bitwise_or
+	
+	set pc, pop
+
+;----------------------------------------------------------------
+; struct handle *led_bitwise_xor(struct handle *left)
+;----------------------------------------------------------------
+:led_bitwise_xor
+	; int*int
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr infix
+	jsr led_bitwise_xor_operation	
+	
+	set pc, postamble
+
+:led_bitwise_xor_operation
+	ifn c, TYPE_INT
+		jsr recover
+
+	set push, a
+	set push, b
+	jsr int_bitwise_xor
+	
+	set pc, pop
+
+;----------------------------------------------------------------
+; struct handle *led_bitwise_and(struct handle *left)
+;----------------------------------------------------------------
+:led_bitwise_and
+	; int*int
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr infix
+	jsr led_bitwise_and_operation	
+	
+	set pc, postamble
+
+:led_bitwise_and_operation
+	ifn c, TYPE_INT
+		jsr recover
+
+	set push, a
+	set push, b
+	jsr int_bitwise_and
+	
+	set pc, pop
+
+;----------------------------------------------------------------
+; struct handle *led_lshift(struct handle *left)
+;----------------------------------------------------------------
+:led_lshift
+	; int << int
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr infix
+	jsr led_lshift_operation	
+	
+	set pc, postamble
+
+:led_lshift_operation
+	ifn c, TYPE_INT
+		jsr recover
+
+	set push, a
+	set push, b
+	jsr int_lshift
+	
+	set pc, pop
+
+;----------------------------------------------------------------
+; struct handle *led_rshift(struct handle *left)
+;----------------------------------------------------------------
+:led_rshift
+	; int >> int
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr infix
+	jsr led_rshift_operation	
+	
+	set pc, postamble
+
+:led_rshift_operation
+	ifn c, TYPE_INT
+		jsr recover
+
+	set push, a
+	set push, b
+	jsr int_rshift
+	
+	set pc, pop
+
+;----------------------------------------------------------------
+; struct handle *led_slash(struct handle *left)
+;----------------------------------------------------------------
+:led_slash
+	; todo int/int, int/float, float/int, float/float
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr infix
+	jsr led_slash_operation	
+	
+	set pc, postamble
+
+:led_slash_operation
+
+	ife c, TYPE_INT
+		set y, int_div
+
+	ife y, 0
+		jsr recover
+
+	set push, a
+	set push, b
+
+	jsr y
+	
+	set pc, pop
+
+;----------------------------------------------------------------
+; struct handle *led_percent(struct handle *left)
+;----------------------------------------------------------------
+:led_percent
+	; todo int/int, int/float, float/int, float/float
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr infix
+	jsr led_percent_operation	
+	
+	set pc, postamble
+
+:led_percent_operation
+	ife c, TYPE_INT
+		set y, int_mod
+
+	ife y, 0
+		jsr recover
+
+	set push, a
+	set push, b
+
+	jsr y
+	
+	set pc, pop
+
+;----------------------------------------------------------------
+; struct handle *led_assign(struct handle *left)
+;----------------------------------------------------------------
+:led_assign
+	set push, 1
+	set push, 1
+	jsr preamble
+
+	jsr lexer_next
+
+	; right side
+	set push, 0x0009 					; right binding power
+	jsr expression
+	set [z-1], x
+	
+	set push, x
+	jsr eval
+	set [z-1], x
+
+	set push, [z+10]
+	set push, x
+	jsr assign
+	
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_cond_assign(struct handle *left)
+;----------------------------------------------------------------
+:led_cond_assign
+	set push, 1
+	set push, 1
+	jsr preamble
+
+	jsr lexer_next					; skip '?='
+
+	; right side
+	set push, 0x0009 					; right binding power
+	jsr expression
+	set [z-1], x
+	
+	set push, [current_scope]
+	set push, [z+10]
+	jsr scope_get
+	
+	ifn x, 0
+		set pc, postamble
+
+	set push, [z-1]
+	jsr eval
+	set [z-1], x
+
+	set push, [z+10]
+	set push, x
+	jsr assign
+	
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_prototype(struct handle *left)
+;----------------------------------------------------------------
+:led_prototype
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr lexer_next					; skip ':='
+
+	; right side
+	set push, 0x0009 					; right binding power
+	jsr expression
+	set [z-1], x
+	
+	set push, x
+	jsr eval
+	set [z-1], x
+
+	; prototyping is available only for dicts
+	ifn [x + HANDLE_TYPE], TYPE_DICT
+		jsr recover
+
+	set push, 5
+	set push, TYPE_DICT
+	jsr alloc
+	set [z-2], x
+	
+	set push, x
+	set push, STR_UNDERSCORE
+	set push, [z-1]
+	jsr dict_set
+
+	set push, [z+10]
+	set push, [z-2]
+	jsr assign
+
+	set x, [z-2]
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_augass_lshift(struct handle *left)
+;----------------------------------------------------------------
+:led_augass_lshift
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr infixr
+
+	jsr led_lshift_operation
+	set [z-1], x
+
+	set push, [z+10]
+	set push, x
+	jsr assign
+	
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_augass_rshift(struct handle *left)
+;----------------------------------------------------------------
+:led_augass_rshift
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr infixr
+
+	jsr led_rshift_operation
+	set [z-1], x
+
+	set push, [z+10]
+	set push, x
+	jsr assign
+	
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_augass_or(struct handle *left)
+;----------------------------------------------------------------
+:led_augass_or
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr infixr
+
+	jsr led_bitwise_or_operation
+	set [z-1], x
+
+	set push, [z+10]
+	set push, x
+	jsr assign
+	
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_augass_xor(struct handle *left)
+;----------------------------------------------------------------
+:led_augass_xor
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr infixr
+
+	jsr led_bitwise_xor_operation
+	set [z-1], x
+
+	set push, [z+10]
+	set push, x
+	jsr assign
+	
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_augass_and(struct handle *left)
+;----------------------------------------------------------------
+:led_augass_and
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr infixr
+
+	jsr led_bitwise_and_operation
+	set [z-1], x
+
+	set push, [z+10]
+	set push, x
+	jsr assign
+	
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_augass_plus(struct handle *left)
+;----------------------------------------------------------------
+:led_augass_plus
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr infixr
+
+	jsr led_plus_operation
+	set [z-1], x
+
+	set push, [z+10]
+	set push, x
+	jsr assign
+	
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_augass_minus(struct handle *left)
+;----------------------------------------------------------------
+:led_augass_minus
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr infixr
+
+	jsr led_minus_operation
+	set [z-1], x
+
+	set push, [z+10]
+	set push, x
+	jsr assign
+	
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_augass_star(struct handle *left)
+;----------------------------------------------------------------
+:led_augass_star
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr infixr
+
+	jsr led_star_operation
+	set [z-1], x
+
+	set push, [z+10]
+	set push, x
+	jsr assign
+	
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_augass_slash(struct handle *left)
+;----------------------------------------------------------------
+:led_augass_slash
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr infixr
+
+	jsr led_slash_operation
+	set [z-1], x
+
+	set push, [z+10]
+	set push, x
+	jsr assign
+	
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_augass_percent(struct handle *left)
+;----------------------------------------------------------------
+:led_augass_percent
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	jsr infixr
+
+	jsr led_percent_operation
+	set [z-1], x
+
+	set push, [z+10]
+	set push, x
+	jsr assign
+	
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_lparen(struct handle *left)
+; function call
+;----------------------------------------------------------------
+:led_lparen
+	set push, 1
+	set push, 4
+	jsr preamble
+
+	set pc, built_in
+
+:led_lparen_user_defined
+	set c, '0'	; num unnamed_args
+
+	; prepare scope
+	set push, 10		; create scope for function call
+	set push, TYPE_DICT
+	jsr alloc
+	set [z-1], x
+
+	set push, x			; add global scope (ex)
+	set push, STR_EX
+	set push, [global_scope]
+	jsr dict_set
+	
+	set a, [z+10]		; if call is by reference, add path dict to scope (me)
+	ifn [a + HANDLE_TYPE], TYPE_REFERENCE
+		set pc, led_lparen_args
+		
+	set a, [a]			; a = struct reference *
+		
+	set push, [z-1]
+	set push, STR_ME
+	set push, [a + REFERENCE_DICT]
+	jsr dict_set
+
+:led_lparen_args
+	jsr lexer_next	; skip '(' or ','
+
+	ife [lexer_token], token_rparen
+		set pc, led_lparen_prepare_call
+
+	jsr parse_testlist_item
+	set push, [z-1]
+	set push, [z-2]
+	set push, [z-3]
+	jsr dict_set
+	
+	ife [lexer_token], token_comma
+		set pc, led_lparen_args
+
+:led_lparen_prepare_call
+	set push, token_rparen
+	jsr lexer_advance	; skip ')'
+
+	set push, [z+10]
+	jsr eval
+	set [z-2], x
+	
+	ifn [x + HANDLE_TYPE], TYPE_STRING
+		jsr recover	
+
+	set push, [current_scope]
+	set [current_scope], [z-1]
+
+	jsr lexer_store
+
+	set x, [z-2]
+	jsr lexer_init
+
+:led_lparen_call
+	jsr parser_stmt
+
+	ife [x+HANDLE_TYPE], TYPE_CONTROL
+		set pc, led_lparen_control
+
+	ifn [lexer_token], token_eof
+		set pc, led_lparen_call
+
+	set a, NONE
+
+:led_lparen_finish
+	jsr lexer_restore
+	set [current_scope], [sp+6]
+	set x, a
+	set pc, postamble
+
+:led_lparen_control
+	set a, [x]
+	ifn [a + CONTROL_SIGNAL], token_return
+		jsr recover			; break and continue
+
+	set push, [a + CONTROL_VALUE]
+	jsr eval
+	set a, x
+	
+	set pc, led_lparen_finish
+
+;----------------------------------------------------------------
+:parse_testlist_item
+;----------------------------------------------------------------
+	; read value or name	
+	set push, 0x0030
+	jsr expression
+	set [z-2], x
+
+	ife [lexer_token], token_assign
+		; parameter value
+		set pc, parse_testlist_item_assign
+
+	; f(1) -> $0=1
+	set [z-3], x
+
+	set push, 2
+	set push, TYPE_NAME
+	jsr alloc
+	set [z-2], x
+
+	set a, [x]
+	set [a], 2
+	set [a+1], '$'
+	
+	set [a+2], c
+	add c, 1
+
+	set pc, parse_testlist_item_set
+
+:parse_testlist_item_assign
+	; f(a=1)
+	ifn [x+1], TYPE_NAME
+		jsr recover	
+
+	jsr lexer_next	; skip '='
+
+	; read value
+	set push, 0x0030
+	jsr expression
+	set [z-3], x
+
+:parse_testlist_item_set
+	set push, [z-3]
+	jsr eval
+	set [z-3], x
+
+	set pc, pop
+
+;----------------------------------------------------------------
+; struct handle *led_lbrack(struct handle *left)
+;----------------------------------------------------------------
+:led_lbrack
+	set push, 1
+	set push, 3
+	jsr preamble
+
+	jsr lexer_next			; skip '['
+
+	; eval left side
+	set push, [z+10]
+	jsr eval
+	set [z-1], x
+
+	ife [x + HANDLE_TYPE], TYPE_DICT	; branch dict
+		set pc, led_lbrack_dict
+
+	ifc [x + HANDLE_TYPE], 0x0070	; STRING | TUPLE | LIST
+		jsr recover
+
+	; handle str, tuple, list
+	ifn [lexer_token], token_colon
+		set pc, led_lbrack_parse_first
+
+	; no slice start, assume 0
+	set [z-2], INT_HANDLE_0
+	set pc, led_lbrack_after_colon
+
+:led_lbrack_parse_first
+	; parse slice start or index
+	set push, 0
+	jsr expression
+	set [z-2], x
+	
+	set push, x
+	jsr eval
+	set [z-2], x
+
+	ifn [lexer_token], token_colon
+		set pc, led_lbrack_finish	; no colon -> index
+
+:led_lbrack_after_colon
+	jsr lexer_next				; skip ':'
+	; [z-2] now contains slice start
+	set [z-3], [z-2]
+
+	set push, 2
+	set push, TYPE_TUPLE
+	jsr alloc
+	set [z-2], x
+
+	set x, [x]
+	set [x], 2
+	set [x+1], [z-3]			; slice start
+
+	ife [lexer_token], token_rbrack
+		set pc, led_lbrack_empty_after_colon
+
+	set push, 0
+	jsr expression
+	set [z-3], x
+	
+	set push, x
+	jsr eval
+	set [z-3], x
+
+	set a, [z-2]
+	set a, [a]
+	set [a+2], [z-3]		; slice end
+
+	set pc, led_lbrack_finish
+
+:led_lbrack_empty_after_colon
+	; set array len to slice end
+	set a, [z-1]
+	set a, [a]
+
+	set push, [a]
+	jsr int16_to_int
+	set [z-3], x
+	
+	set a, [z-2]
+	set a, [a]
+	set [a+2], [z-3]		; slice end
+	
+	set pc, led_lbrack_finish
+
+:led_lbrack_dict
+	set push, 0
+	jsr expression
+	set [z-2], x
+		
+	set push, x
+	jsr eval
+	set [z-2], x
+
+	ifc [x + HANDLE_TYPE], 0x3e	; STRING | TUPLE | INT | BOOL | FLOAT
+		jsr recover
+
+:led_lbrack_finish
+	set push, token_rbrack
+	jsr lexer_advance
+
+	; construct return value
+	set push, 2
+	set push, TYPE_SUBSCRIPTION
+	jsr alloc
+	set [z-3], x			; result
+
+	set x, [x]
+	set [x], 2
+	set [x + SUBSCRIPTION_LIST], [z-1]
+	set [x + SUBSCRIPTION_INDEX], [z-2]
+
+	set x, [z-3]
+	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_reference(struct handle *left)
+; attribute reference
+;----------------------------------------------------------------
+:led_reference
+	set push, 1
+	set push, 3
+	jsr preamble
+
+	set push, 2
+	set push, TYPE_REFERENCE
+	jsr alloc
+	set [z-1], x
+	
+	set push, [z+10]
+	jsr eval
+	
+	ifn [x + 1], TYPE_DICT
+		jsr recover
+
+	set a, [z-1]
+	set a, [a]
+	set [a], 2
+	set [a + REFERENCE_DICT], x
+	
+	jsr lexer_next
+
+	ifn [lexer_token], token_name
+		jsr recover
+
+	jsr lexer_get_token_as_string
+
+	set a, [z-1]
+	set a, [a]
+	set [a + REFERENCE_NAME], x
+
+	jsr lexer_next
+	
+	set x, [z-1]
+	set pc, postamble
+
+;----------------------------------------------------------------
+:infixr
+	set c, [lexer_token]
+	set a, [c + PROTOTYPE_LBP]		; push for expression call
+	sub a, 1
+	set push, a
+	set pc, infix_1
+
+;----------------------------------------------------------------
+:infix
+; fastcall
+; return 
+;   a: struct handle *left
+;   b: struct handle *right
+;   c: left.type ^ right.type
+;   y: 0
+;----------------------------------------------------------------
+	set c, [lexer_token]
+	set push, [c + PROTOTYPE_LBP]		; push for expression call
+
+:infix_1
+	; left
+	set push, [z+10]
+	jsr eval
+	set [z-1], x
+	set a, x
+
+	jsr lexer_next
+
+	; right side
+	jsr expression
+	set [z-2], x
+
+	set push, x
+	jsr eval
+	set [z-2], x
+	set b, x
+
+;	jsr cast_common_number_type
+;	set [z-1], a
+;	set [z-2], b
+	
+	set c, [a + HANDLE_TYPE]
+	bor c, [b + HANDLE_TYPE]
+	
+	set y, 0
+
+	set pc, pop
+	
+;----------------------------------------------------------------
+; struct handle *led_comma(struct handle *left)
+; tuple
+;----------------------------------------------------------------
+:led_comma
+	set push, 1
+	set push, 2
+	jsr preamble
+
+	set a, [z+10]
+	set [z-1], a
+	ife [a + HANDLE_TYPE], TYPE_TUPLE_COMMA
+		set pc, led_comma_add
+		
+	set push, 5
+	set push, TYPE_TUPLE_COMMA
+	jsr alloc
+	set [z-1], x
+
+	set x, [x]
+	set [x], 1
+	set [x+1], a
+	
+:led_comma_add
+	jsr lexer_next
+
+	set a, [lexer_token]
+	ifn [a + PROTOTYPE_STD], std_expression
+		set pc, led_comma_end
+
+	set push, 0x0020
+	ife [z+9], expression_callback
+		jsr expression
+	ife [z+9], testlist_callback
+		jsr testlist	
+	set [z-2], x
+
+	set push, [z-1]
+	set push, -1
+	set push, [z-2]
+	jsr array_insert
+
+:led_comma_end
+	set x, [z-1]	; expr
+	set pc, postamble
+
+
+:built_in
+	set a, [z+10]
+	set a, [a]
+
+	ife [a], 2
+		set pc, built_in_2
+	ife [a], 3
+		set pc, built_in_3
+	ife [a], 4
+		set pc, built_in_4
+	ife [a], 5
+		set pc, built_in_5
+	ife [a], 6
+		set pc, built_in_6
+	ife [a], 7
+		set pc, built_in_7
+
+	set pc, led_lparen_user_defined
+
+:built_in_2
+	ife [a+1], 'i'
+		ife [a+2], 'd'
+			set pc, built_in_id
+	set pc, led_lparen_user_defined
+
+:built_in_3
+	ife [a+1], 'i'
+		ife [a+2], 'n'
+			ife [a+3], 't'
+				set pc, built_in_int
+	ife [a+1], 's'
+		ife [a+2], 't'
+			ife [a+3], 'r'
+				set pc, built_in_str
+	ife [a+1], 'l'
+		ife [a+2], 'e'
+			ife [a+3], 'n'
+				set pc, built_in_len
+	ife [a+1], 'a'
+		ife [a+2], 'b'
+			ife [a+3], 's'
+				set pc, built_in_abs
+	ife [a+1], 'o'
+		ife [a+2], 'r'
+			ife [a+3], 'd'
+				set pc, built_in_ord
+	ife [a+1], 'c'
+		ife [a+2], 'h'
+			ife [a+3], 'r'
+				set pc, built_in_chr
+	ife [a+1], 'c'
+		ife [a+2], 'm'
+			ife [a+3], 'p'
+				set pc, built_in_cmp
+
+	set pc, led_lparen_user_defined
+
+:built_in_4
+	ife [a+1], 'b'
+		ife [a+2], 'o'
+			ife [a+3], 'o'
+				ife [a+4], 'l'
+					set pc, built_in_bool
+	ife [a+1], 'e'
+		ife [a+2], 'd'
+			ife [a+3], 'i'
+				ife [a+4], 't'
+					set pc, built_in_edit
+	ife [a+1], 'r'
+		ife [a+2], 'e'
+			ife [a+3], 'p'
+				ife [a+4], 'r'
+					set pc, built_in_repr
+	set pc, led_lparen_user_defined
+
+:built_in_5
+	ife [a+1], 'r'
+		ife [a+2], 'a'
+			ife [a+3], 'n'
+				ife [a+4], 'g'
+					ife [a+5], 'e'
+					set pc, built_in_range
+	ife [a+1], 'i'
+		ife [a+2], 'n'
+			ife [a+3], 'p'
+				ife [a+4], 'u'
+					ife [a+5], 't'
+					set pc, built_in_input
+	set pc, led_lparen_user_defined
+
+:built_in_6
+	ife [a+1], 'l'
+		ife [a+2], 'o'
+			ife [a+3], 'c'
+				ife [a+4], 'a'
+					ife [a+5], 'l'
+						ife [a+6], 's'
+							set pc, built_in_locals
+	set pc, led_lparen_user_defined
+
+:built_in_7
+	ife [a+1], 'g'
+		ife [a+2], 'l'
+			ife [a+3], 'o'
+				ife [a+4], 'b'
+					ife [a+5], 'a'
+						ife [a+6], 'l'
+							ife [a+7], 's'
+								set pc, built_in_globals
+	set pc, led_lparen_user_defined
+
+:built_in_id
+	jsr built_in_params
+	ifn i, 1
+		jsr recover
+		
+	set push, [z-1]
+	jsr uint16_to_int
+
+	set pc, postamble
+
+:built_in_input
+	jsr built_in_params
+
+	ifg i, 1
+		jsr recover
+
+	set push, [z-1]
+	jsr raw_input
+	set [z-1], x
+
+	set a, [x]
+	sub [a], 1
+
+	set c, 10
+	jsr add_char
+
+	set x, [z-1]
+	set pc, postamble
+	
+:built_in_range
+	jsr built_in_params
+
+	ife i, 0
+		jsr recover
+
+	ifg i, 1
+		set pc, built_in_range_2
+
+	set [z-2], [z-1]
+	set [z-1], INT_HANDLE_0
+
+:built_in_range_2	
+	ifg i, 2
+		set pc, built_in_range_3
+
+	set [z-3], INT_HANDLE_1
+
+:built_in_range_3
+	ifg i, 3
+		jsr recover
+
+	set push, [z-3]
+	jsr int_sgn
+	set y, x
+	xor y, 0xffff
+	add y, 1
+
+	set push, 20
+	set push, TYPE_LIST
+	jsr alloc
+	set [z-4], x
+
+:built_in_range_loop
+	set push, [z-1]
+	set push, [z-2]
+	jsr val_cmp
+	
+	ifn x, y
+		set pc, built_in_range_break
+
+	set push, [z-4]
+	set push, -1
+	set push, [z-1]
+	jsr array_insert	
+
+	set push, [z-1]
+	set push, [z-3]
+	jsr int_add
+	set [z-1], x
+	
+	set pc, built_in_range_loop
+
+:built_in_range_break
+	set x, [z-4]
+	set pc, postamble
+
+:built_in_locals
+	jsr built_in_params
+	ifn i, 0
+		jsr recover
+
+	set x, [current_scope]
+	set pc, postamble	
+
+:built_in_globals
+	jsr built_in_params
+	ifn i, 0
+		jsr recover
+
+	set x, [global_scope]
+	set pc, postamble	
+
+:built_in_cmp
+	jsr built_in_params
+	ifn i, 2
+		jsr recover
+
+	set push, [z-1]
+	set push, [z-2]
+	jsr val_cmp
+	set a, x
+	
+	set x, INT_HANDLE_0
+	ife a, -1
+		set x, INT_HANDLE_N1
+	ife a, 1
+		set x, INT_HANDLE_1
+	
+	set pc, postamble
+
+:built_in_chr
+	jsr built_in_params
+	ifn i, 1
+		jsr recover
+
+	set a, [z-1]
+	ifn [a + HANDLE_TYPE], TYPE_INT
+		jsr recover
+
+	set a, [a]
+	ifn [a], 1
+		jsr recover
+
+	set a, [a+1]
+
+	set push, 1
+	set push, TYPE_STRING
+	jsr alloc
+	
+	set y, [x]
+	set [y], 1
+	set [y+1], a
+
+	set pc, postamble	
+
+:built_in_ord
+	jsr built_in_params
+	ifn i, 1
+		jsr recover
+
+	set a, [z-1]
+	ifn [a + HANDLE_TYPE], TYPE_STRING
+		jsr recover
+
+	set a, [a]
+	ifn [a], 1
+		jsr recover
+
+	set push, [a+1]
+	jsr int16_to_int
+
+	set pc, postamble	
+
+:built_in_edit
+	jsr built_in_params
+	ifg i, 1
+		jsr recover
+
+	set a, [z-1]
+	ife i, 0
+		set a, STR_EMPTY
+
+	ifn [a + HANDLE_TYPE], TYPE_STRING
+		jsr recover
+
+	set push, [cursor]
+
+	set push, a
+	jsr edit_main
+
+	set [cursor], pop
+
+	set pc, postamble	
+
+:built_in_abs
+	jsr built_in_params
+	ifn i, 1
+		jsr recover
+
+	set a, [z-1]
+	ifc [a + HANDLE_TYPE], 0x0006	; INT | BOOL
+		jsr recover
+
+	set push, a
+	jsr int_abs
+
+	set pc, postamble	
+
+:built_in_len
+	jsr built_in_params
+	ifn i, 1
+		jsr recover
+
+	set a, [z-1]
+	ifc [a + HANDLE_TYPE], 0x00f0	; STRING | TUPLE | DICT | LIST
+		jsr recover
+
+	set a, [a]
+
+	set push, [a]
+	jsr int16_to_int
+
+	set pc, postamble	
+
+:built_in_int
+	jsr built_in_params
+	ifn i, 1
+		jsr recover
+
+	set a, [z-1]
+
+	ife [a + HANDLE_TYPE], TYPE_INT
+		set pc, built_in_int_int
+	ife [a + HANDLE_TYPE], TYPE_BOOLEAN
+		set pc, built_in_int_bool
+	ife [a + HANDLE_TYPE], TYPE_STRING
+		set pc, built_in_int_string
+
+	jsr recover
+
+:built_in_int_int
+	set x, a
+	set pc, postamble
+
+:built_in_int_bool
+	ife a, BOOL_HANDLE_FALSE
+		set x, INT_HANDLE_0
+	ife a, BOOL_HANDLE_TRUE
+		set x, INT_HANDLE_1
+	set pc, postamble
+
+:built_in_int_string
+	set push, a
+	jsr int_parse
+	set pc, postamble
+
+:built_in_repr
+	jsr built_in_params
+	ifn i, 1
+		jsr recover
+
+	set push, [z-1]
+	jsr repr
+	set [z-1], x
+	
+	set pc, postamble
+
+:built_in_str
+	jsr built_in_params
+	ifn i, 1
+		jsr recover
+
+	set x, [z-1]
+
+	ife [x + HANDLE_TYPE], TYPE_STRING
+		set pc, postamble
+
+	set push, x
+	jsr repr
+
+	set pc, postamble
+
+:built_in_bool
+	jsr built_in_params
+	ifn i, 1
+		jsr recover
+
+	set push, [z-1]
+	jsr boolean
+
+	set pc, postamble
+
+:built_in_params
+	; c: num params (0,1 or 2)
+	set i, 0	; param counter
+
+:built_in_params_loop
+	jsr lexer_next	; skip '(' or ','
+
+	ife i, 3
+		set pc, built_in_params_end
+	ife [lexer_token], token_rparen
+		set pc, built_in_params_end
+
+	set push, 0x0030
+	jsr expression
+
+	sti a, z
+	sub a, i
+	set [a], x
+
+	set push, x
+	jsr eval
+	set [a], x
+	
+
+	ife [lexer_token], token_comma
+		set pc, built_in_params_loop
+
+:built_in_params_end
+	set push, token_rparen
+	jsr lexer_advance	; skip ')'
+
+	set pc, pop

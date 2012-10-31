@@ -1,0 +1,644 @@
+:lexer_init
+	set [lexer_string], x
+	set [lexer_token], 0
+	set [lexer_start], 0
+	set [lexer_end], 0
+	set [lexer_target_indent], 0
+	set [lexer_current_indent], 0
+
+	jsr lexer_next
+
+	set pc, pop
+
+:lexer_store
+	set x, pop
+	set push, [lexer_string]
+	set push, [lexer_token]
+	set push, [lexer_start]
+	set push, [lexer_end]
+	set push, [lexer_target_indent]
+	set push, [lexer_current_indent]
+	set pc, x
+
+:lexer_restore
+	set x, pop
+	set [lexer_current_indent], [SP]
+	set [lexer_target_indent], [SP+1]
+	set [lexer_end], [SP+2]
+	set [lexer_start], [SP+3]
+	set [lexer_token], [SP+4]
+	set [lexer_string], [SP+5]
+	set pc, x
+
+:lexer_get_token_as_string
+	set push, [lexer_string]
+	set push, [lexer_start]
+	set push, [lexer_end]
+	jsr array_split
+	ife [lexer_token], token_name
+		set [x + HANDLE_TYPE], TYPE_NAME
+	set pc, pop
+
+;----------------------------------------------------------------
+; void lexer_advance(struct handle *expected_token)
+;----------------------------------------------------------------
+:lexer_advance
+	set x, pop
+	ifn [lexer_token], pop
+		set pc, recover
+	
+	set push, x
+	jsr lexer_next
+
+	set pc, pop
+
+;----------------------------------------------------------------
+; void lexer_next()
+;----------------------------------------------------------------
+:lexer_next
+	set push, 0
+	set push, 0
+	jsr preamble
+
+	ifg [lexer_current_indent], [lexer_target_indent]
+		set pc, lexer_dedent
+	ifl [lexer_current_indent], [lexer_target_indent]
+		set pc, lexer_indent
+
+	set a, [lexer_string]		; struct handle *
+	set b, [lexer_end]
+	
+	ife [lexer_token], token_str
+		add b, 1
+
+	jsr lexer_skip_white
+
+	set [lexer_start], b	; token start index
+
+	ifg x, 127
+		set pc, recover
+
+	set pc, [x + lexer_table]
+
+:lexer_finish_advance
+	add b, 1
+
+:lexer_finish
+	set [lexer_end], b
+	set pc, postamble
+
+;----------------------------------------------------------------
+:lexer_char_newline
+;----------------------------------------------------------------
+	set [lexer_token], token_newline
+
+:lexer_char_newline_restart
+	add b, 1
+	set c, 0	; current indent
+	
+:lexer_char_newline_loop
+	jsr array_get
+	ifn x, ' '
+		set pc, lexer_char_newline_break
+
+	add c, 1		; inc indent
+	add b, 1		; advance position
+	set pc, lexer_char_newline_loop
+
+:lexer_char_newline_break
+	ife [lexer_table + x], lexer_char_comment
+		jsr lexer_skip_comment
+
+	ife [lexer_table + x], lexer_char_newline
+		set pc, lexer_char_newline_restart
+
+	set [lexer_target_indent], c
+
+	set pc, lexer_finish
+
+;----------------------------------------------------------------
+:lexer_indent
+;----------------------------------------------------------------
+	set [lexer_token], token_indent
+	add [lexer_current_indent], 1
+	jsr postamble
+;----------------------------------------------------------------
+:lexer_dedent
+;----------------------------------------------------------------
+	set [lexer_token], token_dedent
+	sub [lexer_current_indent], 1
+	jsr postamble
+
+;----------------------------------------------------------------
+:lexer_char_dot
+;----------------------------------------------------------------
+	set [lexer_token], token_reference
+	set pc, lexer_finish_advance
+
+;----------------------------------------------------------------
+:lexer_char_tilde
+;----------------------------------------------------------------
+	set [lexer_token], token_tilde
+	set pc, lexer_finish_advance
+
+;----------------------------------------------------------------
+:lexer_char_colon
+;----------------------------------------------------------------
+	set [lexer_token], token_colon
+	set c, token_prototype
+	set pc, check_augass
+
+;----------------------------------------------------------------
+:lexer_char_questionmark
+;----------------------------------------------------------------
+	set [lexer_token], token_cond_assign
+
+	add b, 1
+	jsr array_get
+	ifn x, '='
+		jsr recover
+
+	set pc, lexer_finish_advance
+
+;----------------------------------------------------------------
+:lexer_char_comma
+;----------------------------------------------------------------
+	set [lexer_token], token_comma
+	set pc, lexer_finish_advance
+
+;----------------------------------------------------------------
+:lexer_char_lparen
+;----------------------------------------------------------------
+	set [lexer_token], token_lparen
+	set pc, lexer_finish_advance
+
+;----------------------------------------------------------------
+:lexer_char_rparen
+;----------------------------------------------------------------
+	set [lexer_token], token_rparen
+	set pc, lexer_finish_advance
+
+;----------------------------------------------------------------
+:lexer_char_lcurly
+;----------------------------------------------------------------
+	set [lexer_token], token_lcurly
+	set pc, lexer_finish_advance
+
+;----------------------------------------------------------------
+:lexer_char_rcurly
+;----------------------------------------------------------------
+	set [lexer_token], token_rcurly
+	set pc, lexer_finish_advance
+
+;----------------------------------------------------------------
+:lexer_char_lbrack
+;----------------------------------------------------------------
+	set [lexer_token], token_lbrack
+	set pc, lexer_finish_advance
+
+;----------------------------------------------------------------
+:lexer_char_rbrack
+;----------------------------------------------------------------
+	set [lexer_token], token_rbrack
+	set pc, lexer_finish_advance
+
+;----------------------------------------------------------------
+:lexer_char_plus
+;----------------------------------------------------------------
+	set [lexer_token], token_plus
+	set c, token_augass_plus
+	set pc, check_augass
+
+;----------------------------------------------------------------
+:lexer_char_minus
+;----------------------------------------------------------------
+	set [lexer_token], token_minus
+	set c, token_augass_minus
+	set pc, check_augass
+
+;----------------------------------------------------------------
+:lexer_char_star
+;----------------------------------------------------------------
+	add b, 1
+	jsr array_get
+	ife x, '='
+		set pc, lexer_char_star_assign
+	ife x, '*'
+		set pc, lexer_char_star_star
+
+	set [lexer_token], token_star
+	set pc, lexer_finish
+:lexer_char_star_assign
+	set [lexer_token], token_augass_star
+	set pc, lexer_finish_advance
+:lexer_char_star_star
+	set [lexer_token], token_power
+	set pc, lexer_finish_advance
+	
+;----------------------------------------------------------------
+:lexer_char_caret
+;----------------------------------------------------------------
+	set [lexer_token], token_bitwise_xor
+	set c, token_augass_xor
+	set pc, check_augass
+
+;----------------------------------------------------------------
+:lexer_char_vbar
+;----------------------------------------------------------------
+	set [lexer_token], token_bitwise_or
+	set c, token_augass_or
+	set pc, check_augass
+
+;----------------------------------------------------------------
+:lexer_char_ambersand
+;----------------------------------------------------------------
+	set [lexer_token], token_bitwise_and
+	set c, token_augass_and
+	set pc, check_augass
+
+;----------------------------------------------------------------
+:lexer_char_slash
+;----------------------------------------------------------------
+	set [lexer_token], token_slash
+	set c, token_augass_slash
+	set pc, check_augass
+
+;----------------------------------------------------------------
+:lexer_char_percent
+;----------------------------------------------------------------
+	set [lexer_token], token_percent
+	set c, token_augass_percent
+	set pc, check_augass
+
+;----------------------------------------------------------------
+:lexer_char_equal
+;----------------------------------------------------------------
+	set [lexer_token], token_assign
+	set c, token_equal
+	set pc, check_augass
+
+;----------------------------------------------------------------
+:lexer_char_less
+; '<' token_less
+; '<=' token_less_or_equal
+; '<<' token_lshift
+; '<<=' token_augass_lshift
+;----------------------------------------------------------------
+	set [lexer_token], token_less
+
+	add b, 1
+	jsr array_get
+	ife x, '<'
+		set pc, lexer_char_less_less	
+	ifn x, '='
+		set pc, lexer_finish
+
+	set [lexer_token], token_less_or_equal
+	set pc, lexer_finish_advance
+
+:lexer_char_less_less
+	set [lexer_token], token_lshift
+	
+	add b, 1
+	jsr array_get
+	ifn x, '='
+		set pc, lexer_finish
+	
+	set [lexer_token], token_augass_lshift
+	set pc, lexer_finish_advance
+
+;----------------------------------------------------------------
+:lexer_char_greater
+; '>' token_greater
+; '>=' token_greater_or_equal
+; '>>' token_rshift
+; '>>=' token_augass_rshift
+;----------------------------------------------------------------
+	set [lexer_token], token_greater
+
+	add b, 1
+	jsr array_get
+	ife x, '>'
+		set pc, lexer_char_greater_greater	
+	ifn x, '='
+		set pc, lexer_finish
+
+	set [lexer_token], token_greater_or_equal
+	set pc, lexer_finish_advance
+
+:lexer_char_greater_greater
+	set [lexer_token], token_rshift
+	
+	add b, 1
+	jsr array_get
+	ifn x, '='
+		set pc, lexer_finish
+	
+	set [lexer_token], token_augass_rshift
+	set pc, lexer_finish_advance
+
+;----------------------------------------------------------------
+:lexer_char_exclamation
+;----------------------------------------------------------------
+	set [lexer_token], token_not
+	set c, token_not_equal
+	set pc, check_augass
+
+;----------------------------------------------------------------
+:check_augass
+;----------------------------------------------------------------
+	add b, 1
+	jsr array_get
+	ifn x, '='
+		set pc, lexer_finish
+
+	set [lexer_token], c
+	set pc, lexer_finish_advance
+
+;----------------------------------------------------------------
+:lexer_char_eof
+;----------------------------------------------------------------
+	set [lexer_token], token_eof
+	set [lexer_target_indent], 0
+	set pc, lexer_finish
+
+;----------------------------------------------------------------
+:lexer_char_digit
+;----------------------------------------------------------------
+	add b, 1
+	jsr array_get
+
+	ife x, '.'		; discard int and go for float
+		set pc, lexer_float
+
+	ife [x + lexer_table], lexer_char_digit
+		set pc, lexer_char_digit
+
+	set [lexer_end], b			; lexer.data1
+
+	set [lexer_token], token_int
+	set pc, lexer_finish
+
+;----------------------------------------------------------------
+:lexer_char_letter
+	set a,a
+:lexer_char_letter_uc
+	set a,a
+:lexer_char_letter_lc
+	set a,a
+;----------------------------------------------------------------
+:lexer_name_loop
+	add b, 1
+	jsr array_get
+
+	ife [x + lexer_table], lexer_char_letter_lc
+		set pc, lexer_name_loop
+	ife [x + lexer_table], lexer_char_letter_uc
+		set pc, lexer_name_loop
+	ife [x + lexer_table], lexer_char_digit
+		set pc, lexer_name_loop
+
+	set [lexer_end], b
+	
+	set a, [a]
+	add a, [lexer_start]
+	sub b, [lexer_start]
+
+	ife b, 2
+		set pc, lexer_name_2
+	ife b, 3
+		set pc, lexer_name_3
+	ife b, 4
+		set pc, lexer_name_4
+	ife b, 5
+		set pc, lexer_name_5
+	ife b, 6
+		set pc, lexer_name_6
+	ife b, 8
+		set pc, lexer_name_8
+
+:lexer_name_general
+	set c, token_name
+:lexer_name_finish
+	set [lexer_token], c
+	set pc, postamble
+
+:lexer_name_2
+	set c, token_if
+	ife [a+1], 'i'
+		ife [a+2], 'f'
+			set pc, lexer_name_finish
+
+	set c, token_or
+	ife [a+1], 'o'
+		ife [a+2], 'r'
+			set pc, lexer_name_finish
+
+	set c, token_is
+	ife [a+1], 'i'
+		ife [a+2], 's'
+			set pc, lexer_name_finish
+				
+	set c, token_in
+	ife [a+1], 'i'
+		ife [a+2], 'n'
+			set pc, lexer_name_finish
+				
+	set pc, lexer_name_general
+
+:lexer_name_3
+	set c, token_cls
+	ife [a+1], 'c'
+		ife [a+2], 'l'
+			ife [a+3], 's'
+				set pc, lexer_name_finish
+	
+	set c, token_and
+	ife [a+1], 'a'
+		ife [a+2], 'n'
+			ife [a+3], 'd'
+				set pc, lexer_name_finish
+	
+	set c, token_not
+	ife [a+1], 'n'
+		ife [a+2], 'o'
+			ife [a+3], 't'
+				set pc, lexer_name_finish
+	
+	set c, token_del
+	ife [a+1], 'd'
+		ife [a+2], 'e'
+			ife [a+3], 'l'
+				set pc, lexer_name_finish
+	
+	set c, token_for
+	ife [a+1], 'f'
+		ife [a+2], 'o'
+			ife [a+3], 'r'
+				set pc, lexer_name_finish
+	
+	set pc, lexer_name_general
+
+:lexer_name_4
+	set c, token_true
+	ife [a+1], 't'
+		ife [a+2], 'r'
+			ife [a+3], 'u'
+				ife [a+4], 'e'
+					set pc, lexer_name_finish
+	
+	set c, token_none
+	ife [a+1], 'n'
+		ife [a+2], 'o'
+			ife [a+3], 'n'
+				ife [a+4], 'e'
+					set pc, lexer_name_finish
+	
+	set c, token_elif
+	ife [a+1], 'e'
+		ife [a+2], 'l'
+			ife [a+3], 'i'
+				ife [a+4], 'f'
+					set pc, lexer_name_finish
+	
+	set c, token_else
+	ife [a+1], 'e'
+		ife [a+2], 'l'
+			ife [a+3], 's'
+				ife [a+4], 'e'
+					set pc, lexer_name_finish
+	
+	set c, token_pass
+	ife [a+1], 'p'
+		ife [a+2], 'a'
+			ife [a+3], 's'
+				ife [a+4], 's'
+					set pc, lexer_name_finish
+	
+	set pc, lexer_name_general
+
+:lexer_name_5
+	set c, token_false
+	ife [a+1], 'f'
+		ife [a+2], 'a'
+			ife [a+3], 'l'
+				ife [a+4], 's'
+					ife [a+5], 'e'
+						set pc, lexer_name_finish
+	
+	set c, token_print
+	ife [a+1], 'p'
+		ife [a+2], 'r'
+			ife [a+3], 'i'
+				ife [a+4], 'n'
+					ife [a+5], 't'
+						set pc, lexer_name_finish
+	
+	set c, token_while
+	ife [a+1], 'w'
+		ife [a+2], 'h'
+			ife [a+3], 'i'
+				ife [a+4], 'l'
+					ife [a+5], 'e'
+						set pc, lexer_name_finish
+
+	set c, token_reset
+	ife [a+1], 'r'
+		ife [a+2], 'e'
+			ife [a+3], 's'
+				ife [a+4], 'e'
+					ife [a+5], 't'
+						set pc, lexer_name_finish
+
+	set c, token_break
+	ife [a+1], 'b'
+		ife [a+2], 'r'
+			ife [a+3], 'e'
+				ife [a+4], 'a'
+					ife [a+5], 'k'
+						set pc, lexer_name_finish
+	
+	set pc, lexer_name_general
+
+:lexer_name_6
+	set c, token_return
+	ife [a+1], 'r'
+		ife [a+2], 'e'
+			ife [a+3], 't'
+				ife [a+4], 'u'
+					ife [a+5], 'r'
+						ife [a+6], 'n'
+							set pc, lexer_name_finish
+
+	set pc, lexer_name_general
+	
+:lexer_name_8
+	set c, token_continue
+	ife [a+1], 'c'
+		ife [a+2], 'o'
+			ife [a+3], 'n'
+				ife [a+4], 't'
+					ife [a+5], 'i'
+						ife [a+6], 'n'
+							ife [a+7], 'u'
+								ife [a+8], 'e'
+										set pc, lexer_name_finish
+
+	set pc, lexer_name_general
+;----------------------------------------------------------------
+:lexer_char_quotationmark
+;----------------------------------------------------------------
+	set y, x
+	add [lexer_start], 1 	; skip "
+
+:lexer_literal_string_loop
+	add b, 1
+	jsr array_get
+
+	ifn x, y
+		set pc, lexer_literal_string_loop
+
+	set [lexer_end], b
+
+	set [lexer_token], token_str
+	set pc, lexer_finish
+
+;----------------------------------------------------------------
+:lexer_float
+; d*.d*
+;----------------------------------------------------------------
+	set b, [lexer_start]			; restore start position
+
+;todo
+	
+	set [lexer_token], token_float
+	set pc, lexer_finish
+
+;----------------------------------------------------------------
+:lexer_skip_white
+; a: struct handle *
+; b: index
+;----------------------------------------------------------------
+	jsr array_get
+	ifn x, ' '
+		set pc, pop
+	add b, 1
+	set pc, lexer_skip_white
+
+;----------------------------------------------------------------
+:lexer_skip_comment
+; a: struct handle *
+; b: index
+;----------------------------------------------------------------
+	jsr array_get
+	ife [lexer_table + x], lexer_char_newline
+		set pc, pop
+	ife [lexer_table + x], lexer_char_eof
+		set pc, pop
+	add b, 1
+	set pc, lexer_skip_comment
+
+:lexer_char_whitespace
+:lexer_char_comment
+	set pc, recover
+
