@@ -7,7 +7,7 @@
     <property name="code.generateHexOutput">false</property>
     <property name="code.hexOutputFilename">admiral.hex</property>
     <property name="code.setFirstFile">True</property>
-    <property name="code.firstFile">F:\dcpu-admiral\interpreter.10c</property>
+    <property name="code.firstFile">interpreter.10c</property>
   </properties>
   <references />
   <files>
