@@ -45,6 +45,30 @@ All tested web emulators failed:
     set [a-1], 1 ; which definitely is a valid command
 
 --
+<h4>USAGE</h4>
+When Admiral starts, it will show interactive prompt '>' and wait for your input. 
+You can evaluate any one line command.
+
+To ease writing software Admiral has built-in text editor. It is started by making
+a funtion call "edit()". You can give string as an argument. Ofcourse you should
+store the return value into a variable. 
+
+You can exit the editor be pressing CTRL (press AND release) followed by x. All strings
+that are ment to be functions must end with line feed (enter).
+
+<pre>
+&gt;f=edit()
+'print arg1
+'
+&gt;f(arg1='Hello World!')
+Hello World!
+</pre>
+
+Since Admiral is pure interpreter all strings all callable:
+<pre>
+&gt;'print arg1'(arg1='Hello World again!')
+Hello World again!
+</pre>
 
 <h4>BUILT-IN STATEMENTS</h4>
 
