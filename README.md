@@ -60,12 +60,12 @@ You can use it to evaluate any one line statements.
 4
 </pre>
 
-To ease writing software Admiral has built-in text editor. It is started by making
-a funtion call "edit()". You can give string as an argument. Ofcourse you should
-store the return value into a variable. 
+To facilitate software development in deep space fringe colonies Admiral has a
+built-in text editor. It is available by calling "result=edit('code here')"-function. 
+Editor can take string argument that it will initially render for editing. 
 
-You can exit the editor be pressing CTRL (press AND release) followed by x. All strings
-that are ment to be functions must end with line feed (enter).
+You can exit the editor be pressing CTRL (press AND release) followed by x. 
+(NOTE: Admiral parser requires that all functions must end with line feed)
 
 <pre>
 &gt;f=edit()
