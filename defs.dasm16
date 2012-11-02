@@ -1,0 +1,144 @@
+;----------------------------------------------------------------
+; CONSTANTS
+;----------------------------------------------------------------
+#define TRUE            1
+#define FALSE           0
+
+#define HEAP_GC_TRIGGER 10
+
+#define SCREEN_START    0x8000
+#define SCREEN_END      0x8180
+#define FONT_COLOR      0x7000
+#define LINE_LEN        32
+#define LINES           12
+
+#define KEY_BS          0x10
+#define KEY_NEWLINE     0x11
+#define KEY_INSERT      0x12
+#define KEY_DEL         0x13
+#define KEY_UP          0x80
+#define KEY_DOWN        0x81
+#define KEY_LEFT        0x82
+#define KEY_RIGHT       0x83
+#define KEY_SHIFT       0x90
+#define KEY_CTRL        0x91
+#define KEY_CTRL_X      0x8078
+
+#define SCOPE_MODE_UPDATE   0x0002
+#define SCOPE_MODE_INSERT   0x0004
+
+;----------------------------------------------------------------
+; DATA TYPES
+;----------------------------------------------------------------
+; SPECIAL TYPES
+#define TYPE_END            0x1000
+#define TYPE_NONE           0x2000
+#define TYPE_ERROR          0x4000
+#define TYPE_CONTROL        0x8000
+
+; VALUE TYPES
+#define TYPE_BOOLEAN        0x0002
+#define TYPE_INT            0x0004
+#define TYPE_FLOAT          0x0008
+
+#define TYPE_STRING         0x0010
+#define TYPE_TUPLE          0x0020
+#define TYPE_LIST           0x0040
+#define TYPE_DICT           0x0080
+
+#define TYPE_TUPLE_COMMA    0x0001
+
+; TARGET TYPES (LEFT SIDES OF ASSIGNMENT)
+#define TYPE_NAME           0x0100
+#define TYPE_REFERENCE      0x0200
+#define TYPE_SUBSCRIPTION   0x0400
+
+
+;----------------------------------------------------------------
+; DATA STRUCTURE DEFINITIONS
+;----------------------------------------------------------------
+;----------------------------------------------------------------
+; MEMORY
+;
+; struct heap {
+;   uint16 *start;
+;   uint16 *end;
+;   uint16 *free_start;
+;   uint16 *handle_start;
+;   struct handle *zero;
+;   struct handle *free;
+; }
+;
+; struct handle {
+;   uint16 *data;
+;   uint16 type;
+;   uint16 size;
+;   struct handle *prev;
+;   struct handle *next;
+; }
+#define SIZEOF_HANDLE       5
+#define HANDLE_PTR      0
+#define HANDLE_TYPE     1
+#define HANDLE_SIZE     2
+#define HANDLE_PREV     3
+#define HANDLE_NEXT     4
+
+; struct int_value {
+;   uint16 len;
+;   uint16[] data;
+; }
+
+#define INT_LEN     0
+#define INT_DATA    1
+
+#define INT_DIVISION_QUOTIENT   1
+#define INT_DIVISION_REMAINDER  2
+
+; position of key and value in dict item tuple
+#define DICT_ITEM_KEY   1
+#define DICT_ITEM_VALUE 2
+
+; struct lexer {
+;   struct handle *string;
+;   uint16 indent;
+;   struct token *;
+;   uint16 start;
+;   uint16 end;
+; }
+; NOT IN USE
+
+; struct prototype {
+;   void *std;
+;   void *nud;
+;   void *led;
+;   uint16 lbp;
+; }
+#define PROTOTYPE_STD               0
+#define PROTOTYPE_NUD               1
+#define PROTOTYPE_LED               2
+#define PROTOTYPE_LBP               3
+
+; struct control {
+;   uint16 length;
+;   uint16 token;
+;   [struct handle *value;] # only for return
+; }
+#define CONTROL_SIGNAL      1
+#define CONTROL_VALUE       2
+
+; struct reference {
+;   uint16 length;
+;   struct handle *dict;
+;   struct handle *name;
+; }
+#define REFERENCE_DICT      1
+#define REFERENCE_NAME      2
+
+; struct subscription {
+;   uint16 length;
+;   struct handle *list;
+;   struct handle *int;
+; }
+#define SUBSCRIPTION_LIST   1
+#define SUBSCRIPTION_INDEX  2
+
