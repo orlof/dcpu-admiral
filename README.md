@@ -15,73 +15,85 @@
 <h4>FEATURES</h4>
  - Pure interpreted language
    - Garbage collection
-   - Variable length integers
+   - Variable length integers, booleans, strings, lists, tuples and dicts
    - Prototype based inheritance
- - Language is based on Python syntax
+ - Grammar is based on Python grammar
  - Interactive command prompt
- - Integrated text editor for editing sources
+ - Integrated code editor for
 
 <h4>NEXT IN PRODUCTION</h4>
  - Screen library
+ - Exception handling (error handling is now poor)
+ - More built-in functions
  - Floating point numbers
  - Trigonometric functions
  - Dict implementation with TST
  - Embedded assembler (editor + assembler)
  - 200-400% speed improvements
  - Support for more HW
-                     
-<h4>ON PLANNING BOARD</h4>
- - Threading
 
 --
 
 <h4>INSTALLATION</h4>
 
-Admiral is currently distributed as DevKit project. Download it from Github and fire it up.
-Quick test also showed that Lettuce can run Admiral, but Organic failed in the compilation.
+https://github.com/orlof/dcpu-admiral
 
-All tested web emulators failed:
+Download the whole Devkit project or only admiral.bin (interpreter.10c is the starting point). 
+I suppose admiral.bin should also run in Lettuce(?).
 
-    set [a-1], 1 ; which definitely is a valid command
-
---
 <h4>USAGE</h4>
-When Admiral starts, it will show interactive prompt '>' and wait for your input. 
-You can use it to evaluate any one line statements.
 
+When Admiral starts, it will show interactive prompt '>' and wait for input. It can evaluate one line statements.
 <pre>
-&gt;5+5**2
-30
-&gt;for a in range(5): print a
-0
-1
-2
-3
+>1+2**32 
+4294967297 
+>for a in range(5): print a 
+0 
+1 
+2 
+3 
 4
 </pre>
 
-To facilitate software development in deep space fringe colonies Admiral has a
-built-in text editor. It is available by calling "result=edit('code here')"-function. 
-Editor can take string argument that it will initially render for editing. 
+Admiral also has a built-in text editor to facilitate software development in deep space colonies. It is 
+started by calling result=edit('code here')"-function. Editor can take a string argument that will be 
+rendered for editing.
 
-You can exit the editor be pressing CTRL (press AND release) followed by x. 
-(NOTE: Admiral parser requires that all functions must end with line feed)
-
+You can exit the editor be pressing CTRL (press AND release) followed by x. (NOTE: Admiral parser 
+requires that all functions must end with line feed)
 <pre>
-&gt;f=edit()
-'print arg1
-'
-&gt;f(arg1='Hello World!')
+>f=edit() 
+'print arg1 
+' 
+>f(arg1='Hello World!') 
 Hello World!
 </pre>
 
-Since Admiral is pure interpreter all strings all callable:
+
+Since Admiral is pure interpreter all strings are callable:
 <pre>
-&gt;'print arg1'(arg1='Hello World again!')
+>'print arg1'(arg1='Hello World again!') 
 Hello World again!
 </pre>
 
-<h4>BUILT-IN STATEMENTS</h4>
+
+Dicts and prototypes provice "poor mans" objects :-)
+<pre>
+>ship={} 
+{} 
+>ship.spd=0 
+0 
+>ship.accelerate=edit() 
+'me.spd+=me.acceleration 
+' 
+>shuttle:=ship 
+... 
+>shuttle.acceleration=8 
+8 
+>shuttle.accelerate() 
+>shuttle.spd 8 
+>ship.spd 0
+</pre>
 
 <pre>
 if &lt;expr&gt;: &lt;stmt&gt;
@@ -168,71 +180,3 @@ NOTES
  - Slicing is not supported as assignment left side
  - Boolean operators both sides are always evaluated
  - INDENT and DEDENT must be exactly one space
-
-<h4>EXAMPLES</h4>
-
-Simple expressions:
-<pre>
->5+5
-10
-</pre>
-
-
-Example: 'ex' reference
-<pre>
->a=1
-1
->f=edit()
-'print a, ex.a
-'
->f(a=2)
-2,1
-</pre>
-
-Example: 'me' reference
-<pre>
->a=3
-3
->obj={}
-{}
->obj.a=2
-2
->obj.f=edit()
-'print a, me.a, ex.a
-'
->obj.f(a=1)
-1,2,3
-</pre>
-
-Example: '?=' conditional assignment
-<pre>
->f=edit()
-'a?=1
-b?=2
-print a, b
-'
->f(a=10)
-10, 2
-</pre>
-
-Example: ':=' prototype
-<pre>
->car={}
-{}
->car.spd=0
-0
->car.accelerate=edit()
-'me.spd+=me.acceleration
-'
->vw:=car
-...
->vw.acceleration=8
-8
->vw.accelerate()
->vw.spd
-8
->car.spd
-0
-</pre>
-
-
