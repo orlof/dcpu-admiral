@@ -182,13 +182,3 @@
 
 	set pc, interpreter_loop
 
-#include "edit.dasm"
-#include "data.dasm"
-#include "array.dasm"
-#include "string.dasm"
-#include "integer.dasm"
-#include "stdlib.dasm"
-#include "list.dasm"
-#include "parser.dasm"
-#include "memory.dasm"
-#include "lexer.dasm"
