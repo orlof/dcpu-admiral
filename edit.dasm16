@@ -13,7 +13,7 @@
 	set push, 384
 	set push, TYPE_STRING
 	jsr alloc
-	set [z-2], x
+	set [z+-2], x
 
 	set j, [x]
 	set [j], 384
@@ -28,7 +28,7 @@
 	set push, 1000
 	set push, TYPE_STRING
 	jsr alloc
-	set [z-1], x
+	set [z+-1], x
 
 	set x, [x]
 	add x, 1
@@ -95,7 +95,7 @@
 	set pc, edit_main_loop
 
 :edit_main_finish
-	set i, [z-2]
+	set i, [z+-2]
 	set i, [i]
 	add i, 1
 	
@@ -303,7 +303,7 @@
 	ifl j, [cur_pos]
 		sti [i], [j]
 	ifg i, [cur_pos]
-		std [j-1], [i-1]
+		std [j+-1], [i+-1]
 	ifn i, [cur_pos]
 		ifn j, [cur_pos]
 			set pc, edit_gap_move_loop
