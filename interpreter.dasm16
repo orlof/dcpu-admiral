@@ -16,7 +16,7 @@
 	set push, 10
 	set push, TYPE_DICT
 	jsr alloc
-	set [z-1], x
+	set [z+-1], x
 
 	set [global_scope], x
 	set [current_scope], x
@@ -24,7 +24,7 @@
 :interpreter_loop
 	set push, STR_PROMPT
 	jsr raw_input
-	set [z-2], x
+    set [z+-2], x
 	
 	set c, 10
 	jsr add_char
@@ -33,7 +33,7 @@
 
 :interpreter_loop_parse
 	jsr parser_stmt
-	set [z-3], x
+    set [z+-3], x
 
 	ife [lexer_token], token_eof
 		set pc, interpreter_loop
@@ -43,7 +43,7 @@
 
 	set push, x
 	jsr eval
-	set [z-3], x
+    set [z+-3], x
 
 	set push, x
 	jsr print_repr
