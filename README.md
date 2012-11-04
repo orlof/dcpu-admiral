@@ -38,13 +38,17 @@
 
 https://github.com/orlof/dcpu-admiral
 
-To build from source, run the following with the DCPU Toolchain (DCPUTeam/DCPUToolchain)  
-    dtasm admiral.dasm16 -o admiral.bin
-or this with Organic (SirCmpwn/Organic) (you have to use long literals at the moment, as Organic is very slow at optimising at the moment)  
-    organic admiral.dasm16 admiral.bin --long-literals  
+To build from source, run the following with the DCPU Toolchain (DCPUTeam/DCPUToolchain)
 
-You can run the .bin provided, or the one you built as normal in Lettuce (SirCmpwn/Tomato), and with the following command with the Toolchain  
-    dtemu admiral.bin  
+    dtasm admiral.dasm16 -o admiral.bin
+    
+or this with Organic (SirCmpwn/Organic) (you have to use long literals at the moment, as Organic is very slow at optimising at the moment)
+
+    organic admiral.dasm16 admiral.bin --long-literals
+
+You can run the .bin provided, or the one you built as normal in Lettuce (SirCmpwn/Tomato), and with the following command with the Toolchain
+
+    dtemu admiral.bin
 
 <h4>USAGE</h4>
 
