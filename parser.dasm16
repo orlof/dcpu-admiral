@@ -82,14 +82,14 @@
 
 	set push, 0
 	jsr expression
-	set [z-1], x
+    set [z+-1], x
 
 	ife [x + HANDLE_TYPE], TYPE_TUPLE_COMMA
 		set pc, std_print_array
 		
 	set push, x
 	jsr eval
-	set [z-1], x
+    set [z+-1], x
 
 	set push, x
 	jsr print
@@ -99,7 +99,7 @@
 :std_print_array
 	set push, x
 	jsr eval
-	set [z-1], x
+    set [z+-1], x
 
 	set push, x
 	set push, std_print_iterator
@@ -139,7 +139,7 @@
 	set push, 2			; create struct control
 	set push, TYPE_CONTROL
 	jsr alloc
-	set [z-1], x
+    set [z+-1], x
 
 	set a, [x]
 	set [a], 2
@@ -152,7 +152,7 @@
 	set push, 0
 	jsr expression
 
-	set a, [z-1]
+    set a, [z+-1]
 	set a, [a]
 	set [a + CONTROL_VALUE], x
 
@@ -161,7 +161,7 @@
 	; set push, token_newline
 	; jsr lexer_advance
 
-	set x, [z-1]
+    set x, [z+-1]
 	set pc, postamble
 	
 ;----------------------------------------------------------------
@@ -209,7 +209,7 @@
 	; get the testlist (left side)
 	set push, 0x0000
 	jsr testlist
-	set [z-3], x
+    set [z+-3], x
 
 	set push, token_in	; verify 'in'
 	jsr lexer_advance
@@ -217,11 +217,11 @@
 	; get the exprlist (right side)
 	set push, 0x0000
 	jsr expression
-	set [z-4], x
+    set [z+-4], x
 
 	set push, x
 	jsr eval
-	set [z-4], x
+    set [z+-4], x
 
 	set push, token_colon		; verify colon
 	jsr lexer_advance
@@ -231,8 +231,8 @@
 	set i, 0
 	
 :std_for_loop
-	set a, [z-3]	; struct handle *left
-	set b, [z-4]	; struct handle *right
+    set a, [z+-3]   ; struct handle *left
+    set b, [z+-4]   ; struct handle *right
 
 	set c, [b]		; struct data *right
 	ife i, [c]		; i == rightLen -> done
@@ -294,7 +294,7 @@
 	set x, NONE
 
 :std_for_control_return
-	set [current_scope], [z-1]
+    set [current_scope], [z+-1]
 	set pc, postamble
 
 ;----------------------------------------------------------------
@@ -308,7 +308,7 @@
 
 	set push, 0
 	jsr expression
-	set [z-1], x
+    set [z+-1], x
 	
 	set push, x
 	jsr del
@@ -327,16 +327,16 @@
 
 	set push, 0			; evaluate if condition
 	jsr expression
-	set [z-3], x
+    set [z+-3], x
 	
 	set push, x
 	jsr eval
-	set [z-3], x
+    set [z+-3], x
 	
 	set push, token_colon		; verify colon
 	jsr lexer_advance
 
-	ife [z-3], BOOL_HANDLE_FALSE	; break if loop condition is false
+    ife [z+-3], BOOL_HANDLE_FALSE   ; break if loop condition is false
 		set pc, std_if_false
 
 	jsr parser_suite
@@ -392,19 +392,19 @@
 ;----------------------------------------------------------------
 :parser_fork_scope
 ;----------------------------------------------------------------
-	set [z-1], [current_scope]	; store current scope
+    set [z+-1], [current_scope] ; store current scope
 
 	;----------------------------------------------------------------
 	; comment to disabled block scope to mimic python's deficiencies
 	set push, 5			; create new scope for while block
 	set push, TYPE_DICT
 	jsr alloc
-	set [z-2], x
+    set [z+-2], x
 	set [current_scope], x		; set new scope in effect
 
 	set push, x			; set parent scope
 	set push, STR_UNDERSCORE
-	set push, [z-1]
+    set push, [z+-1]
 	jsr dict_set
 	;----------------------------------------------------------------
 
@@ -424,12 +424,12 @@
 :std_while_loop
 	set push, 0					; evaluate loop condition
 	jsr expression
-	set [z-3], x
+    set [z+-3], x
 	
 	set push, token_colon		; verify colon
 	jsr lexer_advance
 
-	ife [z-3], BOOL_HANDLE_FALSE	; break if loop condition is false
+    ife [z+-3], BOOL_HANDLE_FALSE   ; break if loop condition is false
 		set pc, std_while_false
 
 	jsr parser_suite
@@ -467,7 +467,7 @@
 	set x, NONE
 
 :std_while_control_return
-	set [current_scope], [z-1]
+    set [current_scope], [z+-1]
 	set pc, postamble
 
 ;----------------------------------------------------------------
@@ -586,7 +586,7 @@
 	set c, [lexer_token]
 	jsr [c + PROTOTYPE_NUD]
 	
-	set [z-1], x		; struct handle *left
+    set [z+-1], x       ; struct handle *left
 
 :expr_loop
 	set c, [lexer_token]
@@ -596,15 +596,15 @@
 	ife b, [c + PROTOTYPE_LBP]
 		set pc, expr_finish
 
-	set push, [z-1]
+    set push, [z+-1]
 	jsr [c + PROTOTYPE_LED]
 :expression_callback
-	set [z-1], x		; struct handle *left
+	set [z+-1], x		; struct handle *left
 
 	set pc, expr_loop
 
 :expr_finish
-	set x, [z-1]		; struct handle *left
+    set x, [z+-1]       ; struct handle *left
 	set pc, postamble
 	
 ;----------------------------------------------------------------
@@ -627,7 +627,7 @@
 		jsr recover
 		
 	jsr y
-	set [z-1], x		; struct handle *left
+    set [z+-1], x       ; struct handle *left
 
 :testlist_loop
 	set c, [lexer_token]
@@ -648,10 +648,10 @@
 	ife y, 0
 		set pc, expr_finish
 	
-	set push, [z-1]
+    set push, [z+-1]
 	jsr y
 :testlist_callback
-	set [z-1], x		; struct handle *left
+    set [z+-1], x       ; struct handle *left
 
 	set pc, testlist_loop
 
@@ -664,15 +664,15 @@
 	jsr preamble
 
 	jsr lexer_get_token_as_string
-	set [z-1], x
+    set [z+-1], x
 
-	set push, [z-1]
+	set push, [z+-1]
 	jsr int_parse
-	set [z-1], x
+    set [z+-1], x
 		
 	jsr lexer_next
 
-	set x, [z-1]
+    set x, [z+-1]
 	set pc, postamble
 
 ;----------------------------------------------------------------
@@ -685,11 +685,11 @@
 	jsr preamble
 
 	jsr lexer_get_token_as_string
-	set [z-1], x
+    set [z+-1], x
 	
 	jsr lexer_next
 
-	set x, [z-1]
+    set x, [z+-1]
 	set pc, postamble
 
 ;----------------------------------------------------------------
@@ -732,7 +732,7 @@
 
 	set push, 0
 	jsr expression
-	set [z-1], x
+    set [z+-1], x
 
 	ifb [x + HANDLE_TYPE], 0x0801	; TUPLE_COLON | TUPLE_COMMA
 		set [x + HANDLE_TYPE], TYPE_TUPLE
@@ -740,7 +740,7 @@
 	set push, token_rparen
 	jsr lexer_advance
 
-	set x, [z-1]
+    set x, [z+-1]
 	set pc, postamble
 
 :nud_lparen_empty
@@ -768,7 +768,7 @@
 
 	set push, 0
 	jsr expression
-	set [z-1], x
+    set [z+-1], x
 
 	ife [x + HANDLE_TYPE], TYPE_TUPLE_COMMA
 		set pc, nud_lbrack_change_type
@@ -776,22 +776,22 @@
 	set push, 5
 	set push, TYPE_LIST
 	jsr alloc
-	set [z-2], x
+    set [z+-2], x
 
 	set a, [x]
 	set	[a], 1
-	set [a+1], [z-1]
+    set [a+1], [z+-1]
 	set pc, nud_lbrack_continue
 	
 :nud_lbrack_change_type
 	set [x + HANDLE_TYPE], TYPE_LIST
-	set [z-2], x
+    set [z+-2], x
 
 :nud_lbrack_continue
 	set push, token_rbrack
 	jsr lexer_advance
 
-	set x, [z-2]
+    set x, [z+-2]
 	set pc, postamble
 
 :nud_lbrack_empty
@@ -814,7 +814,7 @@
 	set push, 5
 	set push, TYPE_DICT
 	jsr alloc
-	set [z-1], x
+    set [z+-1], x
 
 :nud_lcurly_loop
 	jsr lexer_next	; skip '{' or ','
@@ -825,11 +825,11 @@
 	; left side (key)
 	set push, 0
 	jsr expression
-	set [z-3], x
+    set [z+-3], x
 
 	set push, x
 	jsr eval
-	set [z-3], x
+	set [z+-3], x
 
 	set push, token_colon
 	jsr lexer_advance		; skip ':'
@@ -837,26 +837,26 @@
 	; right side (value)
 	set push, 0x0030		; break at comma
 	jsr expression
-	set [z-4], x
+    set [z+-4], x
 
 	set push, x
 	jsr eval
-	set [z-4], x
+    set [z+-4], x
 
 	; kv-pair
 	set push, 2
 	set push, TYPE_TUPLE
 	jsr alloc
-	set [z-2], x
+    set [z+-2], x
 
 	set x, [x]
 	set [x], 2
-	set [x+1], [z-3]
-	set [x+2], [z-4]
+    set [x+1], [z+-3]
+    set [x+2], [z+-4]
 
-	set push, [z-1]
+    set push, [z+-1]
 	set push, -1
-	set push, [z-2]
+    set push, [z+-2]
 	jsr array_insert
 
 	ife [lexer_token], token_comma
@@ -866,7 +866,7 @@
 	set push, token_rcurly
 	jsr lexer_advance
 
-	set x, [z-1]
+    set x, [z+-1]
 	set pc, postamble
 
 ;----------------------------------------------------------------
@@ -892,11 +892,11 @@
 
 	set push, 0x0150
 	jsr expression
-	set [z-1], x
+    set [z+-1], x
 
 	set push, x
 	jsr eval
-	set [z-1], x
+    set [z+-1], x
 
 	ife [x + HANDLE_TYPE], TYPE_INT
 		set pc, nud_minus_int
@@ -921,11 +921,11 @@
 
 	set push, 0x0160
 	jsr expression
-	set [z-1], x
+    set [z+-1], x
 
 	set push, x
 	jsr eval
-	set [z-1], x
+    set [z+-1], x
 
 	ife [x + HANDLE_TYPE], TYPE_INT
 		set pc, nud_tilde_int
@@ -950,11 +950,11 @@
 
 	set push, 0x0055
 	jsr expression
-	set [z-1], x
+    set [z+-1], x
 
 	set push, x
 	jsr eval
-	set [z-1], x
+    set [z+-1], x
 
 	set push, x
 	jsr boolean
@@ -977,9 +977,9 @@
 	jsr boolean_operator
 
 	set x, BOOL_HANDLE_TRUE
-	ife [z-1], BOOL_HANDLE_FALSE	
+    ife [z+-1], BOOL_HANDLE_FALSE   
 		set x, BOOL_HANDLE_FALSE
-	ife [z-2], BOOL_HANDLE_FALSE	
+    ife [z+-2], BOOL_HANDLE_FALSE   
 		set x, BOOL_HANDLE_FALSE
 			
 	set pc, postamble
@@ -995,9 +995,9 @@
 	jsr boolean_operator
 
 	set x, BOOL_HANDLE_FALSE
-	ife [z-1], BOOL_HANDLE_TRUE	
+    ife [z+-1], BOOL_HANDLE_TRUE    
 		set x, BOOL_HANDLE_TRUE
-	ife [z-2], BOOL_HANDLE_TRUE	
+    ife [z+-2], BOOL_HANDLE_TRUE    
 		set x, BOOL_HANDLE_TRUE
 			
 	set pc, postamble
@@ -1008,26 +1008,26 @@
 	; evaluate left side
 	set push, [z+10]
 	jsr eval
-	set [z-1], x
+    set [z+-1], x
 
 	set push, x
 	jsr boolean
-	set [z-1], x
+    set [z+-1], x
 
 	; right side
 	set c, [lexer_token]
 	set push, [c + PROTOTYPE_LBP]		; push for expression call
 	jsr expression
-	set [z-2], x
+    set [z+-2], x
 
 	; evaluate right side
-	set push, [z-2]
+	set push, [z+-2]
 	jsr eval
-	set [z-2], x
+    set [z+-2], x
 	
 	set push, x
 	jsr boolean
-	set [z-2], x
+    set [z+-2], x
 
 	set pc, pop
 
@@ -1050,30 +1050,30 @@
 	; evaluate left side
 	set push, [z+10]
 	jsr eval
-	set [z-1], x
+    set [z+-1], x
 
 	; parse right side
 	set push, 0x0070
 	jsr expression
-	set [z-2], x
+    set [z+-2], x
 	
 	; evaluate right side
-	set push, [z-2]
+    set push, [z+-2]
 	jsr eval
-	set [z-2], x
+    set [z+-2], x
 
 	ife a, TRUE
 		set pc, led_is_not
 
 	set x, BOOL_HANDLE_FALSE
-	ife x, [z-1]
+    ife x, [z+-1]
 		set x, BOOL_HANDLE_TRUE
 
 	set pc, postamble
 
 :led_is_not
 	set x, BOOL_HANDLE_TRUE
-	ife x, [z-1]
+    ife x, [z+-1]
 		set x, BOOL_HANDLE_FALSE
 
 	set pc, postamble
@@ -1108,17 +1108,17 @@
 ; evaluate left side
 	set push, [z+10]
 	jsr eval
-	set [z-1], x
+    set [z+-1], x
 
 	; parse right side
 	set push, 0x0060
 	jsr expression
-	set [z-2], x
+    set [z+-2], x
 	
 	; evaluate right side
-	set push, [z-2]
+    set push, [z+-2]
 	jsr eval
-	set [z-2], x
+    set [z+-2], x
 
 	ife [x + HANDLE_TYPE], TYPE_STRING
 		set pc, led_in_string
@@ -1133,7 +1133,7 @@
 
 :led_in_string
 	set push, x
-	set push, [z-1]
+    set push, [z+-1]
 	jsr str_search
 	ife x, -1
 		set pc, led_in_not_found
@@ -1141,7 +1141,7 @@
 
 :led_in_dict
 	set push, x
-	set push, [z-1]
+    set push, [z+-1]
 	jsr dict_get
 	ife x, 0
 		set pc, led_in_not_found
@@ -1149,7 +1149,7 @@
 
 :led_in_list
 	set push, x
-	set push, [z-1]
+    set push, [z+-1]
 	jsr list_find
 	ife x, -1
 		set pc, led_in_not_found
@@ -1271,20 +1271,20 @@
 	; right side
 	set push, 0x0080
 	jsr expression
-	set [z-2], x
+    set [z+-2], x
 
 	; evaluate left side
 	set push, [z+10]
 	jsr eval
-	set [z-1], x
+    set [z+-1], x
 
 	; evaluate right side
-	set push, [z-2]
+    set push, [z+-2]
 	jsr eval
-	set [z-2], x
+    set [z+-2], x
 	
-	set push, [z-1]
-	set push, [z-2]
+    set push, [z+-1]
+    set push, [z+-2]
 	jsr val_cmp
 	set a, x
 
@@ -1604,11 +1604,11 @@
 	; right side
 	set push, 0x0009 					; right binding power
 	jsr expression
-	set [z-1], x
+    set [z+-1], x
 	
 	set push, x
 	jsr eval
-	set [z-1], x
+    set [z+-1], x
 
 	set push, [z+10]
 	set push, x
@@ -1629,7 +1629,7 @@
 	; right side
 	set push, 0x0009 					; right binding power
 	jsr expression
-	set [z-1], x
+    set [z+-1], x
 	
 	set push, [current_scope]
 	set push, [z+10]
@@ -1638,9 +1638,9 @@
 	ifn x, 0
 		set pc, postamble
 
-	set push, [z-1]
+    set push, [z+-1]
 	jsr eval
-	set [z-1], x
+    set [z+-1], x
 
 	set push, [z+10]
 	set push, x
@@ -1661,11 +1661,11 @@
 	; right side
 	set push, 0x0009 					; right binding power
 	jsr expression
-	set [z-1], x
+    set [z+-1], x
 	
 	set push, x
 	jsr eval
-	set [z-1], x
+    set [z+-1], x
 
 	; prototyping is available only for dicts
 	ifn [x + HANDLE_TYPE], TYPE_DICT
@@ -1674,18 +1674,18 @@
 	set push, 5
 	set push, TYPE_DICT
 	jsr alloc
-	set [z-2], x
+    set [z+-2], x
 	
 	set push, x
 	set push, STR_UNDERSCORE
-	set push, [z-1]
+    set push, [z+-1]
 	jsr dict_set
 
 	set push, [z+10]
-	set push, [z-2]
+    set push, [z+-2]
 	jsr assign
 
-	set x, [z-2]
+    set x, [z+-2]
 	set pc, postamble
 
 ;----------------------------------------------------------------
@@ -1699,7 +1699,7 @@
 	jsr infixr
 
 	jsr led_lshift_operation
-	set [z-1], x
+    set [z+-1], x
 
 	set push, [z+10]
 	set push, x
@@ -1718,7 +1718,7 @@
 	jsr infixr
 
 	jsr led_rshift_operation
-	set [z-1], x
+    set [z+-1], x
 
 	set push, [z+10]
 	set push, x
@@ -1737,7 +1737,7 @@
 	jsr infixr
 
 	jsr led_bitwise_or_operation
-	set [z-1], x
+    set [z+-1], x
 
 	set push, [z+10]
 	set push, x
@@ -1756,7 +1756,7 @@
 	jsr infixr
 
 	jsr led_bitwise_xor_operation
-	set [z-1], x
+    set [z+-1], x
 
 	set push, [z+10]
 	set push, x
@@ -1775,7 +1775,7 @@
 	jsr infixr
 
 	jsr led_bitwise_and_operation
-	set [z-1], x
+    set [z+-1], x
 
 	set push, [z+10]
 	set push, x
@@ -1794,7 +1794,7 @@
 	jsr infixr
 
 	jsr led_plus_operation
-	set [z-1], x
+    set [z+-1], x
 
 	set push, [z+10]
 	set push, x
@@ -1813,7 +1813,7 @@
 	jsr infixr
 
 	jsr led_minus_operation
-	set [z-1], x
+    set [z+-1], x
 
 	set push, [z+10]
 	set push, x
@@ -1832,7 +1832,7 @@
 	jsr infixr
 
 	jsr led_star_operation
-	set [z-1], x
+    set [z+-1], x
 
 	set push, [z+10]
 	set push, x
@@ -1851,7 +1851,7 @@
 	jsr infixr
 
 	jsr led_slash_operation
-	set [z-1], x
+    set [z+-1], x
 
 	set push, [z+10]
 	set push, x
@@ -1870,7 +1870,7 @@
 	jsr infixr
 
 	jsr led_percent_operation
-	set [z-1], x
+    set [z+-1], x
 
 	set push, [z+10]
 	set push, x
@@ -1896,7 +1896,7 @@
 	set push, 10		; create scope for function call
 	set push, TYPE_DICT
 	jsr alloc
-	set [z-1], x
+    set [z+-1], x
 
 	set push, x			; add global scope (ex)
 	set push, STR_EX
@@ -1909,7 +1909,7 @@
 		
 	set a, [a]			; a = struct reference *
 		
-	set push, [z-1]
+    set push, [z+-1]
 	set push, STR_ME
 	set push, [a + REFERENCE_DICT]
 	jsr dict_set
@@ -1921,9 +1921,9 @@
 		set pc, led_lparen_prepare_call
 
 	jsr parse_testlist_item
-	set push, [z-1]
-	set push, [z-2]
-	set push, [z-3]
+    set push, [z+-1]
+    set push, [z+-2]
+    set push, [z+-3]
 	jsr dict_set
 	
 	ife [lexer_token], token_comma
@@ -1935,17 +1935,17 @@
 
 	set push, [z+10]
 	jsr eval
-	set [z-2], x
+    set [z+-2], x
 	
 	ifn [x + HANDLE_TYPE], TYPE_STRING
 		jsr recover	
 
 	set push, [current_scope]
-	set [current_scope], [z-1]
+    set [current_scope], [z+-1]
 
 	jsr lexer_store
 
-	set x, [z-2]
+    set x, [z+-2]
 	jsr lexer_init
 
 :led_lparen_call
@@ -1982,19 +1982,19 @@
 	; read value or name	
 	set push, 0x0030
 	jsr expression
-	set [z-2], x
+    set [z+-2], x
 
 	ife [lexer_token], token_assign
 		; parameter value
 		set pc, parse_testlist_item_assign
 
 	; f(1) -> $0=1
-	set [z-3], x
+    set [z+-3], x
 
 	set push, 2
 	set push, TYPE_NAME
 	jsr alloc
-	set [z-2], x
+    set [z+-2], x
 
 	set a, [x]
 	set [a], 2
@@ -2015,12 +2015,12 @@
 	; read value
 	set push, 0x0030
 	jsr expression
-	set [z-3], x
+    set [z+-3], x
 
 :parse_testlist_item_set
-	set push, [z-3]
+    set push, [z+-3]
 	jsr eval
-	set [z-3], x
+    set [z+-3], x
 
 	set pc, pop
 
@@ -2037,7 +2037,7 @@
 	; eval left side
 	set push, [z+10]
 	jsr eval
-	set [z-1], x
+    set [z+-1], x
 
 	ife [x + HANDLE_TYPE], TYPE_DICT	; branch dict
 		set pc, led_lbrack_dict
@@ -2050,76 +2050,76 @@
 		set pc, led_lbrack_parse_first
 
 	; no slice start, assume 0
-	set [z-2], INT_HANDLE_0
+    set [z+-2], INT_HANDLE_0
 	set pc, led_lbrack_after_colon
 
 :led_lbrack_parse_first
 	; parse slice start or index
 	set push, 0
 	jsr expression
-	set [z-2], x
+    set [z+-2], x
 	
 	set push, x
 	jsr eval
-	set [z-2], x
+    set [z+-2], x
 
 	ifn [lexer_token], token_colon
 		set pc, led_lbrack_finish	; no colon -> index
 
 :led_lbrack_after_colon
 	jsr lexer_next				; skip ':'
-	; [z-2] now contains slice start
-	set [z-3], [z-2]
+	; [z+-2] now contains slice start
+    set [z+-3], [z+-2]
 
 	set push, 2
 	set push, TYPE_TUPLE
 	jsr alloc
-	set [z-2], x
+    set [z+-2], x
 
 	set x, [x]
 	set [x], 2
-	set [x+1], [z-3]			; slice start
+    set [x+1], [z+-3]           ; slice start
 
 	ife [lexer_token], token_rbrack
 		set pc, led_lbrack_empty_after_colon
 
 	set push, 0
 	jsr expression
-	set [z-3], x
+	set [z+-3], x
 	
 	set push, x
 	jsr eval
-	set [z-3], x
+	set [z+-3], x
 
-	set a, [z-2]
+	set a, [z+-2]
 	set a, [a]
-	set [a+2], [z-3]		; slice end
+	set [a+2], [z+-3]		; slice end
 
 	set pc, led_lbrack_finish
 
 :led_lbrack_empty_after_colon
 	; set array len to slice end
-	set a, [z-1]
+	set a, [z+-1]
 	set a, [a]
 
 	set push, [a]
 	jsr int16_to_int
-	set [z-3], x
+	set [z+-3], x
 	
-	set a, [z-2]
+	set a, [z+-2]
 	set a, [a]
-	set [a+2], [z-3]		; slice end
+	set [a+2], [z+-3]		; slice end
 	
 	set pc, led_lbrack_finish
 
 :led_lbrack_dict
 	set push, 0
 	jsr expression
-	set [z-2], x
+	set [z+-2], x
 		
 	set push, x
 	jsr eval
-	set [z-2], x
+	set [z+-2], x
 
 	ifc [x + HANDLE_TYPE], 0x3e	; STRING | TUPLE | INT | BOOL | FLOAT
 		jsr recover
@@ -2132,14 +2132,14 @@
 	set push, 2
 	set push, TYPE_SUBSCRIPTION
 	jsr alloc
-	set [z-3], x			; result
+	set [z+-3], x			; result
 
 	set x, [x]
 	set [x], 2
-	set [x + SUBSCRIPTION_LIST], [z-1]
-	set [x + SUBSCRIPTION_INDEX], [z-2]
+	set [x + SUBSCRIPTION_LIST], [z+-1]
+	set [x + SUBSCRIPTION_INDEX], [z+-2]
 
-	set x, [z-3]
+	set x, [z+-3]
 	set pc, postamble
 
 ;----------------------------------------------------------------
@@ -2154,7 +2154,7 @@
 	set push, 2
 	set push, TYPE_REFERENCE
 	jsr alloc
-	set [z-1], x
+	set [z+-1], x
 	
 	set push, [z+10]
 	jsr eval
@@ -2162,7 +2162,7 @@
 	ifn [x + 1], TYPE_DICT
 		jsr recover
 
-	set a, [z-1]
+	set a, [z+-1]
 	set a, [a]
 	set [a], 2
 	set [a + REFERENCE_DICT], x
@@ -2174,13 +2174,13 @@
 
 	jsr lexer_get_token_as_string
 
-	set a, [z-1]
+	set a, [z+-1]
 	set a, [a]
 	set [a + REFERENCE_NAME], x
 
 	jsr lexer_next
 	
-	set x, [z-1]
+	set x, [z+-1]
 	set pc, postamble
 
 ;----------------------------------------------------------------
@@ -2207,23 +2207,23 @@
 	; left
 	set push, [z+10]
 	jsr eval
-	set [z-1], x
+	set [z+-1], x
 	set a, x
 
 	jsr lexer_next
 
 	; right side
 	jsr expression
-	set [z-2], x
+	set [z+-2], x
 
 	set push, x
 	jsr eval
-	set [z-2], x
+	set [z+-2], x
 	set b, x
 
 ;	jsr cast_common_number_type
-;	set [z-1], a
-;	set [z-2], b
+;	set [z+-1], a
+;	set [z+-2], b
 	
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
@@ -2242,14 +2242,14 @@
 	jsr preamble
 
 	set a, [z+10]
-	set [z-1], a
+	set [z+-1], a
 	ife [a + HANDLE_TYPE], TYPE_TUPLE_COMMA
 		set pc, led_comma_add
 		
 	set push, 5
 	set push, TYPE_TUPLE_COMMA
 	jsr alloc
-	set [z-1], x
+	set [z+-1], x
 
 	set x, [x]
 	set [x], 1
@@ -2267,15 +2267,15 @@
 		jsr expression
 	ife [z+9], testlist_callback
 		jsr testlist	
-	set [z-2], x
+	set [z+-2], x
 
-	set push, [z-1]
+	set push, [z+-1]
 	set push, -1
-	set push, [z-2]
+	set push, [z+-2]
 	jsr array_insert
 
 :led_comma_end
-	set x, [z-1]	; expr
+	set x, [z+-1]	; expr
 	set pc, postamble
 
 
@@ -2395,7 +2395,7 @@
 	ifn i, 1
 		jsr recover
 		
-	set push, [z-1]
+	set push, [z+-1]
 	jsr uint16_to_int
 
 	set pc, postamble
@@ -2406,9 +2406,9 @@
 	ifg i, 1
 		jsr recover
 
-	set push, [z-1]
+	set push, [z+-1]
 	jsr raw_input
-	set [z-1], x
+	set [z+-1], x
 
 	set a, [x]
 	sub [a], 1
@@ -2416,7 +2416,7 @@
 	set c, 10
 	jsr add_char
 
-	set x, [z-1]
+	set x, [z+-1]
 	set pc, postamble
 	
 :built_in_range
@@ -2428,20 +2428,20 @@
 	ifg i, 1
 		set pc, built_in_range_2
 
-	set [z-2], [z-1]
-	set [z-1], INT_HANDLE_0
+	set [z+-2], [z+-1]
+	set [z+-1], INT_HANDLE_0
 
 :built_in_range_2	
 	ifg i, 2
 		set pc, built_in_range_3
 
-	set [z-3], INT_HANDLE_1
+	set [z+-3], INT_HANDLE_1
 
 :built_in_range_3
 	ifg i, 3
 		jsr recover
 
-	set push, [z-3]
+	set push, [z+-3]
 	jsr int_sgn
 	set y, x
 	xor y, 0xffff
@@ -2450,30 +2450,30 @@
 	set push, 20
 	set push, TYPE_LIST
 	jsr alloc
-	set [z-4], x
+	set [z+-4], x
 
 :built_in_range_loop
-	set push, [z-1]
-	set push, [z-2]
+	set push, [z+-1]
+	set push, [z+-2]
 	jsr val_cmp
 	
 	ifn x, y
 		set pc, built_in_range_break
 
-	set push, [z-4]
+	set push, [z+-4]
 	set push, -1
-	set push, [z-1]
+	set push, [z+-1]
 	jsr array_insert	
 
-	set push, [z-1]
-	set push, [z-3]
+	set push, [z+-1]
+	set push, [z+-3]
 	jsr int_add
-	set [z-1], x
+	set [z+-1], x
 	
 	set pc, built_in_range_loop
 
 :built_in_range_break
-	set x, [z-4]
+	set x, [z+-4]
 	set pc, postamble
 
 :built_in_locals
@@ -2497,8 +2497,8 @@
 	ifn i, 2
 		jsr recover
 
-	set push, [z-1]
-	set push, [z-2]
+	set push, [z+-1]
+	set push, [z+-2]
 	jsr val_cmp
 	set a, x
 	
@@ -2515,7 +2515,7 @@
 	ifn i, 1
 		jsr recover
 
-	set a, [z-1]
+	set a, [z+-1]
 	ifn [a + HANDLE_TYPE], TYPE_INT
 		jsr recover
 
@@ -2540,7 +2540,7 @@
 	ifn i, 1
 		jsr recover
 
-	set a, [z-1]
+	set a, [z+-1]
 	ifn [a + HANDLE_TYPE], TYPE_STRING
 		jsr recover
 
@@ -2558,7 +2558,7 @@
 	ifg i, 1
 		jsr recover
 
-	set a, [z-1]
+	set a, [z+-1]
 	ife i, 0
 		set a, STR_EMPTY
 
@@ -2579,7 +2579,7 @@
 	ifn i, 1
 		jsr recover
 
-	set a, [z-1]
+	set a, [z+-1]
 	ifc [a + HANDLE_TYPE], 0x0006	; INT | BOOL
 		jsr recover
 
@@ -2593,7 +2593,7 @@
 	ifn i, 1
 		jsr recover
 
-	set a, [z-1]
+	set a, [z+-1]
 	ifc [a + HANDLE_TYPE], 0x00f0	; STRING | TUPLE | DICT | LIST
 		jsr recover
 
@@ -2609,7 +2609,7 @@
 	ifn i, 1
 		jsr recover
 
-	set a, [z-1]
+	set a, [z+-1]
 
 	ife [a + HANDLE_TYPE], TYPE_INT
 		set pc, built_in_int_int
@@ -2641,9 +2641,9 @@
 	ifn i, 1
 		jsr recover
 
-	set push, [z-1]
+	set push, [z+-1]
 	jsr repr
-	set [z-1], x
+	set [z+-1], x
 	
 	set pc, postamble
 
@@ -2652,7 +2652,7 @@
 	ifn i, 1
 		jsr recover
 
-	set x, [z-1]
+	set x, [z+-1]
 
 	ife [x + HANDLE_TYPE], TYPE_STRING
 		set pc, postamble
@@ -2667,7 +2667,7 @@
 	ifn i, 1
 		jsr recover
 
-	set push, [z-1]
+	set push, [z+-1]
 	jsr boolean
 
 	set pc, postamble
