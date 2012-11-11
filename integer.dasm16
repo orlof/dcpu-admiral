@@ -193,6 +193,87 @@
 	jsr postamble
 
 ;----------------------------------------------------------------
+; extern struct handle *int_random(struct handle *max)
+;----------------------------------------------------------------
+:int_random
+	set push, 1
+	set push, 1
+	jsr preamble
+	
+	set a, [z+10]
+	set a, [a]
+	
+	set push, [a]
+	jsr int_create
+	set [z+-1], x
+	
+	set a, [x]
+	set i, a
+	add i, [i]
+	add a, 1
+	
+:int_random_loop
+	jsr int_rnd_lfsr
+;	jsr int_rnd_lcg
+	ife i, a
+		and x, 0x7fff
+	set [i], x
+	ifg i, a
+		std pc, int_random_loop
+	
+	set push, [z+-1]
+	set push, [z+10]
+	jsr int_division
+	
+	set x, [x]
+	set x, [x + INT_DIVISION_REMAINDER]
+	
+	set pc, postamble
+
+;----------------------------------------------------------------
+; kirinyaga's "Linear feedback shift register" pseudo random number generator
+; 
+; output every number twice per period. 
+; return the higher 16bits out of 17. 
+; 
+; out A: 0000-FFFF 
+; 
+; uses 0 word from stack 
+; 13 words / 14 cycles 
+;----------------------------------------------------------------
+:int_rnd_lfsr ; return pseudo-random 0000-FFFF in x 
+	set x, [rnd_lfsr_seed] 
+	shr x, 1 
+	bor x, [rnd_lfsr_seed + 1] 
+	set [rnd_lfsr_seed + 1], ex 
+	ifn ex, 0 
+		xor x, [rnd_lfsr_poly] 
+	set [rnd_lfsr_seed], x 
+	set pc, pop 
+
+;----------------------------------------------------------------
+; Entroper's Linear congruential generator
+; Generates random words, using two words of state.
+; Based on the algorithm described here:
+; http://6502.org/source/integers/random/random.html 
+; Sets x to a 16-bit PRN.
+;----------------------------------------------------------------
+:int_rnd_lcg
+	; 0x0019660D x seed + 1
+	set push, a
+	set a, [rnd_lcg_seed]
+	set x, [rnd_lcg_seed + 1]
+	mul x, 0x660D
+	mul a, 0x0019
+	mul [rnd_lcg_seed], 0x660D
+	adx x, a
+	add [rnd_lcg_seed], 1
+	add x, ex
+	set [rnd_lcg_seed + 1], x
+	set a, pop
+	set pc, pop
+
+;----------------------------------------------------------------
 ; extern struct handle *int_bitwise_or(struct handle *i1, struct handle *i2)
 ;----------------------------------------------------------------
 :int_bitwise_or
