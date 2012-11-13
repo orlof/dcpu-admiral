@@ -1,0 +1,149 @@
+; This file represent my first tests to utilize new style of assembler.
+; I try to minimize register usage here
+
+;----------------------------------------------------------------
+:screen_prev
+; fastcall
+;----------------------------------------------------------------
+	ife [current_screen], screen_first
+		set pc, pop
+	sub [current_screen], SIZEOF_SCREEN
+	set pc, screen_select
+;----------------------------------------------------------------
+:screen_next
+; fastcall
+;----------------------------------------------------------------
+	ife [current_screen], screen_last
+		set pc, pop
+	add [current_screen], SIZEOF_SCREEN
+
+;----------------------------------------------------------------
+:screen_select
+; fastcall
+;----------------------------------------------------------------
+	set push, a
+	set push, b
+	
+	set a, 0
+	set b, [current_screen]
+	set b, [b]
+	hwi [monitor]
+	
+	set b, pop
+	set a, pop
+	
+	set pc, pop
+	 
+;----------------------------------------------------------------
+:screen_toggle_cursor
+; fastcall
+;----------------------------------------------------------------
+	set x, [current_screen]				; struct screen *cur
+	set x, [x + SCREEN_CURSOR]	
+	xor [x], 0xff80						; change colors
+	set pc, pop
+
+;----------------------------------------------------------------
+:screen_move_cursor
+; fastcall
+;  x [sp+2]
+;  y [sp+1]
+;----------------------------------------------------------------
+	set x, [current_screen]
+	set [x+SCREEN_CURSOR], [x+SCREEN_START]
+	
+	mul [sp+1], SCREEN_COLS
+	add [x+SCREEN_CURSOR], [sp+1]
+	add [x+SCREEN_CURSOR], [sp+2]
+
+	set [sp], pop	; remove y
+	set [sp], pop	; remove x
+	set pc, pop
+
+;----------------------------------------------------------------
+; void cls(void)
+;----------------------------------------------------------------
+:screen_clear
+	set push, a
+	set push, i
+	set push, j
+
+	set a, [current_screen]
+	set [a + SCREEN_CURSOR], [a + SCREEN_START]
+
+	set i, [a + SCREEN_START]
+	set a, [a + SCREEN_END]
+	
+:screen_clear_loop
+	set [i], 0
+	ifl i, a
+		sti pc, screen_clear_loop
+
+:screen_clear_finish
+	set j, pop
+	set i, pop
+	set a, pop
+
+	set pc, pop
+
+;----------------------------------------------------------------
+:screen_add_char
+; fastcall
+; c: character
+;----------------------------------------------------------------
+	set push, a
+	set push, i
+	set push, j
+	
+	set a, [current_screen]
+	set i, [a + SCREEN_CURSOR]
+
+	ife [c + lexer_table], lexer_char_newline
+		set pc, add_char_newline
+	
+	ife c, KEY_BS
+		set pc, add_char_backspace
+
+	set [i], c
+	bor [i], FONT_COLOR
+	sti pc, add_char_scroll
+	
+:add_char_newline
+	and i, 0xffe0
+	add i, SCREEN_COLS
+	
+:add_char_scroll
+	set [a + SCREEN_CURSOR], i
+
+	ifl i, [a + SCREEN_END]
+		set pc, add_char_finish
+		
+	sub [a + SCREEN_CURSOR], 32
+	
+	set i, [a + SCREEN_START]
+	set j, [a + SCREEN_START]
+	add j, SCREEN_COLS
+	
+:add_char_copy
+	sti [i], [j]
+	ifl j, [a + SCREEN_END]
+		set pc, add_char_copy
+	
+:add_char_clear
+	sti [i], 0
+	ifl i, [a + SCREEN_END]
+		set pc, add_char_clear
+	
+:add_char_finish
+	set j, pop
+	set i, pop
+	set a, pop
+	
+	set pc, pop
+
+:add_char_backspace
+	ifn i, [a + SCREEN_START]
+		std [i+-1], 0
+
+	set [a + SCREEN_CURSOR], i
+	set pc, add_char_finish

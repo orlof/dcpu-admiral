@@ -6,11 +6,9 @@
 
 #define HEAP_GC_TRIGGER 10
 
-#define SCREEN_START    0x8000
-#define SCREEN_END      0x8180
 #define FONT_COLOR      0x7000
-#define LINE_LEN        32
-#define LINES           12
+#define SCREEN_COLS     32
+#define SCREEN_ROWS     12
 
 #define KEY_BS          0x10
 #define KEY_NEWLINE     0x11
@@ -23,6 +21,7 @@
 #define KEY_SHIFT       0x90
 #define KEY_CTRL        0x91
 #define KEY_CTRL_X      0x8078
+#define KEY_CTRL_C      0x8063
 
 #define SCOPE_MODE_UPDATE   0x0002
 #define SCOPE_MODE_INSERT   0x0004
@@ -98,15 +97,6 @@
 #define DICT_ITEM_KEY   1
 #define DICT_ITEM_VALUE 2
 
-; struct lexer {
-;   struct handle *string;
-;   uint16 indent;
-;   struct token *;
-;   uint16 start;
-;   uint16 end;
-; }
-; NOT IN USE
-
 ; struct prototype {
 ;   void *std;
 ;   void *nud;
@@ -142,3 +132,12 @@
 #define SUBSCRIPTION_LIST   1
 #define SUBSCRIPTION_INDEX  2
 
+; struct screen {
+;   uint16 *start;
+;   uint16 *end;
+;   uint16 *cursor;
+; }
+#define SIZEOF_SCREEN		3
+#define SCREEN_START		0
+#define SCREEN_END			1
+#define SCREEN_CURSOR		2

@@ -663,7 +663,7 @@
 		set pc, postamble
 	
 	set c, x			; char
-	jsr add_char
+	jsr screen_add_char
 
 	add b, 1
 
@@ -768,43 +768,6 @@ ife a, 0xb402
 set pc, hwloop
      
      
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-;   start the monitor
-;
-:init_monitor
-set a, 0
-set b, 0x8000
-hwi [monitor]
-set pc, pop
-     
-     
-     
-;----------------------------------------------------------------
-:win_show_cursor
-:win_hide_cursor
-:show_cursor
-:hide_cursor
-; fastcall
-;----------------------------------------------------------------
-	set x, [cursor]			; pointer to video memory in cursor
-	xor [x], 0xff80			; change colors
-
-	set pc, pop
-
-;----------------------------------------------------------------
-:win_move
-; fastcall
-; a: y
-; b: x
-;----------------------------------------------------------------
-	mul a, LINE_LEN
-	add b, a
-	add b, SCREEN_START
-	set [cursor], b
-	
-	set pc, pop
-
 ;----------------------------------------------------------------
 :win_getchar
 ; c: delayed key
@@ -858,16 +821,10 @@ set pc, pop
     ife c, KEY_CTRL
         set pc, win_getchar_ctrl_loop
 
-	ife c, 'w'
-		set	c, KEY_UP
-	ife c, 's'
-		set c, KEY_DOWN
-	ife c, 'd'
-		set c, KEY_RIGHT
-	ife c, 'a'
-		set c, KEY_LEFT
 	ife c, 'x'
 		set c, KEY_CTRL_X
+	ife c, 'c'
+		set c, KEY_CTRL_C
 		
 	set pc, pop
 
@@ -879,85 +836,6 @@ set pc, pop
 	ifn c, FALSE
 		set pc, win_getchar_release_loop
 
-	set pc, pop
-
-;----------------------------------------------------------------
-:add_char
-; fastcall
-; c: character
-;----------------------------------------------------------------
-	set push, c
-	set push, i
-	set push, j
-	
-	set i, [cursor]
-
-	ife [c + lexer_table], lexer_char_newline
-		set pc, add_char_newline
-	
-	ife c, 0x10
-		set pc, add_char_backspace
-
-	bor c, FONT_COLOR
-	sti [i], c
-	set pc, add_char_scroll
-	
-:add_char_newline
-	and i, 0xffe0
-	add i, LINE_LEN
-	
-:add_char_scroll
-	set [cursor], i
-
-	ifl i, SCREEN_END
-		set pc, add_char_finish
-		
-	sub [cursor], 32
-	
-	set i, SCREEN_START
-	set j, SCREEN_START + LINE_LEN
-	
-:add_char_copy
-	sti [i], [j]
-	ifl j, SCREEN_END
-		set pc, add_char_copy
-	
-:add_char_clear
-	sti [i], 0
-	ifl i, SCREEN_END
-		set pc, add_char_clear
-	
-:add_char_finish
-	set j, pop
-	set i, pop
-	set c, pop
-	
-	set pc, pop
-
-:add_char_backspace
-	ife i, SCREEN_START	
-		set pc, add_char_finish
-
-	std [i+-1], 0
-	set [cursor], i
-	set pc, add_char_finish
-     
-;----------------------------------------------------------------
-; void cls(void)
-;----------------------------------------------------------------
-:cls
-	set push, i
-	set push, j
-
-	set i, SCREEN_START
-:cls_loop
-	set [i], 0
-	ifl i, SCREEN_END
-		sti pc, cls_loop
-
-:cls_finish
-	set j, pop
-	set i, pop
 	set pc, pop
 
 ;----------------------------------------------------------------
@@ -980,11 +858,13 @@ set pc, pop
 	jsr print
 	
 :raw_input_no_prompt
-	set y, [cursor]
+;	set y, [cursor]
+	set y, [current_screen]
+	set b, [y + SCREEN_CURSOR]
 
 :next_char_loop
 	; start of input
-	jsr show_cursor
+	jsr screen_toggle_cursor
 	
 	; Handle keyboard input  
 :input_loop
@@ -995,36 +875,36 @@ set pc, pop
     ife c, KEY_SHIFT
         set pc, input_loop
 
-	jsr hide_cursor
+	jsr screen_toggle_cursor
 	
-	ife c, 0x11
+	ife c, KEY_NEWLINE
 		set pc, finish
 
-	ife c, 0x10
-		ife [cursor], y
+	ife c, KEY_BS
+		ife [y + SCREEN_CURSOR], b
 			set pc, next_char_loop
 			
-	jsr add_char
+	jsr screen_add_char
 
 	set pc, next_char_loop
 
 :finish
-	set a, [cursor]
-	sub a, y
+	set a, [y + SCREEN_CURSOR]
+	sub a, b
 	add a, 1
 
 	set push, a
 	set push, TYPE_STRING
 	jsr alloc
 
-	set j, [x]		; struct string *
-	set [j], a		; len
-	add j, [j]		; string[last]
-	set [j], 10		; set newline
-	std i, [cursor] ; i = cursor -1
+	set j, [x]					; struct string *
+	set [j], a					; len
+	add j, [j]					; string[last]
+	set [j], 10					; set newline
+	std i, [y + SCREEN_CURSOR] 	; i = cursor -1
 
 :finish_loop
-	ifl i, y
+	ifl i, b
 		set pc, postamble
 	set [j], [i]
 	and [j], 0x007f
