@@ -52,8 +52,7 @@
 ;----------------------------------------------------------------
 	jsr lexer_next		; skip 'cls'
 
-	jsr cls
-	set [cursor], SCREEN_START
+	jsr screen_clear
 
 	set x, NONE
 	set pc, postamble
@@ -62,8 +61,7 @@
 :std_reset
 ; return struct handle *none
 ;----------------------------------------------------------------
-	jsr cls
-	set [cursor], SCREEN_START
+	jsr screen_clear
 	set sp, 0
 	set z, 0
 	set pc, interpreter_main
@@ -113,7 +111,7 @@
 	jsr print
 
 	set c, ' '
-	jsr add_char
+	jsr screen_add_char
 
 	set x, [sp]
 	add sp, 3
@@ -125,7 +123,7 @@
 
 :std_print_break_eof
 	set c, 10
-	jsr add_char
+	jsr screen_add_char
 
 	set x, NONE
 	set pc, postamble
@@ -2418,7 +2416,7 @@
 	sub [a], 1
 
 	set c, 10
-	jsr add_char
+	jsr screen_add_char
 
 	set x, [z+-1]
 	set pc, postamble
@@ -2569,12 +2567,8 @@
 	ifn [a + HANDLE_TYPE], TYPE_STRING
 		jsr recover
 
-	set push, [cursor]
-
 	set push, a
 	jsr edit_main
-
-	set [cursor], pop
 
 	set pc, postamble	
 

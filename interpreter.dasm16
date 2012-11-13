@@ -5,12 +5,14 @@
 	
 	set [recovery_fp], z
 	set [recovery_sp], sp
-	
-	jsr detect_hardware
-	jsr init_monitor
 
-	set push, 0xa000
-	set push, 3000
+	jsr detect_hardware
+	jsr screen_select
+
+	jsr screen_clear
+
+	set push, 0x6000
+	set push, 0x6000
 	jsr create_heap
 
 	set push, 10
@@ -27,7 +29,7 @@
     set [z+-2], x
 	
 	set c, 10
-	jsr add_char
+	jsr screen_add_char
 	
 	jsr lexer_init
 
@@ -49,7 +51,7 @@
 	jsr print_repr
 
 	set c, 10
-	jsr add_char
+	jsr screen_add_char
 	
 	set pc, interpreter_loop_parse
 
@@ -170,7 +172,7 @@
 	jsr print
 
 	set c, ':'
-	jsr add_char
+	jsr screen_add_char
 	
 	jsr lexer_get_token_as_string
 
@@ -178,7 +180,7 @@
 	jsr print
 
 	set c, 10
-	jsr add_char
+	jsr screen_add_char
 
 	set pc, interpreter_loop
 
