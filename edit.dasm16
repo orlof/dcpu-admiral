@@ -1,29 +1,17 @@
 ;----------------------------------------------------------------
+; extern struct handle *edit_main(struct handle *str)
 :edit_main
 ;----------------------------------------------------------------
 	set push, 1
-	set push, 2
+	set push, 1
 	jsr preamble
 
 	set [cur_x], 0
 	set [cur_y], 0
 	set [prev_char], 0
 
-; store screen
-	set push, 384
-	set push, TYPE_STRING
-	jsr alloc
-	set [z+-2], x
-
-	set j, [x]
-	set [j], 384
-	add j, 1
-	
-	set i, 0x8000
-:cp_loop
-	sti [j], [i]
-	ifl i, 0x8180
-		set pc, cp_loop
+	jsr screen_next
+	jsr screen_clear
 
 	set push, 1000
 	set push, TYPE_STRING
@@ -47,28 +35,28 @@
 	set y, x
 	add x, [x]
 
-:loop22
+:edit_copy_arg_to_buffer
 	ife y, x
 		set pc, edit_main_loop
 
 	set c, [y+1]
 	jsr edit_insert_char
 	add y, 1
-	set pc, loop22
+	set pc, edit_copy_arg_to_buffer
 
 :edit_main_loop	
 	jsr win_normalize
 	jsr edit_win_draw
 
-	set a, [cur_y]
-	set b, [cur_x]
-	jsr win_move
+	set push, [cur_x]
+	set push, [cur_y]
+	jsr screen_move_cursor
 
 	set c, [prev_char]
 
-	jsr win_show_cursor	
+	jsr screen_toggle_cursor
 	jsr win_getchar
-	jsr win_hide_cursor
+	jsr screen_toggle_cursor
 
 	set [prev_char], c
 
@@ -88,6 +76,8 @@
 		set pc, edit_key_newline
 	ife c, KEY_CTRL_X
 		set pc, edit_main_finish
+	ife c, KEY_CTRL_C
+		set pc, edit_main_finish
 	ifg c, 0x19
 		ifl c, 0x7f
 			set pc, edit_key_character
@@ -95,15 +85,11 @@
 	set pc, edit_main_loop
 
 :edit_main_finish
-	set i, [z+-2]
-	set i, [i]
-	add i, 1
-	
-	set j, 0x8000
-:cp_loop2
-	sti [j], [i]
-	ifl j, 0x8180
-		set pc, cp_loop2
+	jsr screen_prev
+
+	set x, [z+10]
+	ife c, KEY_CTRL_C
+		set pc, postamble
 
 	set c, [buf_end]
 	sub c, [buf_start]
@@ -120,13 +106,13 @@
 	
 	set i, [buf_start]
 
-:loop33
+:edit_copy_buffer_to_result
 	ife i, [gap_start]
 		set i, [gap_end]
 	ife i, [buf_end]
 		set pc, postamble	
 	sti [j], [i]
-	set pc, loop33	
+	set pc, edit_copy_buffer_to_result
 
 ;----------------------------------------------------------------
 :edit_key_up
@@ -221,13 +207,14 @@
 ;----------------------------------------------------------------
 :edit_win_draw
 ;----------------------------------------------------------------	
+	set a, [current_screen]
 	set i, [win_start]
-	set j, SCREEN_START
+	set j, [a + SCREEN_START]
 
 :edit_win_draw_loop
 	jsr edit_line_draw
 
-	ifl j, SCREEN_END
+	ifl j, [a + SCREEN_END]
 		set pc, edit_win_draw_loop
 
 	set pc, pop
@@ -258,7 +245,7 @@
 	
 :edit_line_chars
 	set c, j
-	add c, LINE_LEN
+	add c, SCREEN_COLS
 
 :edit_line_chars_loop
 	set [j], 0
@@ -558,7 +545,7 @@
 	set a, [win_start]
 
 :win_normalize_6
-	ifl [cur_y], LINES				; cur_y >= LINES
+	ifl [cur_y], SCREEN_ROWS				; cur_y >= LINES
 		set pc, win_normalize_5
 
 	; bow_line = nextline (bow_line);
@@ -586,34 +573,10 @@
 	set pc, win_normalize_8
 	
 :win_normalize_7
-	ifl [cur_x], LINE_LEN
+	ifl [cur_x], SCREEN_COLS
 		set pc, pop
 	
 	sub [cur_x], 8
 	add [win_shift], 8
 	
 	set pc, win_normalize_7
-	
-	
-;void	norm_cur (void) {
-;	int	i;
-;	cur_line = bol (cur_pos);
-;	while (cur_line < bow_line)
-;		bow_line = prevline (bow_line);
-;	cur_y = 0;
-;	for (i = bow_line; i < cur_line; i = nextline (i))
-;		cur_y++;
-;	for (; cur_y >= LINES; cur_y--)
-;		bow_line = nextline (bow_line);
-;
-;	cur_x = win_x (cur_line, cur_pos - cur_line) - win_shift;
-;	while (cur_x < 0) {
-;		cur_x += TABSIZE;
-;		win_shift -= TABSIZE;
-;	}
-;	while (cur_x >= COLS) {
-;		cur_x -= TABSIZE;
-;		win_shift += TABSIZE;
-;	}
-;}
-

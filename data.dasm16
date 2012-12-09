@@ -10,7 +10,26 @@
 ;----------------------------------------------------------------
 ; GLOBAL DISPLAY VARIABLES
 ;----------------------------------------------------------------
-:cursor             DAT 0x8000
+:current_screen dat screen_first
+
+:screen_first	dat 0xc000, 0xc180, 0xc000
+				dat 0xc180, 0xc300, 0xc180
+:screen_last	dat 0xc300, 0xc480, 0xc300
+
+
+;----------------------------------------------------------------
+; GLOBAL FD VARIABLES
+;----------------------------------------------------------------
+
+
+;----------------------------------------------------------------
+; RANDOM NUMBER GENERATORS
+;----------------------------------------------------------------
+:rnd_lfsr_seed 	dat 0xbe8c,0x8000 ; 1st is anything but zero. 2nd should be 8000 or 0000
+:rnd_lfsr_poly 	dat 0xb400 
+
+; To seed the generator, simply overwrite the data in randseed.
+:rnd_lcg_seed	dat 0x5678, 0x1234
 
 ;----------------------------------------------------------------
 ; GLOBAL HW VARIABLES

@@ -189,3 +189,96 @@ NOTES
  - Slicing is not supported as assignment left side
  - Boolean operators both sides are always evaluated
  - INDENT and DEDENT must be exactly one space
+
+SOME EXTRA BITS
+
+Positional function call parameters:
+
+Typically you call functions by specifying the variables that you want initially to be added to the function scope.
+
+<pre>
+function_name(creature='Monster", size='XXXL')
+</pre>
+
+All nameless variables are autonamed as "$0", "$1", "$2"... in left to right order
+
+<pre>
+function_name('Monster", size='XXXL', 'angry')
+</pre>
+ 
+Would produce variables
+<pre>
+$0='Monster'
+size='XXXL'
+$1='angry'
+</pre>
+
+PRINT STATEMENT
+
+print statement can take multiple expressions separated with comma.
+
+<pre>
+>print "This", "is", "good"
+This is good
+</pre>
+
+Concatenating prints with comma is much faster than using "+".
+
+<pre>
+>print "This" + " " + "is" + " " + "BAD!"
+This is BAD!
+</pre>
+
+ASSIGNMENTS
+
+Admiral currently allows augmented assignments to be chained. I will remove that feature if someone can explain to me why it shouldn't be allowed.
+
+<pre>
+>a = b = 0
+>a += b += 1
+1
+>a += b += 1
+3
+</pre>
+
+Currently Admiral does not support assigning to slices: 
+i.e. a[1:3]=(1,2,3) is not working. 
+If that REALLY is a language feature that anyone would use, I will consider adding it :-)
+
+Admiral has two special assigment operators: conditional assignment "?=" and prototype assignment ":=".
+
+Conditional assignment only assigns if left side is NOT defined in the current scope. This feature is only ment for specifying default values for variables in funtions.
+
+Prototype assignment provides "poor mans" inheritance. Right side must be a dict. Left side is assigned a new dict with prototype member set (prototype members key is underscore-string). Whenever key is accessed it is first searched from dict itself, if it is not found, search is propagated to prototype dict. Assignment never changes the value in prototype.
+
+...clear?
+
+BLOCK STATEMENTS
+
+There is three block statements: if, for and while.
+
+<pre>
+if a==1: print "Yeah"
+elif a=2: print "Close..."
+else: print "Naah"
+
+or
+
+if a==1:
+ print "Yeah"
+elif a==":
+ print "Close..."
+else:
+ print "Naah"
+</pre>
+
+while or for doesn't support "else" - I think that is just Python's trash.
+
+Remember that INDENT and DEDENT must always be a single space.
+...and block statements have their own scope. Maybe I should remove it?
+
+OTHER PYTHON FEATURES MISSING
+
+No lambda, yield, try, exception, generators, classes or function definitions.
+
+

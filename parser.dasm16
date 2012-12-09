@@ -52,8 +52,7 @@
 ;----------------------------------------------------------------
 	jsr lexer_next		; skip 'cls'
 
-	jsr cls
-	set [cursor], SCREEN_START
+	jsr screen_clear
 
 	set x, NONE
 	set pc, postamble
@@ -62,8 +61,7 @@
 :std_reset
 ; return struct handle *none
 ;----------------------------------------------------------------
-	jsr cls
-	set [cursor], SCREEN_START
+	jsr screen_clear
 	set sp, 0
 	set z, 0
 	set pc, interpreter_main
@@ -113,7 +111,7 @@
 	jsr print
 
 	set c, ' '
-	jsr add_char
+	jsr screen_add_char
 
 	set x, [sp]
 	add sp, 3
@@ -125,7 +123,7 @@
 
 :std_print_break_eof
 	set c, 10
-	jsr add_char
+	jsr screen_add_char
 
 	set x, NONE
 	set pc, postamble
@@ -2305,6 +2303,10 @@
 	set pc, led_lparen_user_defined
 
 :built_in_3
+	ife [a+1], 'r'
+		ife [a+2], 'n'
+			ife [a+3], 'd'
+				set pc, built_in_rnd
 	ife [a+1], 'i'
 		ife [a+2], 'n'
 			ife [a+3], 't'
@@ -2414,7 +2416,7 @@
 	sub [a], 1
 
 	set c, 10
-	jsr add_char
+	jsr screen_add_char
 
 	set x, [z+-1]
 	set pc, postamble
@@ -2565,12 +2567,22 @@
 	ifn [a + HANDLE_TYPE], TYPE_STRING
 		jsr recover
 
-	set push, [cursor]
-
 	set push, a
 	jsr edit_main
 
-	set [cursor], pop
+	set pc, postamble	
+
+:built_in_rnd
+	jsr built_in_params
+	ifn i, 1
+		jsr recover
+
+	set a, [z+-1]
+	ifn [a + HANDLE_TYPE], TYPE_INT
+		jsr recover
+
+	set push, a
+	jsr int_random
 
 	set pc, postamble	
 
