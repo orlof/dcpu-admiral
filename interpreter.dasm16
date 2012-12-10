@@ -1,6 +1,6 @@
 :interpreter_main
 	set push, 0
-	set push, 3
+	set push, 4
 	jsr preamble
 	
 	set [recovery_fp], z
@@ -22,6 +22,16 @@
 
 	set [global_scope], x
 	set [current_scope], x
+
+	set push, 20
+	set push, TYPE_LIST
+	jsr alloc
+	set [z-4], x
+	
+	set [builtin], x
+
+	; init fpu
+	jsr float_init	
 
 :interpreter_loop
 	set push, STR_PROMPT

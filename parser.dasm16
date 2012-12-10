@@ -1,5 +1,6 @@
 ;----------------------------------------------------------------
 :parser_stmt
+; main method to parse anything
 ;----------------------------------------------------------------
 	set push, 0
 	set push, 4
@@ -10,11 +11,16 @@
 
 ;----------------------------------------------------------------
 :parser_simple_stmt
+; e.g. print hi is simple stmt
+;   if true: print "Hi"
 ;----------------------------------------------------------------
 	set push, 0
 	set push, 1
 	jsr preamble
 
+	; compound stmts are not allowed here
+	;   if true: if true: print "Hi"
+	; that would make parsing more complex
 	set c, [lexer_token]
 	ife c, token_while
 		jsr recover
@@ -48,6 +54,7 @@
 
 ;----------------------------------------------------------------
 :std_cls
+; clear lem
 ; return struct handle *none
 ;----------------------------------------------------------------
 	jsr lexer_next		; skip 'cls'
@@ -59,7 +66,7 @@
 
 ;----------------------------------------------------------------
 :std_reset
-; return struct handle *none
+; restart admiral
 ;----------------------------------------------------------------
 	jsr screen_clear
 	set sp, 0
@@ -198,8 +205,13 @@
 
 ;----------------------------------------------------------------
 :std_for
+; for x in list:
+;  print x
 ; return struct handle *none
 ; todo implement else
+; problems: stupid python grammar has valid token (in) as for loop
+; separator. there is no way for parser to detect between expression 
+; operator and for separator.
 ;----------------------------------------------------------------
 	jsr lexer_next		; advance 'for'
 	jsr parser_fork_scope
@@ -674,6 +686,26 @@
 	set pc, postamble
 
 ;----------------------------------------------------------------
+; struct handle *nud_float()
+;----------------------------------------------------------------
+:nud_float
+	set push, 0
+	set push, 1
+	jsr preamble
+
+	jsr lexer_get_token_as_string
+    set [z+-1], x
+
+	set push, [z+-1]
+	jsr float_from_str
+    set [z+-1], x
+		
+	jsr lexer_next
+
+    set x, [z+-1]
+	set pc, postamble
+
+;----------------------------------------------------------------
 ; struct handle *nud_name()
 ;----------------------------------------------------------------
 :nud_str
@@ -732,7 +764,7 @@
 	jsr expression
     set [z+-1], x
 
-	ifb [x + HANDLE_TYPE], 0x0801	; TUPLE_COLON | TUPLE_COMMA
+	ifb [x + HANDLE_TYPE], TYPE_TUPLE_COMMA
 		set [x + HANDLE_TYPE], TYPE_TUPLE
 
 	set push, token_rparen
@@ -896,14 +928,17 @@
 	jsr eval
     set [z+-1], x
 
+	set y, 0
 	ife [x + HANDLE_TYPE], TYPE_INT
-		set pc, nud_minus_int
-		
-	jsr recover
+		set y, int_negate
+	ife [x + HANDLE_TYPE], TYPE_FLOAT
+		set y, float_negate
 
-:nud_minus_int
+	ife y, 0
+		jsr recover
+
 	set push, x
-	jsr int_negate
+	jsr y
 
 	set pc, postamble
 
@@ -1124,7 +1159,7 @@
 	ife [x + HANDLE_TYPE], TYPE_DICT
 		set pc, led_in_dict
 
-	ifb [x + HANDLE_TYPE], 0x0060		; TYPE_TUPLE | TYPE_LIST
+	ifb [x + HANDLE_TYPE], TYPE_TUPLE + TYPE_LIST
 		set pc, led_in_list
 
 	jsr recover
@@ -1303,8 +1338,14 @@
 	set pc, postamble
 
 :led_plus_operation
+	jsr cast_common_number_type
+	set c, [a + HANDLE_TYPE]
+	bor c, [b + HANDLE_TYPE]
+	
 	ife c, TYPE_INT
 		set y, int_add
+	ife c, TYPE_FLOAT
+		set y, float_add
 	ife c, TYPE_STRING
 		set y, array_merge
 	ife c, TYPE_LIST
@@ -1312,6 +1353,7 @@
 	ife c, TYPE_TUPLE
 		set y, array_merge
 
+:led_operation_tailer
 	ife y, 0
 		jsr recover
 
@@ -1325,7 +1367,7 @@
 ; struct handle *led_minus(struct handle *left)
 ;----------------------------------------------------------------
 :led_minus
-	; todo int+int, float+int, int+float, float+float
+	; todo int-int, float-int, int-float, float-float
 	set push, 1
 	set push, 2
 	jsr preamble
@@ -1336,17 +1378,16 @@
 	set pc, postamble
 
 :led_minus_operation
+	jsr cast_common_number_type
+	set c, [a + HANDLE_TYPE]
+	bor c, [b + HANDLE_TYPE]
+
 	ife c, TYPE_INT
 		set y, int_sub
+	ife c, TYPE_FLOAT
+		set y, float_sub
 
-	ife y, 0
-		jsr recover
-
-	set push, a
-	set push, b
-	jsr y
-	
-	set pc, pop
+	set pc, led_operation_tailer
 
 ;----------------------------------------------------------------
 ; struct handle *led_star(struct handle *left)
@@ -1363,27 +1404,30 @@
 	set pc, postamble
 
 :led_star_operation
+	jsr cast_common_number_type
+	set c, [a + HANDLE_TYPE]
+	bor c, [b + HANDLE_TYPE]
+
 	ife c, TYPE_INT
 		set y, int_mul
-	ife c, 0x0014
+	ife c, TYPE_FLOAT
+		set y, float_mul
+	ife c, TYPE_STRING + TYPE_INT
 		set y, array_repeat
-	ife c, 0x0024
+	ife c, TYPE_TUPLE + TYPE_INT
 		set y, array_repeat
-	ife c, 0x0044
+	ife c, TYPE_LIST + TYPE_INT
 		set y, array_repeat
 
-	ife y, 0
-		jsr recover
-
-	ife [a + HANDLE_TYPE], TYPE_INT
-		set push, b		
-	set push, a
 	ifn [a + HANDLE_TYPE], TYPE_INT
-		set push, b
+		set pc, led_operation_tailer
 
-	jsr y
-	
-	set pc, pop
+	; swap a and b
+	set ex, a
+	set a, b
+	set b, ex
+
+	set pc, led_operation_tailer
 
 ;----------------------------------------------------------------
 ; struct handle *led_power(struct handle *left)
@@ -1402,15 +1446,11 @@
 :led_power_operation
 	ife c, TYPE_INT
 		set y, int_pow
+	ife [a + HANDLE_TYPE], TYPE_FLOAT
+		ife [b + HANDLE_TYPE], TYPE_INT
+			set y, recover
 
-	ife y, 0
-		jsr recover
-
-	set push, a
-	set push, b
-	jsr y
-	
-	set pc, pop
+	set pc, led_operation_tailer
 
 ;----------------------------------------------------------------
 ; struct handle *led_bitwise_or(struct handle *left)
@@ -1427,14 +1467,11 @@
 	set pc, postamble
 
 :led_bitwise_or_operation
-	ifn c, TYPE_INT
-		jsr recover
+	ife c, TYPE_INT
+		set y, int_bitwise_or
 
-	set push, a
-	set push, b
-	jsr int_bitwise_or
-	
-	set pc, pop
+	set pc, led_operation_tailer
+
 
 ;----------------------------------------------------------------
 ; struct handle *led_bitwise_xor(struct handle *left)
@@ -1451,14 +1488,10 @@
 	set pc, postamble
 
 :led_bitwise_xor_operation
-	ifn c, TYPE_INT
-		jsr recover
+	ife c, TYPE_INT
+		set y, int_bitwise_xor
 
-	set push, a
-	set push, b
-	jsr int_bitwise_xor
-	
-	set pc, pop
+	set pc, led_operation_tailer
 
 ;----------------------------------------------------------------
 ; struct handle *led_bitwise_and(struct handle *left)
@@ -1475,14 +1508,10 @@
 	set pc, postamble
 
 :led_bitwise_and_operation
-	ifn c, TYPE_INT
-		jsr recover
+	ife c, TYPE_INT
+		set y, int_bitwise_and
 
-	set push, a
-	set push, b
-	jsr int_bitwise_and
-	
-	set pc, pop
+	set pc, led_operation_tailer
 
 ;----------------------------------------------------------------
 ; struct handle *led_lshift(struct handle *left)
@@ -1499,14 +1528,10 @@
 	set pc, postamble
 
 :led_lshift_operation
-	ifn c, TYPE_INT
-		jsr recover
+	ife c, TYPE_INT
+		set y, int_lshift
 
-	set push, a
-	set push, b
-	jsr int_lshift
-	
-	set pc, pop
+	set pc, led_operation_tailer
 
 ;----------------------------------------------------------------
 ; struct handle *led_rshift(struct handle *left)
@@ -1523,14 +1548,10 @@
 	set pc, postamble
 
 :led_rshift_operation
-	ifn c, TYPE_INT
-		jsr recover
+	ife c, TYPE_INT
+		set y, int_rshift
 
-	set push, a
-	set push, b
-	jsr int_rshift
-	
-	set pc, pop
+	set pc, led_operation_tailer
 
 ;----------------------------------------------------------------
 ; struct handle *led_slash(struct handle *left)
@@ -1547,19 +1568,16 @@
 	set pc, postamble
 
 :led_slash_operation
+	jsr cast_common_number_type
+	set c, [a + HANDLE_TYPE]
+	bor c, [b + HANDLE_TYPE]
 
 	ife c, TYPE_INT
 		set y, int_div
+	ife c, TYPE_FLOAT
+		set y, float_div
 
-	ife y, 0
-		jsr recover
-
-	set push, a
-	set push, b
-
-	jsr y
-	
-	set pc, pop
+	set pc, led_operation_tailer
 
 ;----------------------------------------------------------------
 ; struct handle *led_percent(struct handle *left)
@@ -1579,15 +1597,7 @@
 	ife c, TYPE_INT
 		set y, int_mod
 
-	ife y, 0
-		jsr recover
-
-	set push, a
-	set push, b
-
-	jsr y
-	
-	set pc, pop
+	set pc, led_operation_tailer
 
 ;----------------------------------------------------------------
 ; struct handle *led_assign(struct handle *left)
@@ -1686,195 +1696,101 @@
     set x, [z+-2]
 	set pc, postamble
 
-;----------------------------------------------------------------
-; struct handle *led_augass_lshift(struct handle *left)
-;----------------------------------------------------------------
-:led_augass_lshift
-	set push, 1
+:led_augass
+	set push, 2
 	set push, 2
 	jsr preamble
 
 	jsr infixr
 
-	jsr led_lshift_operation
+	jsr [z+10]
     set [z+-1], x
 
-	set push, [z+10]
+	set push, [z+11]
 	set push, x
 	jsr assign
 	
 	set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_augass_lshift(struct handle *left)
+;----------------------------------------------------------------
+:led_augass_lshift
+	set push, peek
+	set [sp+1], led_lshift_operation
+	set pc, led_augass
 
 ;----------------------------------------------------------------
 ; struct handle *led_augass_rshift(struct handle *left)
 ;----------------------------------------------------------------
 :led_augass_rshift
-	set push, 1
-	set push, 2
-	jsr preamble
-
-	jsr infixr
-
-	jsr led_rshift_operation
-    set [z+-1], x
-
-	set push, [z+10]
-	set push, x
-	jsr assign
-	
-	set pc, postamble
+	set push, peek
+	set [sp+1], led_rshift_operation
+	set pc, led_augass
 
 ;----------------------------------------------------------------
 ; struct handle *led_augass_or(struct handle *left)
 ;----------------------------------------------------------------
 :led_augass_or
-	set push, 1
-	set push, 2
-	jsr preamble
-
-	jsr infixr
-
-	jsr led_bitwise_or_operation
-    set [z+-1], x
-
-	set push, [z+10]
-	set push, x
-	jsr assign
-	
-	set pc, postamble
+	set push, peek
+	set [sp+1], led_bitwise_or_operation
+	set pc, led_augass
 
 ;----------------------------------------------------------------
 ; struct handle *led_augass_xor(struct handle *left)
 ;----------------------------------------------------------------
 :led_augass_xor
-	set push, 1
-	set push, 2
-	jsr preamble
-
-	jsr infixr
-
-	jsr led_bitwise_xor_operation
-    set [z+-1], x
-
-	set push, [z+10]
-	set push, x
-	jsr assign
-	
-	set pc, postamble
+	set push, peek
+	set [sp+1], led_bitwise_xor_operation
+	set pc, led_augass
 
 ;----------------------------------------------------------------
 ; struct handle *led_augass_and(struct handle *left)
 ;----------------------------------------------------------------
 :led_augass_and
-	set push, 1
-	set push, 2
-	jsr preamble
-
-	jsr infixr
-
-	jsr led_bitwise_and_operation
-    set [z+-1], x
-
-	set push, [z+10]
-	set push, x
-	jsr assign
-	
-	set pc, postamble
+	set push, peek
+	set [sp+1], led_bitwise_and_operation
+	set pc, led_augass
 
 ;----------------------------------------------------------------
 ; struct handle *led_augass_plus(struct handle *left)
 ;----------------------------------------------------------------
 :led_augass_plus
-	set push, 1
-	set push, 2
-	jsr preamble
-
-	jsr infixr
-
-	jsr led_plus_operation
-    set [z+-1], x
-
-	set push, [z+10]
-	set push, x
-	jsr assign
-	
-	set pc, postamble
+	set push, peek
+	set [sp+1], led_plus_operation
+	set pc, led_augass
 
 ;----------------------------------------------------------------
 ; struct handle *led_augass_minus(struct handle *left)
 ;----------------------------------------------------------------
 :led_augass_minus
-	set push, 1
-	set push, 2
-	jsr preamble
-
-	jsr infixr
-
-	jsr led_minus_operation
-    set [z+-1], x
-
-	set push, [z+10]
-	set push, x
-	jsr assign
-	
-	set pc, postamble
+	set push, peek
+	set [sp+1], led_minus_operation
+	set pc, led_augass
 
 ;----------------------------------------------------------------
 ; struct handle *led_augass_star(struct handle *left)
 ;----------------------------------------------------------------
 :led_augass_star
-	set push, 1
-	set push, 2
-	jsr preamble
-
-	jsr infixr
-
-	jsr led_star_operation
-    set [z+-1], x
-
-	set push, [z+10]
-	set push, x
-	jsr assign
-	
-	set pc, postamble
+	set push, peek
+	set [sp+1], led_star_operation
+	set pc, led_augass
 
 ;----------------------------------------------------------------
 ; struct handle *led_augass_slash(struct handle *left)
 ;----------------------------------------------------------------
 :led_augass_slash
-	set push, 1
-	set push, 2
-	jsr preamble
-
-	jsr infixr
-
-	jsr led_slash_operation
-    set [z+-1], x
-
-	set push, [z+10]
-	set push, x
-	jsr assign
-	
-	set pc, postamble
+	set push, peek
+	set [sp+1], led_slash_operation
+	set pc, led_augass
 
 ;----------------------------------------------------------------
 ; struct handle *led_augass_percent(struct handle *left)
 ;----------------------------------------------------------------
 :led_augass_percent
-	set push, 1
-	set push, 2
-	jsr preamble
-
-	jsr infixr
-
-	jsr led_percent_operation
-    set [z+-1], x
-
-	set push, [z+10]
-	set push, x
-	jsr assign
-	
-	set pc, postamble
+	set push, peek
+	set [sp+1], led_percent_operation
+	set pc, led_augass
 
 ;----------------------------------------------------------------
 ; struct handle *led_lparen(struct handle *left)
@@ -2040,7 +1956,7 @@
 	ife [x + HANDLE_TYPE], TYPE_DICT	; branch dict
 		set pc, led_lbrack_dict
 
-	ifc [x + HANDLE_TYPE], 0x0070	; STRING | TUPLE | LIST
+	ifc [x + HANDLE_TYPE], TYPE_STRING + TYPE_TUPLE + TYPE_LIST
 		jsr recover
 
 	; handle str, tuple, list
@@ -2119,7 +2035,7 @@
 	jsr eval
 	set [z+-2], x
 
-	ifc [x + HANDLE_TYPE], 0x3e	; STRING | TUPLE | INT | BOOL | FLOAT
+	ifc [x + HANDLE_TYPE], TYPE_STRING + TYPE_TUPLE + TYPE_INT + TYPE_BOOLEAN + TYPE_FLOAT
 		jsr recover
 
 :led_lbrack_finish
@@ -2183,8 +2099,8 @@
 
 ;----------------------------------------------------------------
 :infixr
-	set c, [lexer_token]
-	set a, [c + PROTOTYPE_LBP]		; push for expression call
+	set a, [lexer_token]
+	set a, [a + PROTOTYPE_LBP]		; push for expression call
 	sub a, 1
 	set push, a
 	set pc, infix_1
@@ -2195,11 +2111,10 @@
 ; return 
 ;   a: struct handle *left
 ;   b: struct handle *right
-;   c: left.type ^ right.type
 ;   y: 0
 ;----------------------------------------------------------------
-	set c, [lexer_token]
-	set push, [c + PROTOTYPE_LBP]		; push for expression call
+	set a, [lexer_token]
+	set push, [a + PROTOTYPE_LBP]		; push for expression call
 
 :infix_1
 	; left
@@ -2218,13 +2133,6 @@
 	jsr eval
 	set [z+-2], x
 	set b, x
-
-;	jsr cast_common_number_type
-;	set [z+-1], a
-;	set [z+-2], b
-	
-	set c, [a + HANDLE_TYPE]
-	bor c, [b + HANDLE_TYPE]
 	
 	set y, 0
 
@@ -2277,7 +2185,9 @@
 	set pc, postamble
 
 
+;----------------------------------------------------------------
 :built_in
+;----------------------------------------------------------------
 	set a, [z+10]
 	set a, [a]
 
@@ -2363,6 +2273,12 @@
 				ife [a+4], 'g'
 					ife [a+5], 'e'
 					set pc, built_in_range
+	ife [a+1], 'f'
+		ife [a+2], 'l'
+			ife [a+3], 'o'
+				ife [a+4], 'a'
+					ife [a+5], 't'
+					set pc, built_in_float
 	ife [a+1], 'i'
 		ife [a+2], 'n'
 			ife [a+3], 'p'
@@ -2592,11 +2508,19 @@
 		jsr recover
 
 	set a, [z+-1]
-	ifc [a + HANDLE_TYPE], 0x0006	; INT | BOOL
+
+	set y, 0
+	
+	ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOLEAN
+		set y, int_abs
+	ifb [a + HANDLE_TYPE], TYPE_FLOAT
+		set y, float_abs
+
+	ife y, 0
 		jsr recover
 
 	set push, a
-	jsr int_abs
+	jsr y
 
 	set pc, postamble	
 
@@ -2606,7 +2530,7 @@
 		jsr recover
 
 	set a, [z+-1]
-	ifc [a + HANDLE_TYPE], 0x00f0	; STRING | TUPLE | DICT | LIST
+	ifc [a + HANDLE_TYPE], TYPE_STRING + TYPE_TUPLE + TYPE_DICT + TYPE_LIST
 		jsr recover
 
 	set a, [a]
@@ -2629,6 +2553,8 @@
 		set pc, built_in_int_bool
 	ife [a + HANDLE_TYPE], TYPE_STRING
 		set pc, built_in_int_string
+	ife [a + HANDLE_TYPE], TYPE_FLOAT
+		set pc, built_in_int_float
 
 	jsr recover
 
@@ -2648,6 +2574,52 @@
 	jsr int_parse
 	set pc, postamble
 
+:built_in_int_float
+	set push, a
+	jsr float_to_int
+	set pc, postamble
+
+
+:built_in_float
+	jsr built_in_params
+	ifn i, 1
+		jsr recover
+
+	set a, [z+-1]
+
+	ife [a + HANDLE_TYPE], TYPE_INT
+		set pc, built_in_float_int
+	ife [a + HANDLE_TYPE], TYPE_BOOLEAN
+		set pc, built_in_float_bool
+	ife [a + HANDLE_TYPE], TYPE_STRING
+		set pc, built_in_float_string
+	ife [a + HANDLE_TYPE], TYPE_FLOAT
+		set pc, built_in_float_float
+
+	jsr recover
+
+:built_in_float_int
+	set push, a
+	jsr float_from_int
+	set pc, postamble
+
+:built_in_float_bool
+	ife a, BOOL_HANDLE_FALSE
+		set x, [FLOAT_0]
+	ife a, BOOL_HANDLE_TRUE
+		set x, [FLOAT_1]
+	set pc, postamble
+
+:built_in_float_string
+	set push, a
+	jsr float_from_str
+	set pc, postamble
+
+:built_in_float_float
+	set x, a
+	set pc, postamble
+	
+	
 :built_in_repr
 	jsr built_in_params
 	ifn i, 1
