@@ -413,6 +413,14 @@
 
 	set pc, postamble
 
+:int_rshift_by_uint
+	set push, 2
+	set push, 1
+	jsr preamble
+
+	set x, [z+10]
+	set pc, int_rshift_join
+
 ;----------------------------------------------------------------
 ; extern struct handle *int_rshift(struct handle *i1, struct handle *i2)
 ;----------------------------------------------------------------
@@ -424,6 +432,7 @@
 	set push, [z+10]
 	jsr int_to_int16
 
+:int_rshift_join
 	; number of words to add to tail
 	set a, x
 	div a, 16
@@ -494,6 +503,7 @@
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_complement(struct handle *integer)
+; bitwise complement -1 <-> 0
 ;----------------------------------------------------------------
 :int_complement
 	set push, 1
@@ -506,6 +516,7 @@
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_negate(struct handle *integer)
+; arithmetic negative -1 <-> +1
 ;----------------------------------------------------------------
 :int_negate
 	set push, 1
@@ -688,7 +699,7 @@
 
 	; --------- term 1 ---------	
 	set x, [a+1]	; x: default value for term1 current word (no data)
-	asr x, 15
+	asr x, 15		; sign extension
 
 	ifg i, a		; ...use real value if more words are available
 		set x, [i]
@@ -834,14 +845,16 @@
 	set y, ex		; store product high
 	add [c], x		; add product low
 	adx [c+-1], y	; add product high
+	set x, ex
 
 	set y, c		; y: product current word
+	sub y, 2
 :int_mul_carry_loop
-	ife ex, 0
+	ife x, 0
 		set pc, int_mul_carry_break
+	add [y], x
 	set x, ex	
 	sub y, 1
-	add [y], x
 	set pc, int_mul_carry_loop
 
 :int_mul_carry_break

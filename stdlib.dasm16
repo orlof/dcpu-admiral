@@ -13,33 +13,32 @@
 	ife a, b
 		set pc, postamble
 	
-	set a, [a + HANDLE_TYPE]
-	set b, [b + HANDLE_TYPE]
-
+	jsr cast_common_number_type
+	
 	; compare
-	ifn a, b	; different types
+	ifn [a + HANDLE_TYPE], [b + HANDLE_TYPE]	; different types
 		set pc, valcmp_type
 
 	set c, 0						; compare function *
 		
 	; equal types
-	ifb a, 0x0006					; TYPE_BOOLEAN | TYPE_INT
+	ifb [a + HANDLE_TYPE], TYPE_BOOLEAN + TYPE_INT
 		set c, int_cmp
 
-;	ife a, TYPE_FLOAT
-;		set c, fcmp
+	ife [a + HANDLE_TYPE], TYPE_FLOAT
+		set c, float_cmp
 
-	ifb a, 0x0110					; TYPE_STRING | TYPE_NAME
+	ifb [a + HANDLE_TYPE], TYPE_STRING + TYPE_NAME
 		set c, str_cmp
 
-	ifb a, 0x0060					; TYPE_LIST | TYPE_TUPLE
+	ifb [a + HANDLE_TYPE], TYPE_LIST + TYPE_TUPLE
 		set c, list_cmp
 
 	ife c, 0
 		set pc, valcmp_address
 
-	set push, [z+11]
-	set push, [z+10]
+	set push, a
+	set push, b
 	jsr c
 	
 	set pc, postamble
@@ -56,9 +55,9 @@
 
 :valcmp_type
 	set x, 0
-	ifg a, b
+	ifg [a + HANDLE_TYPE], [b + HANDLE_TYPE]
 		set x, 1
-	ifl a, b
+	ifl [a + HANDLE_TYPE], [b + HANDLE_TYPE]
 		set x, -1
 
 	set pc, postamble	
@@ -73,7 +72,7 @@
 	
 	set x, [z+10]
 
-	ifb [x + HANDLE_TYPE], 0x0801		; tuple_comma and tuple_colon -> tuple
+	ifb [x + HANDLE_TYPE], TYPE_TUPLE_COMMA
 		set [x + HANDLE_TYPE], TYPE_TUPLE
 
 	set a, [x + HANDLE_TYPE]
@@ -223,12 +222,16 @@
 	ife a, NONE
 		set pc, boolean_false
 
-	ifb [a + HANDLE_TYPE], 0x0006		; INT | BOOL
+	ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOLEAN
 		ife [b], 1
 			ife [b+1], 0
 				set pc, boolean_false
 
-	ifc [a + HANDLE_TYPE], 0x0006
+	ifb [a + HANDLE_TYPE], TYPE_FLOAT
+		ifb [b + FLOAT_CATEGORY], FLOAT_CATEGORY_PZERO + FLOAT_CATEGORY_NZERO
+			set pc, boolean_false
+
+	ifc [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOLEAN + TYPE_FLOAT
 		ife [b], 0
 			set pc, boolean_false
 
@@ -265,7 +268,7 @@
 
 	ife [a + HANDLE_TYPE], TYPE_STRING
 		set pc, sort_string
-	ifb [a + HANDLE_TYPE], 0x00e0
+	ifb [a + HANDLE_TYPE], TYPE_TUPLE + TYPE_LIST + TYPE_DICT
 		set pc, sort_array
 		
 	set pc, recover
@@ -442,6 +445,7 @@
 
 ;----------------------------------------------------------------
 ; struct handle *assign_from_string(struct handle *left, uint16 char)
+;   e.g. a,b = "xy"
 ;----------------------------------------------------------------
 :assign_from_string
 	set push, 2
@@ -514,37 +518,38 @@
 	set pc, postamble
 	
 ;----------------------------------------------------------------
-;:cast_common_number_type
+:cast_common_number_type
 ; fastcall
-; a: struct handle *left
-; b: struct handle *right
+;   a: struct handle *left
+;   b: struct handle *right
 ; return
 ;   a: struct handle *left_or_new_left
 ;   b: struct handle *right_or_new_right
 ;----------------------------------------------------------------
-;	; automatic type conversions
-;	ife [a], TYPE_INT
-;		ife [b], TYPE_FLOAT
-;			set pc, itof_left
-;	
-;	ife [a], TYPE_FLOAT
-;		ife [b], TYPE_INT
-;			set pc, itof_right
-;
-;	set pc, pop
-;
-;:itof_left
-;	set push, a
-;	jsr itof
-;	set a, x
-;	set pc, pop
-;
-;:itof_right
-;	set push, b
-;	jsr itof
-;	set b, x
-;	set pc, pop
+	; automatic type conversions
+	ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOLEAN
+		ife [b + HANDLE_TYPE], TYPE_FLOAT
+			set pc, itof_left
+	
+	ifb [b + HANDLE_TYPE], TYPE_INT + TYPE_BOOLEAN
+		ife [a + HANDLE_TYPE], TYPE_FLOAT
+			set pc, itof_right
 
+	set pc, pop
+
+:itof_left
+	set push, a
+	jsr float_from_int
+	set [z+-1], x
+	set a, x
+	set pc, pop
+
+:itof_right
+	set push, b
+	jsr float_from_int
+	set [z+-2], x
+	set b, x
+	set pc, pop
 
 		
 ;----------------------------------------------------------------
@@ -691,13 +696,12 @@
 	ife [x + HANDLE_TYPE], TYPE_BOOLEAN
 		set pc, repr_boolean
 
-;	ife a, TYPE_FLOAT
-;		set pc, print_float
-
 	set y, recover
 	ife [x + HANDLE_TYPE], TYPE_INT
 		set y, int_to_str
-	ifb [x + HANDLE_TYPE], 0x0060	; TYPE_TUPLE | TYPE_LIST
+	ife [x + HANDLE_TYPE], TYPE_FLOAT
+		set y, float_to_str
+	ifb [x + HANDLE_TYPE], TYPE_TUPLE + TYPE_LIST
 		set y, list_repr
 
 	ife [x + HANDLE_TYPE], TYPE_DICT

@@ -4,6 +4,8 @@
 :global_scope   dat 0
 :current_scope  dat 0
 
+:builtin		dat 0
+
 :recovery_fp    dat 0
 :recovery_sp    dat 0
 
@@ -141,21 +143,21 @@
 ;----------------------------------------------------------------
 ; controls
 :token_eof          dat std_eof, recover, recover, 0x0000
-:token_newline          dat std_newline, recover, recover, 0x0000
-:token_indent           dat std_indent, recover, recover, 0x0000
-:token_dedent           dat std_dedent, recover, recover, 0x0000
+:token_newline      dat std_newline, recover, recover, 0x0000
+:token_indent       dat std_indent, recover, recover, 0x0000
+:token_dedent       dat std_dedent, recover, recover, 0x0000
 
 ; atoms
 :token_int          dat std_expression, nud_int, recover, 0x0000
-:token_float            dat recover, recover, recover, 0x0000
+:token_float        dat std_expression, nud_float, recover, 0x0000
 :token_name         dat std_expression, nud_name, recover, 0x0000
 :token_str          dat std_expression, nud_str, recover, 0x0000
 :token_none         dat std_expression, nud_none, recover, 0x0000
 :token_true         dat std_expression, nud_true, recover, 0x0000
-:token_false            dat std_expression, nud_false, recover, 0x0000
+:token_false        dat std_expression, nud_false, recover, 0x0000
 
 ; nud operators
-:token_tilde            dat std_expression, nud_tilde, recover, 0x0000
+:token_tilde        dat std_expression, nud_tilde, recover, 0x0000
 
 ; statements
 :token_if           dat std_if, recover, recover, 0x0000

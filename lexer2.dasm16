@@ -132,8 +132,14 @@
 ;----------------------------------------------------------------
 :lexer_char_dot
 ;----------------------------------------------------------------
+	add b, 1
+	jsr array_get
+
+	ife [x + lexer_table], lexer_char_digit
+		set pc, lexer_float
+
 	set [lexer_token], token_reference
-	set pc, lexer_finish_advance
+	set pc, lexer_finish
 
 ;----------------------------------------------------------------
 :lexer_char_tilde
@@ -370,6 +376,8 @@
 
 	ife x, '.'		; discard int and go for float
 		set pc, lexer_float
+	ife x, 'e'		; discard int and go for float
+		set pc, lexer_float
 
 	ife [x + lexer_table], lexer_char_digit
 		set pc, lexer_char_digit
@@ -477,6 +485,18 @@
 			ife [a+3], 'r'
 				set pc, lexer_name_finish
 	
+	set c, token_float
+	ife [a+1], 'i'
+		ife [a+2], 'n'
+			ife [a+3], 'f'
+				set pc, lexer_name_finish
+
+	set c, token_float
+	ife [a+1], 'n'
+		ife [a+2], 'a'
+			ife [a+3], 'n'
+				set pc, lexer_name_finish
+
 	set pc, lexer_name_general
 
 :lexer_name_4
@@ -608,11 +628,75 @@
 ; d*.d*
 ;----------------------------------------------------------------
 	set b, [lexer_start]			; restore start position
+	set c, FP_STATE_START
 
-;todo
+:lexer_float_loop
+	jsr array_get
+	add b, 1
+
+	ife x, '+'
+		set pc, lexer_float_plus
+	ife x, '-'
+		set pc, lexer_float_minus
+	ife x, 'e'
+		set pc, lexer_float_exponent
+	ife x, '.'
+		set pc, lexer_float_decimal_point
+
+	ifn [x + lexer_table], lexer_char_digit
+		set pc, lexer_float_finish
+
+	ifb c, FP_STATE_E + FP_STATE_EXPONENT_SIGN
+		set pc, lexer_float_exponent_number
+	ifb c, FP_STATE_DIGIT_DECIMAL + FP_STATE_DECIMAL_POINT		; if in fraction part
+		set pc, lexer_float_decimal_number
+	ifb c, FP_STATE_START + FP_STATE_SIGN + FP_STATE_DIGIT_WHOLE	; if in whole number part
+		set pc, lexer_float_integral_number
+
+	set pc, lexer_float_finish		; wrong state for a number
+
+:lexer_float_decimal_number
+	; parse digit to fraction
+	set c, FP_STATE_DIGIT_DECIMAL						; set state
+	set pc, lexer_float_loop
+
+:lexer_float_integral_number
+	set c, FP_STATE_DIGIT_WHOLE							; set state
+	set pc, lexer_float_loop
+
+:lexer_float_exponent_number
+	set c, FP_STATE_EXPONENT_DIGIT	; set state
+	set pc, lexer_float_loop
+
+:lexer_float_plus
+:lexer_float_minus
+	ifn c, FP_STATE_E
+		set pc, lexer_float_finish
+	set c, FP_STATE_EXPONENT_SIGN
+	set pc, lexer_float_loop
 	
+:lexer_float_decimal_point
+	ifc c, FP_STATE_START + FP_STATE_SIGN + FP_STATE_DIGIT_WHOLE
+		set pc, lexer_float_finish
+
+	set c, FP_STATE_DECIMAL_POINT
+	set pc, lexer_float_loop
+	
+:lexer_float_exponent
+	ifc c, FP_STATE_START + FP_STATE_SIGN + FP_STATE_DIGIT_WHOLE + FP_STATE_DIGIT_DECIMAL
+		set pc, lexer_float_finish
+
+	set c, FP_STATE_E
+	set pc, lexer_float_loop
+
+:lexer_float_finish
+	ifb c, FP_STATE_START + FP_STATE_SIGN + FP_STATE_E + FP_STATE_EXPONENT_SIGN
+		jsr recover
+
+	sub b, 1
+	set [lexer_end], b			; lexer.data1	
 	set [lexer_token], token_float
-	set pc, lexer_finish
+	set pc, postamble
 
 ;----------------------------------------------------------------
 :lexer_skip_white
