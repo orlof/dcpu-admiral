@@ -127,6 +127,11 @@ Thumbs.db
 Desktop.ini
 
 
+# Vim and backup files #
+########################
+*.swp
+*~
+
 #############
 ## Python
 #############
