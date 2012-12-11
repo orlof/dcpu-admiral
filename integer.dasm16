@@ -193,11 +193,11 @@
 	jsr postamble
 
 ;----------------------------------------------------------------
-; extern struct handle *int_random(struct handle *max)
+; extern struct handle *int_random(struct handle *min, struct handle *max)
 ;----------------------------------------------------------------
 :int_random
-	set push, 1
-	set push, 1
+	set push, 2
+	set push, 2
 	jsr preamble
 	
 	set a, [z+10]
@@ -220,14 +220,23 @@
 	set [i], x
 	ifg i, a
 		std pc, int_random_loop
-	
-	set push, [z+-1]
+
 	set push, [z+10]
+	set push, [z+11]
+	jsr int_sub
+	set [z-2], x
+
+	set push, [z+-1]
+	set push, [z+-2]
 	jsr int_division
 	
 	set x, [x]
-	set x, [x + INT_DIVISION_REMAINDER]
-	
+	set [z+-1], [x + INT_DIVISION_REMAINDER]
+
+	set push, [z+11]
+	set push, [z+-1]
+	jsr int_add
+
 	set pc, postamble
 
 ;----------------------------------------------------------------

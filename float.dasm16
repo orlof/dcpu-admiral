@@ -1624,6 +1624,92 @@
 ;----------------------------------------------------------------
 ; uint float_to_uint(struct handle *float)
 ;----------------------------------------------------------------
-:float_rnd
+:float_random
+	set push, 2
+	set push, 2
+	jsr preamble
+	
+	set push, SIZEOF_FLOAT
+	set push, TYPE_FLOAT
+	jsr alloc
+	set [z-1], x
+
+	set c, [x]
+	add c, FLOAT_MANTISSA + FLOAT_PRECISION
+
+	set i, [x]
+	sti [i], FLOAT_CATEGORY_PNUM
+	sti [i], 0x8000
+
+:float_random_loop
+	jsr int_rnd_lfsr
+	sti [i], x
+	ifl i, c
+		set pc, float_random_loop
+	
+	bor [c - FLOAT_PRECISION], 0x8000
+	
+	; transpose 1.0-2.0 to 0.0-1.0	
+	set push, [z-1]
+	set push, [FLOAT_1]
+	jsr float_sub
+	set [z-1], x
+
+	; scaling factor
+	set push, [z+10]
+	set push, [z+11]
+	jsr float_sub
+	set [z-2], x
+
+	; scale
+	set push, [z-1]
+	set push, [z-2]
+	jsr float_mul
+	set [z-1], x
+
+	; transpose
+	set push, [z-1]
+	set push, [z+11]
+	jsr float_add
+
+	set pc, postamble
+
 :float_pow
-	jsr recover
+	set push, 2
+	set push, 2
+	jsr preamble
+
+	set push, [z+10]
+	jsr int_to_int16
+	set a, x
+
+	set [z-1], [z+11]		; x
+	set [z-2], [FLOAT_1]	; aux
+	
+:float_pow_loop
+	ife a, 0
+		set pc, float_pow_exit
+		
+	ifc a, 0x0001
+		set pc, float_pow_square
+
+	set push, [z-1]
+	set push, [z-2]
+	jsr float_mul
+	set [z-2], x
+	
+	ife a, 1
+		set pc, float_pow_exit
+		
+:float_pow_square
+	set push, [z-1]
+	set push, [z-1]
+	jsr float_mul
+	set [z-1], x
+	
+	div a, 2
+	set pc, float_pow_loop
+
+:float_pow_exit
+	set x, [z-1]
+	set pc, postamble
