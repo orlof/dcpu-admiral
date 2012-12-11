@@ -279,12 +279,13 @@
 	set [z+-1], x
 
 	set push, x
-	ife b, TRUE
+	ife b, BOOL_HANDLE_TRUE
 		set push, char_reverse_comparator
-	ife b, FALSE
+	ife b, BOOL_HANDLE_FALSE
 		set push, char_comparator
 		
 	jsr array_sort
+	set x, [z+-1]
 	set pc, postamble
 	
 :char_comparator
@@ -307,12 +308,13 @@
 
 :sort_array
 	set push, a
-	ife b, TRUE
+	ife b, BOOL_HANDLE_TRUE
 		set push, array_reverse_comparator
-	ife b, FALSE
+	ife b, BOOL_HANDLE_FALSE
 		set push, array_comparator
 		
 	jsr array_sort
+	set x, [z+11]
 	set pc, postamble
 
 :array_comparator

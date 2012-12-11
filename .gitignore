@@ -126,6 +126,10 @@ Thumbs.db
 # Folder config file
 Desktop.ini
 
+*.10cproj
+*.bin
+*.10csln
+
 
 #############
 ## Python
