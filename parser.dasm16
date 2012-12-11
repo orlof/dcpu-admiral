@@ -1354,9 +1354,6 @@
 		set y, array_merge
 
 :led_operation_tailer
-	ife y, 0
-		jsr recover
-
 	set push, a
 	set push, b
 	jsr y
@@ -1444,11 +1441,11 @@
 	set pc, postamble
 
 :led_power_operation
+	set c, [a + HANDLE_TYPE]
+	bor c, [b + HANDLE_TYPE]
+
 	ife c, TYPE_INT
 		set y, int_pow
-	ife [a + HANDLE_TYPE], TYPE_FLOAT
-		ife [b + HANDLE_TYPE], TYPE_INT
-			set y, recover
 
 	set pc, led_operation_tailer
 
@@ -1467,6 +1464,9 @@
 	set pc, postamble
 
 :led_bitwise_or_operation
+	set c, [a + HANDLE_TYPE]
+	bor c, [b + HANDLE_TYPE]
+
 	ife c, TYPE_INT
 		set y, int_bitwise_or
 
@@ -1488,6 +1488,9 @@
 	set pc, postamble
 
 :led_bitwise_xor_operation
+	set c, [a + HANDLE_TYPE]
+	bor c, [b + HANDLE_TYPE]
+
 	ife c, TYPE_INT
 		set y, int_bitwise_xor
 
@@ -1508,6 +1511,9 @@
 	set pc, postamble
 
 :led_bitwise_and_operation
+	set c, [a + HANDLE_TYPE]
+	bor c, [b + HANDLE_TYPE]
+
 	ife c, TYPE_INT
 		set y, int_bitwise_and
 
@@ -1528,6 +1534,9 @@
 	set pc, postamble
 
 :led_lshift_operation
+	set c, [a + HANDLE_TYPE]
+	bor c, [b + HANDLE_TYPE]
+
 	ife c, TYPE_INT
 		set y, int_lshift
 
@@ -1548,6 +1557,9 @@
 	set pc, postamble
 
 :led_rshift_operation
+	set c, [a + HANDLE_TYPE]
+	bor c, [b + HANDLE_TYPE]
+
 	ife c, TYPE_INT
 		set y, int_rshift
 
@@ -1594,6 +1606,9 @@
 	set pc, postamble
 
 :led_percent_operation
+	set c, [a + HANDLE_TYPE]
+	bor c, [b + HANDLE_TYPE]
+
 	ife c, TYPE_INT
 		set y, int_mod
 
@@ -2134,7 +2149,7 @@
 	set [z+-2], x
 	set b, x
 	
-	set y, 0
+	set y, recover
 
 	set pc, pop
 	

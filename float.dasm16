@@ -426,11 +426,12 @@
 		set pc, float_postamble
 
 	add i, FLOAT_PRECISION - 1
+	set y, i
 
 :float_add_by_add_shift_loop
-	ifn ex, 0
-		bor [i+1], ex
 	shr [i], 1
+	ifl i, y
+		bor [i+1], ex
 	ifg i, x
 		std pc, float_add_by_add_shift_loop
 		
