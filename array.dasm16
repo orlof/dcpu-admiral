@@ -311,7 +311,7 @@
 ; comparator_func(a,b) return TRUE if a is before b
 ;----------------------------------------------------------------
 :array_sort
-    set push, 3
+    set push, 2
     set push, 0
     jsr preamble	
 
@@ -335,20 +335,24 @@
 
 :array_sort_inner
     ifg j, c
-        set pc, array_sort_outer
+        set pc, array_finish_inner
 
     set push, [j]
     set push, [y]
     jsr b
 
-    ife x, TRUE
+    ife x, FALSE
         sti pc, array_sort_inner
 
+	set y, j
+    sti pc, array_sort_inner
+	
+:array_finish_inner
     set x, [y]
     set [y], [a]
     set [a], x
 
-    sti pc, array_sort_inner
+    sti pc, array_sort_outer
     
 ;----------------------------------------------------------------
 ; struct handle *array_clone(struct handle *original)
@@ -366,11 +370,11 @@
 	jsr alloc
 
 	set j, [x]
-	set c, j
-	add c, [j]
+	set c, i
+	add c, [i]
 	
 :array_clone_loop
-	ifg j, c
+	ifg i, c
 		jsr postamble
 		
 	set [j], [i]
