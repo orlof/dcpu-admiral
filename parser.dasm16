@@ -1446,6 +1446,10 @@
 
 	ife c, TYPE_INT
 		set y, int_pow
+		
+	ife [a + HANDLE_TYPE], TYPE_FLOAT
+		ife [b + HANDLE_TYPE], TYPE_INT
+			set y, float_pow
 
 	set pc, led_operation_tailer
 
@@ -2505,17 +2509,51 @@
 
 :built_in_rnd
 	jsr built_in_params
-	ifn i, 1
+	ifg i, 0
+		set pc, built_in_rnd_1
+		
+	set a, [FLOAT_0]
+	set b, [FLOAT_1]
+	
+	set pc, built_in_rnd_finish
+
+:built_in_rnd_1
+	ifg i, 1
+		set pc, built_in_rnd_2
+
+	set b, [z+-1]
+	set c, [b + HANDLE_TYPE]
+
+	ifc c, TYPE_INT + TYPE_FLOAT
 		jsr recover
 
+	set a, INT_HANDLE_0
+	ife c, TYPE_FLOAT
+		set a, [FLOAT_0]
+
+	set pc, built_in_rnd_finish
+
+:built_in_rnd_2
 	set a, [z+-1]
-	ifn [a + HANDLE_TYPE], TYPE_INT
+	set b, [z+-2]
+
+	ifc [a + HANDLE_TYPE], TYPE_FLOAT + TYPE_INT
 		jsr recover
+	ifc [b + HANDLE_TYPE], TYPE_FLOAT + TYPE_INT
+		jsr recover
+
+:built_in_rnd_finish
+	jsr cast_common_number_type
+
+	set y, int_random
+	ife [a + HANDLE_TYPE], TYPE_FLOAT
+		set y, float_random
 
 	set push, a
-	jsr int_random
+	set push, b
+	jsr y	
 
-	set pc, postamble	
+	set pc, postamble
 
 :built_in_abs
 	jsr built_in_params
