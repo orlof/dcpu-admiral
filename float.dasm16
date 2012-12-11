@@ -1520,33 +1520,39 @@
 	set push, 0
 	jsr preamble
 
-	set a, [z+10]
-	set a, [a]
+	set a, [z+10]				; struct handle *
+	set a, [a]					; struct float *
 
-	set b, a
-	add b, FLOAT_MANTISSA		; msw
+	set b, a					; struct float *
+	add b, FLOAT_MANTISSA		; float.mantissa.msw
 
 	set c, b
-	add c, FLOAT_PRECISION - 1	; lsw
+	add c, FLOAT_PRECISION - 1	; float.mantissa.lsw
 	
-	set i, b
-	set j, b
-	
+	set i, b					; float.mantissa.msw
+
+; start from msw and search for 1st non-zero word
 :float_normalize_search_word
+	; exit loop if non-zero found
 	ifn [i], 0
 		set pc, float_normalize_found_word
 
-	add [a + FLOAT_EXPONENT], 16
+	; for each zero word, add (or sub?) exponent by 16
+	sub [a + FLOAT_EXPONENT], 16
 
+	; continue loop if not yet lsw	
 	ifl i, c
 		sti pc, float_normalize_search_word
 
+	; return zero
 	set pc, float_postamble_zero
 
 :float_normalize_found_word
+	set j, b					; float.mantissa.msw
 	set x, 0
-	set y, [i]
+	set y, [i]					; value of 1st non-zero word
 
+; calclate how many bits need to be shifted until msb is 1
 :float_normalize_search_bit
 	ifb y, 0x8000
 		set pc, float_normalize_shift
@@ -1555,12 +1561,27 @@
 	add x, 1
 	
 	set pc, float_normalize_search_bit
-	
+
+; the real work, copy and shift
+; facts:
+;  - j points to msw
+;  - i points to 1st non-zero word
+;  - x is the amount of bit shifting
+;  - b points to msw
+;  - c points to lsw
+;  - we know this is not zero
 :float_normalize_shift
+	; copy from i to j
 	set [j], [i]
+	
+	; if i is past lsw, overwrite j with 0
 	ifg i, c
 		set [j], 0
+
+	; do the bit shifting
 	shl [j], x
+	
+	; if j is past msw, merge outshifted bits to previous word
 	ifg j, b
 		bor [j-1], ex
 	
