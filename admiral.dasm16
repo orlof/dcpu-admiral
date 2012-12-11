@@ -11,3 +11,4 @@
 #include "string2.dasm16"
 #include "edit.dasm16"
 #include "screen.dasm16"
+#include "float.dasm16"
