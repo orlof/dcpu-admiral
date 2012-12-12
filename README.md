@@ -14,16 +14,19 @@
 
 <h4>FEATURES</h4>
  - Pure interpreted language
+   - Python inspired grammar
    - Garbage collection
+   - Dynamic typing
+   - Prototype based inheritance
    - Data types
-     - Variable length integers
-     - Floats with(compile time precision selection
-     - Booleans, strings and lists and tuples
-     - Dicts for key-value mapped data and prototype based inheritance
- - Python inspired grammar
+     - Variable length integers (only limited by available heap space)
+     - Floats with compile time precision selection (1+ words for mantissa)
+     - Booleans, strings, lists, tuples and dicts
  - Interactive command prompt
- - Integrated code editor
-
+ - Integrated code editor with gap buffer
+ - Pratt’s algorithm for efficient expression parsing
+ - Mark and sweep garbage collector for memory conservation and detecting trash even with reference loops
+ 
 <h4>NEXT IN PRODUCTION</h4>
  - Disk support
    - Low level api and serialization
@@ -33,15 +36,43 @@
  - BETA RELEASE
 
 <h4>LATER PLANS</h4>
+ - 200-400% speed improvements
+ - Support for 3D
  - Command line editor
  - Screen library
- - Exception handling
  - More built-in functions
+ - Exception handling
  - Trigonometric functions
  - Dict implementation with TST
  - Embedded assembler (editor + assembler)
- - 200-400% speed improvements
- - Support for 3D
+
+<h4>EXAMPLES</h4>
+
+Classic Hello World in Admiral:
+
+<pre>
+>output='print text'
+'print text'
+>output(text='Hello World')
+Hello World
+</pre>
+
+Square Root that supports both integers and floats:
+
+<pre>
+>sqrt=edit()
+'p=0
+x=$0
+while not x==p:
+ p=x
+ x=(x**2+$0)/(2*x)
+return x
+'
+>sqrt(81.0)
+9.00000000
+>sqrt(81)
+9
+</pre>
 
 --
 
@@ -53,17 +84,16 @@ To build from source, run the following with the DCPU Toolchain (DCPUTeam/DCPUTo
 
     dtasm --binary admiral.dasm16 -o admiral.bin
     
-or this with Organic (SirCmpwn/Organic) (you have to use long literals at the moment, as Organic is very slow at optimising at the moment)
-
-    organic admiral.dasm16 admiral.bin --long-literals
-
 You can run the .bin provided, or the one you built as normal in Lettuce (SirCmpwn/Tomato), and with the following command with the Toolchain
 
     dtemu admiral.bin
 
+You can also run Admiral in Devkit. Leave the admiral.dasm16 out of the project and specify interpreter.dasm16 as 
+the starting point for execution.
+
 <h4>USAGE</h4>
 
-When Admiral starts, it will show interactive prompt '>' and wait for input. It can evaluate one line statements.
+When Admiral starts, it will show an interactive prompt '>' and wait for input. It can evaluate one line statements.
 <pre>
 >1+2**32 
 4294967297 
@@ -76,28 +106,43 @@ When Admiral starts, it will show interactive prompt '>' and wait for input. It 
 </pre>
 
 Admiral also has a built-in text editor to facilitate software development in deep space colonies. It is 
-started by calling result=edit('code here')"-function. Editor can take a string argument that will be 
-rendered for editing.
+started by calling:
 
-You can exit the editor be pressing CTRL (press AND release) followed by x. (NOTE: Admiral parser 
-requires that all functions must end with line feed)
-<pre>
->f=edit() 
-'print arg1 
-' 
->f(arg1='Hello World!') 
-Hello World!
-</pre>
+    result=edit()
 
+To exit the editor press CTRL (press AND release) followed by x. If you want to discard your editing, use CTRL and c.
 
-Since Admiral is pure interpreter all strings are callable:
+If you later need to edit your text, it can be done by specifying string argument:
+
+    result=edit(result)
+
+Since Admiral is pure interpreter all strings are callable i.e. functions:
+
 <pre>
 >'print arg1'(arg1='Hello World again!') 
 Hello World again!
 </pre>
 
+Function scope can be seed by specifying variables in function call. Unnamed variables are automatically named 
+as $0, $1, $2 etc.
 
-Dicts and prototypes provice "poor mans" objects :-)
+Function can also define default values by using conditional assignment operator '?=':
+
+<pre>
+>next_number=edit()
+'
+$0 ?= 0
+return $0 + 1
+'
+>next_number()
+1
+>next_number(next_number())
+2
+</pre>
+
+Conditional assignment takes place only if left operand is without value in current scope.
+
+Dicts and prototype assignment operator can provice "poor mans" objects :-)
 <pre>
 >ship={} 
 {} 
@@ -115,37 +160,137 @@ Dicts and prototypes provice "poor mans" objects :-)
 >ship.spd 0
 </pre>
 
+<h4>STATEMENTS</h4>
+
+Here is a complete list of all te Admiral statements.
+
+<h5>SIMPLE STATEMENTS</h5>
+
+Simple statements are comprised within a single line.
+
+<h6>pass</h6>
 <pre>
-if &lt;expr&gt;: &lt;stmt&gt;
-[elif &lt;expr&gt;: &lt;stmt&gt;]
-[else: &lt;stmt&gt;]
-
-if &lt;expr&gt;:
- &lt;stmts&gt;
-[elif &lt;expr&gt;:
- &lt;stmts&gt;]
-[else:
- &lt;stmts&gt;]
-
-while &lt;expr&gt;: &lt;stmt&gt;
-
-while &lt;expr&gt;:
- &lt;stmts&gt;
-
-for &lt;id_list&gt; in &lt;expr&gt;: &lt;stmt&gt;
-
-for &lt;id_list&gt; in &lt;expr&gt;:
- &lt;stmts&gt;
-
-break
-continue
-return [expr]
-pass
-del &lt;id&gt;
-print &lt;expr&gt;
-cls
-reset
+pass_stmt ::=  "pass"
 </pre>
+
+pass is a null operation — when it is executed, nothing happens. It is useful as a placeholder when 
+a statement is required syntactically, but no code needs to be executed, for example:
+
+<pre>
+while not getchar()=='y': pass
+</pre>
+
+<h6>return</h6>
+<pre>
+return_stmt ::=  "return" [expression]
+</pre>
+
+return may only occur in a function. If an expression is present, it is evaluated, else None is substituted.
+return leaves the current function call with the expression (or None) as return value.
+
+<h6>break</h6>
+<pre>
+break_stmt ::=  "break"
+</pre>
+
+break may only occur syntactically nested in a for or while loop. break terminates the nearest enclosing loop.
+
+<h6>continue</h6>
+<pre>
+continue_stmt ::=  "continue"
+</pre>
+
+continue may only occur syntactically nested in a for or while loop. It continues with the next cycle of 
+the nearest enclosing loop.
+
+<h6>print</h6>
+<pre>
+print_stmt ::=  "print" [expression ("," expression)* ]
+</pre>
+
+print evaluates each expression in turn and writes the resulting object to LEM screen. If an object is not 
+a string, it is first converted to a string using the rules for string conversions. A space is written 
+between each object.
+
+<h6>del</h6>
+<pre>
+del_stmt ::=  "del" target_list
+</pre>
+
+TODO
+
+<h6>cls</h6>
+<pre>
+cls_stmt ::=  "cls"
+</pre>
+
+TODO
+
+<h6>reset</h6>
+<pre>
+reset_stmt ::=  "reset"
+</pre>
+
+TODO
+
+<h5>COMPOUND STATEMENTS</h5>
+
+Compound statements contain other statements; they affect or control the execution of those other 
+statements in some way. In general, compound statements span multiple lines, although in simple 
+incarnations a whole compound statement may be contained in one line.
+
+The if, while and for statements implement traditional control flow constructs.
+
+Compound statements consist of one or more ‘clauses.’ A clause consists of a header and a ‘suite.’ 
+Each clause header begins with a uniquely identifying keyword and ends with a colon. A suite is a group 
+of statements controlled by a clause. A suite can be one simple statements on the same line as the header, 
+following the header’s colon, or it can be one or more indented statements on subsequent lines. Only
+the latter form of suite can contain nested compound statements, mostly because it wouldn’t be clear 
+to which if clause a following else clause would belong.
+
+The if statement is used for conditional execution:
+
+<pre>
+if_stmt ::=  "if" expression ":" suite
+             ( "elif" expression ":" suite )*
+             ["else" ":" suite]
+</pre>
+
+It selects exactly one of the suites by evaluating the expressions one by one until one is found to be 
+true (see section Boolean operations for the definition of true and false); then that suite is executed
+(and no other part of the if statement is executed or evaluated). If all expressions are false, the 
+suite of the else clause, if present, is executed.
+
+The while statement is used for repeated execution as long as an expression is true:
+
+<pre>
+while_stmt ::=  "while" expression ":" suite
+</pre>
+
+This repeatedly tests the expression and, if it is true, executes the suite; if the expression 
+is false (which may be the first time it is tested) the loop terminates.
+
+A break statement executed in the suite terminates the loop. A continue statement executed in the suite
+skips the rest of the suite and goes back to testing the expression.
+
+The for statement is used to iterate over the elements of a string, tuple, list or dict.
+
+<pre>
+for_stmt ::=  "for" target_list "in" expression_list ":" suite
+</pre>
+
+The expression list is evaluated once. The suite is then executed once for each item provided by the 
+expression list in the order of ascending indices. Each item in turn is assigned to the target list 
+using the standard rules for assignments, and then the suite is executed. When the items are exhausted 
+the loop terminates.
+
+A break statement executed in the suite terminates the loop. A continue statement executed in the suite
+skips the rest of the suite and continues with the next item, or terminates if there was no next item.
+
+The suite may assign to the variable(s) in the target list; this does not affect the next item assigned to it.
+
+Hint: the built-in function range() returns a sequence of integers suitable to emulate the effect of Pascal’s 
+for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
 
 <h4>BUILT-IN FUNCTIONS</h4>
 <pre>
