@@ -131,6 +131,11 @@ Desktop.ini
 *.10csln
 
 
+# Vim and backup files #
+########################
+*.swp
+*~
+
 #############
 ## Python
 #############
