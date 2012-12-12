@@ -149,21 +149,37 @@ reset
 
 <h4>BUILT-IN FUNCTIONS</h4>
 <pre>
-int id(<id>)
-int int(item)
-str str(item)
-int len(item)
-int abs(int)
-int ord(str)
-str chr(int)
-int cmp(item, item)
-bool bool(item)
-str edit([str])
-str repr(item)
-[] range(int start, int end, int step)
-str input(str prompt)
-{} locals()
-{} globals()
+TYPE CONVERSION FUNCTIONS
+  bool bool(bool | int | float | str)
+  int int(bool | int | float | str)
+  float float(bool | int | float | str)
+  str str(bool | int | float | str)
+
+GENERIC FUNTIONS
+  int id(list | tuple | dict | int | bool | str | float)
+  int len(list | tuple | dict | str | int)
+
+NUMERICAL FUNCTIONS
+  int abs(int)
+  float abs(float)
+  int cmp(item, item)
+  float rnd([float[, float]])    start inclusive, end exclusive in all rnd functions, negative values are not allowed
+  int rnd([int[, int]])          start inclusive, end exclusive in all rnd functions, negative values are not allowed
+
+CHARACTER FUNCTIONS
+  int ord(str)
+  str chr(int)
+  str input([str])
+  str edit([str])
+  str repr(list | tuple | dict | int | bool | str | float)
+  str sort(str)
+
+CONTAINER FUNCTIONS
+  list sort(list sort)             list is sorted 'in place'! return value is only for convenience.
+  list range(int end)
+  list range(int start, int end[, int step])
+  {} locals()
+  {} globals()
 </pre>
 
 <h4>EXPRESSION PRECEDENCE TABLE</h4>
