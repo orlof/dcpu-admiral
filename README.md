@@ -248,6 +248,8 @@ following the header’s colon, or it can be one or more indented statements on 
 the latter form of suite can contain nested compound statements, mostly because it wouldn’t be clear 
 to which if clause a following else clause would belong.
 
+<h6>if</h6>
+
 The if statement is used for conditional execution:
 
 <pre>
@@ -261,6 +263,8 @@ true (see section Boolean operations for the definition of true and false); then
 (and no other part of the if statement is executed or evaluated). If all expressions are false, the 
 suite of the else clause, if present, is executed.
 
+<h6>while</h6>
+
 The while statement is used for repeated execution as long as an expression is true:
 
 <pre>
@@ -272,6 +276,8 @@ is false (which may be the first time it is tested) the loop terminates.
 
 A break statement executed in the suite terminates the loop. A continue statement executed in the suite
 skips the rest of the suite and goes back to testing the expression.
+
+<h6>for</h6>
 
 The for statement is used to iterate over the elements of a string, tuple, list or dict.
 
