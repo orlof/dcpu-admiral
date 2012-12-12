@@ -15,22 +15,33 @@
 <h4>FEATURES</h4>
  - Pure interpreted language
    - Garbage collection
-   - Variable length integers, booleans, strings, lists, tuples and dicts
-   - Prototype based inheritance
- - Grammar is based on Python grammar
+   - Data types
+     - Variable length integers
+     - Floats with(compile time precision selection
+     - Booleans, strings and lists and tuples
+     - Dicts for key-value mapped data and prototype based inheritance
+ - Python inspired grammar
  - Interactive command prompt
- - Integrated code editor for
+ - Integrated code editor
 
 <h4>NEXT IN PRODUCTION</h4>
+ - Disk support
+   - Low level api and serialization
+ - Improved error reporting
+ - Example code
+ - Misc built-in functions
+ - BETA RELEASE
+
+<h4>LATER PLANS</h4>
+ - Command line editor
  - Screen library
- - Exception handling (error handling is now poor)
+ - Exception handling
  - More built-in functions
- - Floating point numbers
  - Trigonometric functions
  - Dict implementation with TST
  - Embedded assembler (editor + assembler)
  - 200-400% speed improvements
- - Support for more HW
+ - Support for 3D
 
 --
 
