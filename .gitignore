@@ -129,7 +129,7 @@ Desktop.ini
 *.10cproj
 *.bin
 *.10csln
-
+*.10csuo
 
 # Vim and backup files #
 ########################
