@@ -48,29 +48,29 @@
 
 <h4>EXAMPLES</h4>
 
-Classic Hello World in Admiral:
+Classic Hello World in Admiral.
 
 <pre>
->output='print text'
-'print text'
->output(text='Hello World')
-Hello World
+>output='print text'          # assign string to variable output
+'print text'                  # interpreter returns with assigned value
+>output(text='Hello World')   # use output-string as function
+Hello World                   # print statement output
 </pre>
 
 Square Root that supports both integers and floats:
 
 <pre>
->sqrt=edit()
-'p=0
-x=$0
-while not x==p:
+>sqrt=edit()                  # start integrated editor
+'p=0                          # define variable
+x=$0                          # assign first unnamed function argument to x
+while not x==p:               # loop to calculate sqrt
  p=x
  x=(x**2+$0)/(2*x)
-return x
+return x                      # return value
 '
->sqrt(81.0)
+>sqrt(81.0)                   # function call with float argument
 9.00000000
->sqrt(81)
+>sqrt(81)                     # function call with integer argument
 9
 </pre>
 
@@ -110,7 +110,7 @@ started by calling:
 
     result=edit()
 
-To exit the editor press CTRL (press AND release) followed by x. If you want to discard your editing, use CTRL and c.
+To exit the editor press CTRL (press AND release) followed by x. If you want to discard your editing, use CTRL followed by c.
 
 If you later need to edit your text, it can be done by specifying string argument:
 
