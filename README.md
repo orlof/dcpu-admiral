@@ -126,6 +126,17 @@ Hello World again!
 Function scope can be seed by specifying variables in function call. Unnamed variables are automatically named 
 as $0, $1, $2 etc.
 
+<pre>
+get_danger_level(type='Monster", 'XXXL', 'hungry')
+</pre>
+ 
+Would produce variables
+<pre>
+type='Monster'
+$0='XXXL'
+$1='hungry'
+</pre>
+
 Function can also define default values by using conditional assignment operator '?=':
 
 <pre>
@@ -211,6 +222,15 @@ print evaluates each expression in turn and writes the resulting object to LEM s
 a string, it is first converted to a string using the rules for string conversions. A space is written 
 between each object.
 
+Concatenating prints with comma is much faster than using "+".
+
+<pre>
+>print "This", "is", "good"
+This is good
+>print "This" + " " + "is" + " " + "BAD!"
+This is BAD!
+</pre>
+
 <h6>del</h6>
 <pre>
 del_stmt ::=  "del" target_list
@@ -245,7 +265,13 @@ Each clause header begins with a uniquely identifying keyword and ends with a co
 of statements controlled by a clause. A suite can be one simple statements on the same line as the header, 
 following the header’s colon, or it can be one or more indented statements on subsequent lines. Only
 the latter form of suite can contain nested compound statements, mostly because it wouldn’t be clear 
-to which if clause a following else clause would belong.
+to which if clause else clause would belong.
+
+All compound statements are executed in a block scope. Compound statements can use the enclosing scope
+(i.e. read and assign values to variables that are alrady defined in the enclosing scope) but all variables
+that are defined in the compound statement are discarded when control exits the compound statement's block scope. 
+
+NOTE: To help fitting source code into LEM 32x12 screen, INDENT and DEDENT MUST always BE a SINGLE SPACE!
 
 <h6>if</h6>
 
@@ -369,43 +395,6 @@ NOTES
 
 SOME EXTRA BITS
 
-Positional function call parameters:
-
-Typically you call functions by specifying the variables that you want initially to be added to the function scope.
-
-<pre>
-function_name(creature='Monster", size='XXXL')
-</pre>
-
-All nameless variables are autonamed as "$0", "$1", "$2"... in left to right order
-
-<pre>
-function_name('Monster", size='XXXL', 'angry')
-</pre>
- 
-Would produce variables
-<pre>
-$0='Monster'
-size='XXXL'
-$1='angry'
-</pre>
-
-PRINT STATEMENT
-
-print statement can take multiple expressions separated with comma.
-
-<pre>
->print "This", "is", "good"
-This is good
-</pre>
-
-Concatenating prints with comma is much faster than using "+".
-
-<pre>
->print "This" + " " + "is" + " " + "BAD!"
-This is BAD!
-</pre>
-
 ASSIGNMENTS
 
 Admiral currently allows augmented assignments to be chained. I will remove that feature if someone can explain to me why it shouldn't be allowed.
@@ -422,39 +411,7 @@ Currently Admiral does not support assigning to slices:
 i.e. a[1:3]=(1,2,3) is not working. 
 If that REALLY is a language feature that anyone would use, I will consider adding it :-)
 
-Admiral has two special assigment operators: conditional assignment "?=" and prototype assignment ":=".
-
-Conditional assignment only assigns if left side is NOT defined in the current scope. This feature is only ment for specifying default values for variables in funtions.
-
-Prototype assignment provides "poor mans" inheritance. Right side must be a dict. Left side is assigned a new dict with prototype member set (prototype members key is underscore-string). Whenever key is accessed it is first searched from dict itself, if it is not found, search is propagated to prototype dict. Assignment never changes the value in prototype.
-
-...clear?
-
-BLOCK STATEMENTS
-
-There is three block statements: if, for and while.
-
-<pre>
-if a==1: print "Yeah"
-elif a=2: print "Close..."
-else: print "Naah"
-
-or
-
-if a==1:
- print "Yeah"
-elif a==":
- print "Close..."
-else:
- print "Naah"
-</pre>
-
-while or for doesn't support "else" - I think that is just Python's trash.
-
-Remember that INDENT and DEDENT must always be a single space.
-...and block statements have their own scope. Maybe I should remove it?
-
-OTHER PYTHON FEATURES MISSING
+PYTHON FEATURES MISSING (INCOMPLETE LIST)
 
 No lambda, yield, try, exception, generators, classes or function definitions.
 
