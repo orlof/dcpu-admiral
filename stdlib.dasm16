@@ -917,3 +917,52 @@ set pc, hwloop
 	
 	std pc, finish_loop
 	
+;----------------------------------------------------------------
+:built_in_matcher
+; fastcall
+;   a: str.ptr
+;   b: str.len
+;   x: list
+; return
+;   c: value
+;----------------------------------------------------------------
+	sub a, 1
+	add b, 1
+	sub x, 1
+
+:built_in_matcher_list_loop
+	sti j, x
+
+    ; calculate return value pointer
+	set x, [j]
+    add x, j
+
+	set c, [x]
+    ife [j], 1      ; length
+        set pc, pop
+
+    ifn [j], b      ; if length != search length -> continue
+        set pc, built_in_matcher_list_loop
+
+    sti i, a
+
+:built_in_matcher_cmp_loop
+    ife [j], [i]
+        ifl j, x
+            sti pc, built_in_matcher_cmp_loop
+
+    ife j, x
+        set pc, pop
+
+    set pc, built_in_matcher_list_loop
+
+:list
+    dat 3, "if", 1
+    dat 3, "or", 2
+    dat 4, "cls", 3
+    dat 1, 0
+
+:text
+    dat "xxx"
+
+

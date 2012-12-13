@@ -1716,16 +1716,25 @@
 	set pc, postamble
 
 :led_augass
-	set push, 2
+	; we cheat here, as stack is wrongly organized
+	; z+10
+	; rts
+	; z+11
+	; we must copy rts and z11 to get proper stack bottom
+	set push, [sp+2]
+	set push, [sp+2]
+
+	; here we claim 4 parameters, to make postamble clean them all
+	set push, 4
 	set push, 2
 	jsr preamble
 
 	jsr infixr
 
-	jsr [z+10]
+	jsr [z+11]
     set [z+-1], x
 
-	set push, [z+11]
+	set push, [z+10]
 	set push, x
 	jsr assign
 	
@@ -1735,80 +1744,70 @@
 ; struct handle *led_augass_lshift(struct handle *left)
 ;----------------------------------------------------------------
 :led_augass_lshift
-	set push, peek
-	set [sp+1], led_lshift_operation
+	set push, led_lshift_operation
 	set pc, led_augass
 
 ;----------------------------------------------------------------
 ; struct handle *led_augass_rshift(struct handle *left)
 ;----------------------------------------------------------------
 :led_augass_rshift
-	set push, peek
-	set [sp+1], led_rshift_operation
+	set push, led_rshift_operation
 	set pc, led_augass
 
 ;----------------------------------------------------------------
 ; struct handle *led_augass_or(struct handle *left)
 ;----------------------------------------------------------------
 :led_augass_or
-	set push, peek
-	set [sp+1], led_bitwise_or_operation
+	set push, led_bitwise_or_operation
 	set pc, led_augass
 
 ;----------------------------------------------------------------
 ; struct handle *led_augass_xor(struct handle *left)
 ;----------------------------------------------------------------
 :led_augass_xor
-	set push, peek
-	set [sp+1], led_bitwise_xor_operation
+	set push, led_bitwise_xor_operation
 	set pc, led_augass
 
 ;----------------------------------------------------------------
 ; struct handle *led_augass_and(struct handle *left)
 ;----------------------------------------------------------------
 :led_augass_and
-	set push, peek
-	set [sp+1], led_bitwise_and_operation
+	set push, led_bitwise_and_operation
 	set pc, led_augass
 
 ;----------------------------------------------------------------
 ; struct handle *led_augass_plus(struct handle *left)
 ;----------------------------------------------------------------
 :led_augass_plus
-	set push, peek
-	set [sp+1], led_plus_operation
+	set push, led_plus_operation
 	set pc, led_augass
 
 ;----------------------------------------------------------------
 ; struct handle *led_augass_minus(struct handle *left)
 ;----------------------------------------------------------------
 :led_augass_minus
-	set push, peek
-	set [sp+1], led_minus_operation
+	set push, led_minus_operation
 	set pc, led_augass
 
 ;----------------------------------------------------------------
 ; struct handle *led_augass_star(struct handle *left)
 ;----------------------------------------------------------------
 :led_augass_star
-	set push, peek
-	set [sp+1], led_star_operation
+	set push, led_star_operation
 	set pc, led_augass
 
 ;----------------------------------------------------------------
 ; struct handle *led_augass_slash(struct handle *left)
 ;----------------------------------------------------------------
 :led_augass_slash
-	set push, peek
-	set [sp+1], led_slash_operation
+	set push, led_slash_operation
 	set pc, led_augass
 
 ;----------------------------------------------------------------
 ; struct handle *led_augass_percent(struct handle *left)
 ;----------------------------------------------------------------
 :led_augass_percent
-	set push, peek
-	set [sp+1], led_percent_operation
+	set push, led_percent_operation
 	set pc, led_augass
 
 ;----------------------------------------------------------------
@@ -2209,130 +2208,17 @@
 ;----------------------------------------------------------------
 	set a, [z+10]
 	set a, [a]
+	
+	set b, [a]
+	add a, 1
+	
+	set x, built_in_functions
+	jsr built_in_matcher
+	set pc, c
 
-	ife [a], 2
-		set pc, built_in_2
-	ife [a], 3
-		set pc, built_in_3
-	ife [a], 4
-		set pc, built_in_4
-	ife [a], 5
-		set pc, built_in_5
-	ife [a], 6
-		set pc, built_in_6
-	ife [a], 7
-		set pc, built_in_7
-
-	set pc, led_lparen_user_defined
-
-:built_in_2
-	ife [a+1], 'i'
-		ife [a+2], 'd'
-			set pc, built_in_id
-	set pc, led_lparen_user_defined
-
-:built_in_3
-	ife [a+1], 'r'
-		ife [a+2], 'n'
-			ife [a+3], 'd'
-				set pc, built_in_rnd
-	ife [a+1], 'i'
-		ife [a+2], 'n'
-			ife [a+3], 't'
-				set pc, built_in_int
-	ife [a+1], 's'
-		ife [a+2], 't'
-			ife [a+3], 'r'
-				set pc, built_in_str
-	ife [a+1], 'l'
-		ife [a+2], 'e'
-			ife [a+3], 'n'
-				set pc, built_in_len
-	ife [a+1], 'a'
-		ife [a+2], 'b'
-			ife [a+3], 's'
-				set pc, built_in_abs
-	ife [a+1], 'o'
-		ife [a+2], 'r'
-			ife [a+3], 'd'
-				set pc, built_in_ord
-	ife [a+1], 'c'
-		ife [a+2], 'h'
-			ife [a+3], 'r'
-				set pc, built_in_chr
-	ife [a+1], 'c'
-		ife [a+2], 'm'
-			ife [a+3], 'p'
-				set pc, built_in_cmp
-
-	set pc, led_lparen_user_defined
-
-:built_in_4
-	ife [a+1], 'b'
-		ife [a+2], 'o'
-			ife [a+3], 'o'
-				ife [a+4], 'l'
-					set pc, built_in_bool
-	ife [a+1], 'e'
-		ife [a+2], 'd'
-			ife [a+3], 'i'
-				ife [a+4], 't'
-					set pc, built_in_edit
-	ife [a+1], 'r'
-		ife [a+2], 'e'
-			ife [a+3], 'p'
-				ife [a+4], 'r'
-					set pc, built_in_repr
-	ife [a+1], 's'
-		ife [a+2], 'o'
-			ife [a+3], 'r'
-				ife [a+4], 't'
-					set pc, built_in_sort
-	set pc, led_lparen_user_defined
-
-:built_in_5
-	ife [a+1], 'r'
-		ife [a+2], 'a'
-			ife [a+3], 'n'
-				ife [a+4], 'g'
-					ife [a+5], 'e'
-					set pc, built_in_range
-	ife [a+1], 'f'
-		ife [a+2], 'l'
-			ife [a+3], 'o'
-				ife [a+4], 'a'
-					ife [a+5], 't'
-					set pc, built_in_float
-	ife [a+1], 'i'
-		ife [a+2], 'n'
-			ife [a+3], 'p'
-				ife [a+4], 'u'
-					ife [a+5], 't'
-					set pc, built_in_input
-	set pc, led_lparen_user_defined
-
-:built_in_6
-	ife [a+1], 'l'
-		ife [a+2], 'o'
-			ife [a+3], 'c'
-				ife [a+4], 'a'
-					ife [a+5], 'l'
-						ife [a+6], 's'
-							set pc, built_in_locals
-	set pc, led_lparen_user_defined
-
-:built_in_7
-	ife [a+1], 'g'
-		ife [a+2], 'l'
-			ife [a+3], 'o'
-				ife [a+4], 'b'
-					ife [a+5], 'a'
-						ife [a+6], 'l'
-							ife [a+7], 's'
-								set pc, built_in_globals
-	set pc, led_lparen_user_defined
-
+;----------------------------------------------------------------
 :built_in_id
+;----------------------------------------------------------------
 	jsr built_in_params
 	ifn i, 1
 		jsr recover
@@ -2342,7 +2228,9 @@
 
 	set pc, postamble
 
+;----------------------------------------------------------------
 :built_in_input
+;----------------------------------------------------------------
 	jsr built_in_params
 
 	ifg i, 1
@@ -2361,7 +2249,9 @@
 	set x, [z+-1]
 	set pc, postamble
 	
+;----------------------------------------------------------------
 :built_in_range
+;----------------------------------------------------------------
 	jsr built_in_params
 
 	ife i, 0
@@ -2418,7 +2308,9 @@
 	set x, [z+-4]
 	set pc, postamble
 
+;----------------------------------------------------------------
 :built_in_locals
+;----------------------------------------------------------------
 	jsr built_in_params
 	ifn i, 0
 		jsr recover
@@ -2426,7 +2318,9 @@
 	set x, [current_scope]
 	set pc, postamble	
 
+;----------------------------------------------------------------
 :built_in_globals
+;----------------------------------------------------------------
 	jsr built_in_params
 	ifn i, 0
 		jsr recover
@@ -2434,7 +2328,9 @@
 	set x, [global_scope]
 	set pc, postamble	
 
+;----------------------------------------------------------------
 :built_in_cmp
+;----------------------------------------------------------------
 	jsr built_in_params
 	ifn i, 2
 		jsr recover
@@ -2452,7 +2348,9 @@
 	
 	set pc, postamble
 
+;----------------------------------------------------------------
 :built_in_chr
+;----------------------------------------------------------------
 	jsr built_in_params
 	ifn i, 1
 		jsr recover
@@ -2477,7 +2375,9 @@
 
 	set pc, postamble	
 
+;----------------------------------------------------------------
 :built_in_ord
+;----------------------------------------------------------------
 	jsr built_in_params
 	ifn i, 1
 		jsr recover
@@ -2495,7 +2395,9 @@
 
 	set pc, postamble	
 
+;----------------------------------------------------------------
 :built_in_edit
+;----------------------------------------------------------------
 	jsr built_in_params
 	ifg i, 1
 		jsr recover
@@ -2512,7 +2414,9 @@
 
 	set pc, postamble	
 
+;----------------------------------------------------------------
 :built_in_rnd
+;----------------------------------------------------------------
 	jsr built_in_params
 	ifg i, 0
 		set pc, built_in_rnd_1
@@ -2560,7 +2464,9 @@
 
 	set pc, postamble
 
+;----------------------------------------------------------------
 :built_in_abs
+;----------------------------------------------------------------
 	jsr built_in_params
 	ifn i, 1
 		jsr recover
@@ -2582,7 +2488,9 @@
 
 	set pc, postamble	
 
+;----------------------------------------------------------------
 :built_in_len
+;----------------------------------------------------------------
 	jsr built_in_params
 	ifn i, 1
 		jsr recover
@@ -2598,7 +2506,9 @@
 
 	set pc, postamble	
 
+;----------------------------------------------------------------
 :built_in_int
+;----------------------------------------------------------------
 	jsr built_in_params
 	ifn i, 1
 		jsr recover
@@ -2637,8 +2547,9 @@
 	jsr float_to_int
 	set pc, postamble
 
-
+;----------------------------------------------------------------
 :built_in_float
+;----------------------------------------------------------------
 	jsr built_in_params
 	ifn i, 1
 		jsr recover
@@ -2677,8 +2588,9 @@
 	set x, a
 	set pc, postamble
 	
-	
+;----------------------------------------------------------------
 :built_in_repr
+;----------------------------------------------------------------
 	jsr built_in_params
 	ifn i, 1
 		jsr recover
@@ -2689,7 +2601,9 @@
 	
 	set pc, postamble
 
+;----------------------------------------------------------------
 :built_in_str
+;----------------------------------------------------------------
 	jsr built_in_params
 	ifn i, 1
 		jsr recover
@@ -2704,7 +2618,9 @@
 
 	set pc, postamble
 
+;----------------------------------------------------------------
 :built_in_bool
+;----------------------------------------------------------------
 	jsr built_in_params
 	ifn i, 1
 		jsr recover
@@ -2714,7 +2630,9 @@
 
 	set pc, postamble
 
+;----------------------------------------------------------------
 :built_in_sort
+;----------------------------------------------------------------
 	jsr built_in_params
 	ifg i, 1
 		jsr built_in_sort_2
@@ -2735,8 +2653,10 @@
 
 	set pc, postamble
 
+;----------------------------------------------------------------
 :built_in_params
-	; c: num params (0,1 or 2)
+; util function used by built-in impls to parse arguments
+;----------------------------------------------------------------
 	set i, 0	; param counter
 
 :built_in_params_loop
