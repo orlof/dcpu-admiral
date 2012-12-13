@@ -52,9 +52,9 @@ Classic Hello World in Admiral.
 
 <pre>
 >output='print text'          # assign string to variable output
-'print text'                  # interpreter returns with assigned value
->output(text='Hello World')   # use output-string as function
-Hello World                   # print statement output
+'print text'                  # interpreter returns assigned value
+>output(text='Hello World')   # output-string is called as a function
+Hello World                   # function output
 </pre>
 
 Square Root that supports both integers and floats:
@@ -112,11 +112,11 @@ started by calling:
 
 To exit the editor press CTRL (press AND release) followed by x. If you want to discard your editing, use CTRL followed by c.
 
-If you later need to edit your text, it can be done by specifying string argument:
+If you later need to edit your text, it can be done by specifying a string argument for edit():
 
     result=edit(result)
 
-Since Admiral is pure interpreter all strings are callable i.e. functions:
+Since Admiral is pure interpreter all strings are callable (i.e. can be used as functions):
 
 <pre>
 >'print arg1'(arg1='Hello World again!') 
@@ -130,8 +130,7 @@ Function can also define default values by using conditional assignment operator
 
 <pre>
 >next_number=edit()
-'
-$0 ?= 0
+'$0 ?= 0                      # set value for autonamed variable if value is not defined in function call
 return $0 + 1
 '
 >next_number()
@@ -142,22 +141,22 @@ return $0 + 1
 
 Conditional assignment takes place only if left operand is without value in current scope.
 
-Dicts and prototype assignment operator can provice "poor mans" objects :-)
+Dicts and prototype assignment operator provide "poor mans" objects :-)
 <pre>
->ship={} 
+>ship={}                  # create prototype object (i.e. dict)
 {} 
->ship.spd=0 
+>ship.spd=0               # assign value to prototype
 0 
->ship.accelerate=edit() 
-'me.spd+=me.acceleration 
+>ship.accelerate=edit()   # define function in prototype
+'me.spd+=me.acceleration  # function modifies object field
 ' 
->shuttle:=ship 
-... 
->shuttle.acceleration=8 
+>shuttle:=ship            # create new object from prototype
+...                       # new object "inherits" prototype's fields
+>shuttle.acceleration=8   # set value in new object
 8 
->shuttle.accelerate() 
->shuttle.spd 8 
->ship.spd 0
+>shuttle.accelerate()     # call new object's method (that is defined in prototype)
+>shuttle.spd 8            # new objects field has changed...
+>ship.spd 0               # and prototype's fields are intact
 </pre>
 
 <h4>STATEMENTS</h4>
