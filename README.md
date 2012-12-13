@@ -51,9 +51,9 @@
 Classic Hello World in Admiral.
 
 <pre>
->output='print text'          # assign string to variable output
+>output='print text'          # assign string to variable
 'print text'                  # interpreter returns assigned value
->output(text='Hello World')   # output-string is called as a function
+>output(text='Hello World')   # call output-string as function
 Hello World                   # function output
 </pre>
 
