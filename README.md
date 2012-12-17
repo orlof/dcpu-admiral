@@ -5,9 +5,16 @@
 
 ---
 
-<h4>DESIGN PRINCIPLES</h4>
+<h4>Guidelines</h4>
 
- - DCPU must not be only a runtime, but it must also be the development platform 
+Design Philosophy
+ - DCPU must provide a self sufficient environment - external compilers are not needed
+ - Capability is more important than capacity 
+ - Don’t bother users with details that the machine can handle
+ - A bug in the user’s Admiral-code should not be allowed to lead to undefined behavior 
+   of the interpreter
+
+Implementation Principles
  - Memory: 20kw for the system, 30kw for heap and 10kw for stack
 
 --
