@@ -13,6 +13,8 @@ Design Philosophy
  - Don’t bother users with details that the machine can handle
  - A bug in the user’s Admiral-code should not be allowed to lead to undefined behavior 
    of the interpreter
+ - Should there be no limit on the range of numbers, the length of strings, or the size 
+   of collections (other than the total memory available)
 
 Implementation Principles
  - Memory: 20kw for the system, 30kw for heap and 10kw for stack
