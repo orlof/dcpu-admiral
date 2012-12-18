@@ -8,16 +8,22 @@
 <h4>Guidelines</h4>
 
 Design Philosophy
- - DCPU must provide a self sufficient environment - external compilers are not needed
+ - DCPU must provide a self sufficient environment for developing and running software
  - Capability is more important than capacity 
- - Don’t bother users with details that the machine can handle
+ - Users shouldn't be bothered with details that the machine can handle
  - A bug in the user’s Admiral-code should not be allowed to lead to undefined behavior 
    of the interpreter
  - Should there be no limit on the range of numbers, the length of strings, or the size 
    of collections (other than the total memory available)
 
 Implementation Principles
- - Memory: 20kw for the system, 30kw for heap and 10kw for stack
+ - Memory allocation targets:
+   - 32 768 words for heap
+   - 8 192 words for stack
+   - 24 576 words for admiral core (including static memory buffers)
+ - Memory is conserved by using direct one-pass interpreter
+ - Pratt’s algorithm for efficient expression parsing
+ - Mark and sweep garbage collector for memory conservation and detecting trash even with reference loops
 
 --
 
@@ -33,8 +39,6 @@ Implementation Principles
      - Booleans, strings, lists, tuples and dicts
  - Interactive command prompt
  - Integrated code editor with gap buffer
- - Pratt’s algorithm for efficient expression parsing
- - Mark and sweep garbage collector for memory conservation and detecting trash even with reference loops
  
 <h4>NEXT IN PRODUCTION</h4>
  - Disk support
@@ -46,6 +50,7 @@ Implementation Principles
 
 <h4>LATER PLANS</h4>
  - 200-400% speed improvements
+   - different concepts (code/algo optimization, number cache)
  - Support for 3D
  - Command line editor
  - Screen library
