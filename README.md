@@ -7,7 +7,7 @@
 
 <h4>Guidelines</h4>
 
-Design Philosophy
+<h6>Design Philosophy</h6>
  - DCPU must provide a self sufficient environment for developing and running software
  - Capability is more important than capacity 
  - Users shouldn't be bothered with details that the machine can handle
@@ -16,7 +16,7 @@ Design Philosophy
  - Should there be no limit on the range of numbers, the length of strings, or the size 
    of collections (other than the total memory available)
 
-Implementation Principles
+<h6>Implementation Principles</h6>
  - Memory allocation targets:
    - 32 768 words for heap
    - 8 192 words for stack
@@ -27,7 +27,7 @@ Implementation Principles
 
 --
 
-<h4>FEATURES</h4>
+<h4>Features</h4>
  - Pure interpreted language
    - Python inspired grammar
    - Garbage collection
@@ -40,7 +40,7 @@ Implementation Principles
  - Interactive command prompt
  - Integrated code editor with gap buffer
  
-<h4>NEXT IN PRODUCTION</h4>
+<h6>Next in development</h6>
  - Disk support
    - Low level api and serialization
  - Improved error reporting
@@ -48,7 +48,7 @@ Implementation Principles
  - Misc built-in functions
  - BETA RELEASE
 
-<h4>LATER PLANS</h4>
+<h6>Later plans</h6>
  - 200-400% speed improvements
    - different concepts (code/algo optimization, number cache)
  - Support for 3D
@@ -60,7 +60,7 @@ Implementation Principles
  - Dict implementation with TST
  - Embedded assembler (editor + assembler)
 
-<h4>EXAMPLES</h4>
+<h4>Examples</h4>
 
 Classic Hello World in Admiral.
 
