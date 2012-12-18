@@ -257,14 +257,16 @@ TODO
 cls_stmt ::=  "cls"
 </pre>
 
-TODO
+cls (for clear screen) is a command used by the command line interpreter to clear the LEM1802 
+screen and restore cursor to top left -corner position.
 
 <h6>reset</h6>
 <pre>
 reset_stmt ::=  "reset"
 </pre>
 
-TODO
+routine that resets the Admiral interpreter and peripheral devices (as if it were turned off and then 
+on again). This command retains the data that is stored into global scope!
 
 <h5>COMPOUND STATEMENTS</h5>
 
