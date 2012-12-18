@@ -402,9 +402,18 @@ CONTAINER FUNCTIONS
 </table>
 
 NOTES
+ - Assignment is an expression, not statement
+   - yelds the assigned value
+   - e.g. "a = (b += 1)" is a valid command 
  - Assignment right side is alway evaluated before left side
+   - e.g. "for n in range(3): a += b += 1"
+     - round 1: a=1, b=1
+     - round 2: a=3, b=2
+     - round 3: a=6, b=3
  - Slicing is not supported as assignment left side
+   - e.g. "a[1:2] = 1,2" is NOT working!
  - Boolean operators both sides are always evaluated
+   - e.g. "if true or (a+=1):" will increment a with every evaluation
  - INDENT and DEDENT must be exactly one space
 
 SOME EXTRA BITS
