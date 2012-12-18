@@ -5,7 +5,7 @@
 
 ---
 
-<h4>Guidelines</h4>
+<h4>Summary</h4>
 
 <h6>Design Philosophy</h6>
  - DCPU must provide a self sufficient environment for developing and running software
@@ -25,42 +25,7 @@
  - Pratt’s algorithm for efficient expression parsing
  - Mark and sweep garbage collector for memory conservation and detecting trash even with reference loops
 
---
-
-<h4>Features</h4>
- - Pure interpreted language
-   - Python inspired grammar
-   - Garbage collection
-   - Dynamic typing
-   - Prototype based inheritance
-   - Data types
-     - Variable length integers (only limited by available heap space)
-     - Floats with compile time precision selection (1+ words for mantissa)
-     - Booleans, strings, lists, tuples and dicts
- - Interactive command prompt
- - Integrated code editor with gap buffer
- 
-<h6>Next in development</h6>
- - Disk support
-   - Low level api and serialization
- - Improved error reporting
- - Example code
- - Misc built-in functions
- - BETA RELEASE
-
-<h6>Later plans</h6>
- - 200-400% speed improvements
-   - different concepts (code/algo optimization, number cache)
- - Support for 3D
- - Command line editor
- - Screen library
- - More built-in functions
- - Exception handling
- - Trigonometric functions
- - Dict implementation with TST
- - Embedded assembler (editor + assembler)
-
-<h4>Examples</h4>
+<h6>Examples</h6>
 
 Classic Hello World in Admiral.
 
@@ -87,6 +52,43 @@ return x                      # return value
 >sqrt(81)                     # function call with integer argument
 9
 </pre>
+
+--
+
+<h4>Development status</h4>
+
+<h6>Current features</h6>
+ - Pure interpreted language
+   - Python inspired grammar
+   - Garbage collection
+   - Dynamic typing
+   - Prototype based inheritance
+   - Data types
+     - Variable length integers (only limited by available heap space)
+     - Floats with compile time precision selection (1+ words for mantissa)
+     - Booleans, strings, lists, tuples and dicts
+ - Interactive command prompt
+ - Integrated code editor with gap buffer
+ 
+<h6>Next in development</h6>
+ - Disk support
+   - Low level api and serialization
+ - Improved error reporting
+ - Example code
+ - Misc built-in functions
+ - BETA RELEASE (est. 1/2013)
+
+<h6>Later plans</h6>
+ - 200-400% speed improvements
+   - different concepts (code/algo optimization, number cache)
+ - Support for 3D
+ - Command line editor
+ - Screen library
+ - More built-in functions
+ - Exception handling
+ - Trigonometric functions
+ - Dict implementation with TST
+ - Embedded assembler (editor + assembler)
 
 --
 
