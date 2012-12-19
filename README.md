@@ -17,6 +17,7 @@
    of collections (other than the total memory available)
 
 <h6>Implementation Principles</h6>
+ - "First make it work. Then make it right. Then make it fast."
  - Memory allocation targets:
    - 32 768 words for heap
    - 8 192 words for stack
