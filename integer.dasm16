@@ -17,6 +17,7 @@
 
 ;----------------------------------------------------------------
 ; struct handle *int16_to_int(int16 value)
+; convert 16 bit register value to admiral's integer
 ;----------------------------------------------------------------
 :int16_to_int
 	set push, 1
@@ -28,12 +29,16 @@
 
 ;----------------------------------------------------------------
 ; struct handle *uint16_to_int(uint16 value)
+; convert 16 bit register value to admiral's integer
 ;----------------------------------------------------------------
 :uint16_to_int
 	set push, 1
 	set push, 0
 	jsr preamble
 
+	; special case here. if msb is 1, we must not convert it to
+	; negative integer, but instead extend integer length to keep the
+	; value positive
 	set c, 1
 	ifb [z+10], 0x8000
 		set c, 2
@@ -43,21 +48,25 @@
 	set push, TYPE_INT
 	jsr alloc
 	
-	set a, [x]
-	set [a], c
-	add a, c
-	set [a], [z+10]
+	set a, [x]		; struct integer *
+	set [a], c		; integer.len = c
+	add a, c		; a: integer.lsw
+	set [a], [z+10] ; integer.lsw = arg1
 
 	jsr postamble
 
 ;----------------------------------------------------------------
 ; struct handle *int_to_int16(struct handle *integer)
-;----------------------------------------------------------------
 :int_to_int16
-	set x, [sp+1]
-	set x, [x]
-	add x, [x]
-	set x, [x]
+; fastcall with argument in stack
+;  [sp+1]	struct handle integer *
+; return
+;  x: int16 value
+;----------------------------------------------------------------
+	set x, [sp+1]	; struct handle *
+	set x, [x]		; struct integer *
+	add x, [x]		; integer.lsw *
+	set x, [x]		; integer.lsw
 	
 	set [sp], pop	; move rts over arg
 	set pc, pop

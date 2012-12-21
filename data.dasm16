@@ -39,6 +39,7 @@
 :keyboard           DAT 0
 :monitor            DAT 0 
 :clock              DAT 0
+:floppy             DAT 0
      
 ;----------------------------------------------------------------
 ; GLOBAL HEAP MANAGEMENT VARIABLES
