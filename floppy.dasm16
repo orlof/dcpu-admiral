@@ -1,0 +1,211 @@
+#define FILE_FREE_NODE 		0
+#define FILE_DIRECTORY 		1
+
+#define FILE_BUFFER_START	49152
+#define FILE_BUFFER_END		49664
+
+:file_position			dat 0
+:file_buffer_position	dat 0
+:file_current_sector    dat 0
+
+:file_free_node         dat 0
+:file_directory         dat 0
+
+;----------------------------------------------------------------
+; void serialize(struct handle *root)
+;----------------------------------------------------------------
+:serialize
+    set push, 1
+    set push, 0
+    jsr preamble
+
+    set a, sp					; done.end
+    set b, sp
+
+    set push, [z+10]			; put root item to queue
+
+:serialize_loop
+	sub b, 1
+    set y, [b]					; next todo -item
+
+    set push, y                 ; id
+    jsr file_write_word
+
+	set c, [y + HANDLE_TYPE]
+
+    set push, c 				; type
+    jsr file_write_word
+
+    set y, [y]                  ; move y to data
+    set i, y
+	add i, 1
+
+    set push, SIZEOF_FLOAT		; I should reshape float
+    ifn c, TYPE_FLOAT
+        set push, [y]
+
+    add y, peek					; last item *
+
+    jsr file_write_word
+    
+:serialize_list_loop
+	ifg i, y					
+		ifl sp, b
+			set pc, serialize_loop
+
+	ifg i, y
+		set pc, postamble
+		
+	set push, [i]
+	jsr file_write_word
+
+    ifc c, TYPE_TUPLE + TYPE_LIST + TYPE_DICT
+        sti pc, serialize_list_loop
+
+; here starts the todo insertion loop	
+    set j, a
+
+:serialize_todo_insert_loop
+	sub j, 1
+    ife [j], [i]		; match
+    	sti pc, serialize_list_loop
+
+    ifg j, sp
+        set pc, serialize_todo_insert_loop   ; no match
+
+	set push, [i]
+	
+	sti pc, serialize_list_loop
+
+  
+;----------------------------------------------------------------
+:file_write_word
+;----------------------------------------------------------------
+	ife [file_buffer_position], FILE_BUFFER_END
+        set pc, file_write_word_1
+
+    jsr file_write_sector
+    jsr file_next_sector
+
+:file_write_word_1
+    set x, [file_buffer_position]
+    set [x], [sp+1]
+
+    add [file_buffer_position], 1
+    add [file_position], 1
+    
+	set [sp], pop
+    set pc, pop
+
+;----------------------------------------------------------------
+:file_read_word
+;----------------------------------------------------------------
+	ife [file_buffer_position], FILE_BUFFER_END
+		jsr file_next_sector
+
+    set c, [file_buffer_position]
+    set [c], c
+
+    add [file_buffer_position], 1
+    add [file_position], 1
+
+    set pc, pop
+
+;----------------------------------------------------------------
+; void file_write_sector()
+;----------------------------------------------------------------
+:file_write_sector
+    set push, 0
+    set push, 0
+    jsr preamble
+
+	set a, 3
+	set x, [file_current_sector]
+	set y, FILE_BUFFER_START
+	hwi [floppy]
+	
+	set a, 0
+:file_write_sector_loop
+	hwi [floppy]
+	ifn b, 0x0001
+		set pc, file_write_sector_loop
+
+    set pc, postamble
+
+;----------------------------------------------------------------
+; void file_read_sector()
+;----------------------------------------------------------------
+:file_read_sector
+    set push, 0
+    set push, 0
+    jsr preamble
+
+	set a, 2
+
+	set x, [file_current_sector]
+	set y, FILE_BUFFER_START
+	hwi [floppy]
+	
+	set a, 0
+:file_read_sector_loop
+	hwi [floppy]
+	ifb b, 0x0003
+		set pc, file_read_sector_loop
+
+    set pc, postamble
+
+;----------------------------------------------------------------
+:file_next_sector
+;----------------------------------------------------------------
+    ; get the next sector number
+    set [file_current_sector], [FILE_BUFFER_START]
+
+    ; read the sector to memory buffer
+    jsr file_read_sector
+
+    ; reset buffer pointer
+    set [file_buffer_position], FILE_BUFFER_START + 1
+
+    set pc, pop
+        
+;----------------------------------------------------------------
+; void save(struct handle *filename, struct handle *root)
+;----------------------------------------------------------------
+:file_save
+    set push, 2
+    set push. 0
+    jsr preamble
+
+    ; check disk is loaded
+    
+    set [file_current_sector], 0
+    jsr file_read_block
+
+    set [file_free_node], [FILE_BUFFER_START + FILE_FREE_NODE]
+    set [file_directory], [FILE_BUFFER_START + FILE_DIRECTORY]
+
+    set [file_current_sector], [file_free_node]
+    jsr file_read_block
+
+    set [file_buffer_position], 1
+    set [file_position], 0
+
+    set push, [z+10]
+    jsr serialize
+
+    ; update directory
+
+    set pc, postamble    
+
+;----------------------------------------------------------------
+:file_open
+;----------------------------------------------------------------
+;----------------------------------------------------------------
+:file_close
+;----------------------------------------------------------------
+
+
+
+
+
+

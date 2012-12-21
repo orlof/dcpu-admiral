@@ -771,6 +771,9 @@ ife a, 0x7406
 ife a, 0xb402
     ife b, 0x12d0
         set [clock], j
+ife a, 0x24c5
+    ife b, 0x4fd5
+        set [floppy], j
 set pc, hwloop
      
      
