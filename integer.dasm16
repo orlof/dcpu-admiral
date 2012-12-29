@@ -17,6 +17,7 @@
 
 ;----------------------------------------------------------------
 ; struct handle *int16_to_int(int16 value)
+; convert 16 bit register value to admiral's integer
 ;----------------------------------------------------------------
 :int16_to_int
 	set push, 1
@@ -28,12 +29,16 @@
 
 ;----------------------------------------------------------------
 ; struct handle *uint16_to_int(uint16 value)
+; convert 16 bit register value to admiral's integer
 ;----------------------------------------------------------------
 :uint16_to_int
 	set push, 1
 	set push, 0
 	jsr preamble
 
+	; special case here. if msb is 1, we must not convert it to
+	; negative integer, but instead extend integer length to keep the
+	; value positive
 	set c, 1
 	ifb [z+10], 0x8000
 		set c, 2
@@ -43,21 +48,25 @@
 	set push, TYPE_INT
 	jsr alloc
 	
-	set a, [x]
-	set [a], c
-	add a, c
-	set [a], [z+10]
+	set a, [x]		; struct integer *
+	set [a], c		; integer.len = c
+	add a, c		; a: integer.lsw
+	set [a], [z+10] ; integer.lsw = arg1
 
 	jsr postamble
 
 ;----------------------------------------------------------------
 ; struct handle *int_to_int16(struct handle *integer)
-;----------------------------------------------------------------
 :int_to_int16
-	set x, [sp+1]
-	set x, [x]
-	add x, [x]
-	set x, [x]
+; fastcall with argument in stack
+;  [sp+1]	struct handle integer *
+; return
+;  x: int16 value
+;----------------------------------------------------------------
+	set x, [sp+1]	; struct handle *
+	set x, [x]		; struct integer *
+	add x, [x]		; integer.lsw *
+	set x, [x]		; integer.lsw
 	
 	set [sp], pop	; move rts over arg
 	set pc, pop
@@ -193,11 +202,11 @@
 	jsr postamble
 
 ;----------------------------------------------------------------
-; extern struct handle *int_random(struct handle *max)
+; extern struct handle *int_random(struct handle *min, struct handle *max)
 ;----------------------------------------------------------------
 :int_random
-	set push, 1
-	set push, 1
+	set push, 2
+	set push, 2
 	jsr preamble
 	
 	set a, [z+10]
@@ -220,14 +229,23 @@
 	set [i], x
 	ifg i, a
 		std pc, int_random_loop
-	
-	set push, [z+-1]
+
 	set push, [z+10]
+	set push, [z+11]
+	jsr int_sub
+	set [z-2], x
+
+	set push, [z+-1]
+	set push, [z+-2]
 	jsr int_division
 	
 	set x, [x]
-	set x, [x + INT_DIVISION_REMAINDER]
-	
+	set [z+-1], [x + INT_DIVISION_REMAINDER]
+
+	set push, [z+11]
+	set push, [z+-1]
+	jsr int_add
+
 	set pc, postamble
 
 ;----------------------------------------------------------------
@@ -413,6 +431,14 @@
 
 	set pc, postamble
 
+:int_rshift_by_uint
+	set push, 2
+	set push, 1
+	jsr preamble
+
+	set x, [z+10]
+	set pc, int_rshift_join
+
 ;----------------------------------------------------------------
 ; extern struct handle *int_rshift(struct handle *i1, struct handle *i2)
 ;----------------------------------------------------------------
@@ -424,6 +450,7 @@
 	set push, [z+10]
 	jsr int_to_int16
 
+:int_rshift_join
 	; number of words to add to tail
 	set a, x
 	div a, 16
@@ -494,6 +521,7 @@
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_complement(struct handle *integer)
+; bitwise complement -1 <-> 0
 ;----------------------------------------------------------------
 :int_complement
 	set push, 1
@@ -506,6 +534,7 @@
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_negate(struct handle *integer)
+; arithmetic negative -1 <-> +1
 ;----------------------------------------------------------------
 :int_negate
 	set push, 1
@@ -688,7 +717,7 @@
 
 	; --------- term 1 ---------	
 	set x, [a+1]	; x: default value for term1 current word (no data)
-	asr x, 15
+	asr x, 15		; sign extension
 
 	ifg i, a		; ...use real value if more words are available
 		set x, [i]
@@ -834,14 +863,16 @@
 	set y, ex		; store product high
 	add [c], x		; add product low
 	adx [c+-1], y	; add product high
+	set x, ex
 
 	set y, c		; y: product current word
+	sub y, 2
 :int_mul_carry_loop
-	ife ex, 0
+	ife x, 0
 		set pc, int_mul_carry_break
+	add [y], x
 	set x, ex	
 	sub y, 1
-	add [y], x
 	set pc, int_mul_carry_loop
 
 :int_mul_carry_break
