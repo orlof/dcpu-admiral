@@ -5,6 +5,8 @@
 #define FALSE           0
 
 #define HEAP_GC_TRIGGER 10
+#define FLOAT_PRECISION	2
+; 2*16=32 bits for mantissa
 
 #define FONT_COLOR      0x7000
 #define SCREEN_COLS     32
@@ -132,6 +134,8 @@
 #define SUBSCRIPTION_LIST   1
 #define SUBSCRIPTION_INDEX  2
 
+; screen is not stored in heap -> it can be non-standard
+;
 ; struct screen {
 ;   uint16 *start;
 ;   uint16 *end;

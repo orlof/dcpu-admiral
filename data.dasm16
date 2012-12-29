@@ -4,6 +4,8 @@
 :global_scope   dat 0
 :current_scope  dat 0
 
+:builtin		dat 0
+
 :recovery_fp    dat 0
 :recovery_sp    dat 0
 
@@ -37,6 +39,7 @@
 :keyboard           DAT 0
 :monitor            DAT 0 
 :clock              DAT 0
+:floppy             DAT 0
      
 ;----------------------------------------------------------------
 ; GLOBAL HEAP MANAGEMENT VARIABLES
@@ -141,21 +144,21 @@
 ;----------------------------------------------------------------
 ; controls
 :token_eof          dat std_eof, recover, recover, 0x0000
-:token_newline          dat std_newline, recover, recover, 0x0000
-:token_indent           dat std_indent, recover, recover, 0x0000
-:token_dedent           dat std_dedent, recover, recover, 0x0000
+:token_newline      dat std_newline, recover, recover, 0x0000
+:token_indent       dat std_indent, recover, recover, 0x0000
+:token_dedent       dat std_dedent, recover, recover, 0x0000
 
 ; atoms
 :token_int          dat std_expression, nud_int, recover, 0x0000
-:token_float            dat recover, recover, recover, 0x0000
+:token_float        dat std_expression, nud_float, recover, 0x0000
 :token_name         dat std_expression, nud_name, recover, 0x0000
 :token_str          dat std_expression, nud_str, recover, 0x0000
 :token_none         dat std_expression, nud_none, recover, 0x0000
 :token_true         dat std_expression, nud_true, recover, 0x0000
-:token_false            dat std_expression, nud_false, recover, 0x0000
+:token_false        dat std_expression, nud_false, recover, 0x0000
 
 ; nud operators
-:token_tilde            dat std_expression, nud_tilde, recover, 0x0000
+:token_tilde        dat std_expression, nud_tilde, recover, 0x0000
 
 ; statements
 :token_if           dat std_if, recover, recover, 0x0000
@@ -238,6 +241,63 @@
 :token_rcurly           dat recover, recover, recover, 0x0000
 
 :token_reference        dat recover, recover, led_reference, 0x0210
+
+;----------------------------------------------------------------
+; BUILT IN FUNCTIONS
+; length+1, function_name, function_impl_ptr
+; last line is the default if nothing matches
+;----------------------------------------------------------------
+:built_in_functions
+	dat 3, "id", built_in_id
+	dat 4, "rnd", built_in_rnd
+	dat 4, "int", built_in_int
+	dat 4, "str", built_in_str
+	dat 4, "len", built_in_len
+	dat 4, "abs", built_in_abs
+	dat 4, "ord", built_in_ord
+	dat 4, "chr", built_in_chr
+	dat 4, "cmp", built_in_cmp
+	dat 5, "bool", built_in_bool
+	dat 5, "edit", built_in_edit
+	dat 5, "repr", built_in_repr
+	dat 5, "sort", built_in_sort
+	dat 6, "range", built_in_range
+	dat 6, "float", built_in_float
+	dat 6, "input", built_in_input
+	dat 7, "locals", built_in_locals
+	dat 8, "globals", built_in_globals
+	dat 1, led_lparen_user_defined
+
+;----------------------------------------------------------------
+; RESERVED WORDS
+; length+1, reserved word, token
+; last line is the default if nothing matches
+;----------------------------------------------------------------
+:built_in_stmts
+	dat 3, "if", token_if
+	dat 3, "or", token_or
+	dat 3, "is", token_is
+	dat 3, "in", token_in
+	dat 4, "cls", token_cls
+	dat 4, "and", token_and
+	dat 4, "not", token_not
+	dat 4, "del", token_del
+	dat 4, "for", token_for
+	dat 4, "inf", token_float
+	dat 4, "nan", token_float
+	dat 5, "true", token_true
+	dat 5, "none", token_none
+	dat 5, "elif", token_elif
+	dat 5, "else", token_else
+	dat 5, "pass", token_pass
+	dat 6, "false", token_false
+	dat 6, "print", token_print
+	dat 6, "while", token_while
+	dat 6, "reset", token_reset
+	dat 6, "break", token_break
+	dat 7, "return", token_return
+	dat 9, "continue", token_continue
+	dat 1, token_name
 
 ;----------------------------------------------------------------
 ; LEXER CHARACTER TABLE
