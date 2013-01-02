@@ -40,6 +40,94 @@
 	set pc, pop
 
 ;----------------------------------------------------------------
+; struct handle *lexer__get_line()
+;----------------------------------------------------------------
+:lexer__get_line
+	set push, a
+	set push, b
+	
+	set a, [lexer_string]
+	set push, a
+	
+	set b, [lexer_start]	
+	jsr lexer__goto_sol
+	set push, b
+
+	jsr lexer__goto_eol
+	set push, b
+	jsr array_split
+
+	set b, pop
+	set a, pop
+
+	set pc, pop
+
+;----------------------------------------------------------------
+; struct handle *lexer__get_token_marker()
+;----------------------------------------------------------------
+:lexer__get_token_marker
+	set push, 0
+	set push, 0
+	jsr preamble
+
+	set a, [lexer_string]	
+	set b, [lexer_start]	
+	jsr lexer__goto_sol
+
+	set c, [lexer_end]
+	sub c, b
+
+	set push, c
+	set push, TYPE_STRING
+	jsr array_create
+
+	sti i, [x]
+	set j, b
+
+:lexer__get_token_marker__pre_mark
+	ife j, [lexer_start]
+		set pc, lexer__get_token_marker__mark
+		
+	set [i], ' '
+	sti pc, lexer__get_token_marker__pre_mark
+
+:lexer__get_token_marker__mark
+	ife j, [lexer_end]
+		set pc, postamble
+		
+	set [i], '^'
+	sti pc, lexer__get_token_marker__mark
+
+;----------------------------------------------------------------
+:lexer__goto_eol
+;----------------------------------------------------------------
+	jsr array_get
+	
+	ife x, 0
+		set pc, pop
+	
+	ife [x + lexer_table], lexer_char_newline
+		set pc, pop
+
+	add b, 1
+	set pc, lexer__goto_eol
+
+;----------------------------------------------------------------
+:lexer__goto_sol
+;----------------------------------------------------------------
+	ife b, 0
+		set pc, pop
+		
+	sub b, 1
+	jsr array_get
+	
+	ifn [x + lexer_table], lexer_char_newline
+		set pc, lexer__goto_sol
+
+	add b, 1
+	set pc, pop
+
+;----------------------------------------------------------------
 ; void lexer_advance(struct handle *expected_token)
 ;----------------------------------------------------------------
 :lexer_advance
@@ -389,19 +477,12 @@
 
 ;----------------------------------------------------------------
 :lexer_char_letter
-	set a,a
-:lexer_char_letter_uc
-	set a,a
-:lexer_char_letter_lc
-	set a,a
 ;----------------------------------------------------------------
 :lexer_name_loop
 	add b, 1
 	jsr array_get
 
-	ife [x + lexer_table], lexer_char_letter_lc
-		set pc, lexer_name_loop
-	ife [x + lexer_table], lexer_char_letter_uc
+	ife [x + lexer_table], lexer_char_letter
 		set pc, lexer_name_loop
 	ife [x + lexer_table], lexer_char_digit
 		set pc, lexer_name_loop

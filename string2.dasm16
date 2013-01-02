@@ -31,13 +31,15 @@
 
 	; x = toLower(x)
 	set c, [i+1]
-	ife [lexer_table + c], lexer_char_letter_uc
-		add c, 'a' - 'A'
+	ifg c, 'A'-1
+		ifl c, 'Z'+1
+			add c, 'a' - 'A'
 
 	; y = toLower(y)
 	set y, [j+1]
-	ife [lexer_table + y], lexer_char_letter_uc
-		add y, 'a' - 'A'
+	ifg y, 'A'-1
+		ifl y, 'Z'+1
+			add y, 'a' - 'A'
 
 	set pc, str_comparator_select
 
