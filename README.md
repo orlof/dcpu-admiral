@@ -353,6 +353,7 @@ TYPE CONVERSION FUNCTIONS
 GENERIC FUNTIONS
   int id(list | tuple | dict | int | bool | str | float)
   int len(list | tuple | dict | str | int)
+  int mem()
 
 NUMERICAL FUNCTIONS
   int abs(int)
