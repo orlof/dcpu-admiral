@@ -273,6 +273,7 @@
 ;----------------------------------------------------------------
 :built_in_functions
 	dat 3, "id", built_in_id
+	dat 4, "mem", built_in_mem
 	dat 4, "rnd", built_in_rnd
 	dat 4, "int", built_in_int
 	dat 4, "str", built_in_str

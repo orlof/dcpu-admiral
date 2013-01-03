@@ -2298,6 +2298,24 @@
 	set pc, postamble
 
 ;----------------------------------------------------------------
+:built_in_mem
+;----------------------------------------------------------------
+	jsr built_in_params
+	ifn i, 0
+		jsr recover
+
+	jsr mark
+	jsr compact
+
+	set a, [heap_handle_start]
+	sub a, [heap_free_start]
+	
+	set push, a
+	jsr uint16_to_int
+
+	set pc, postamble	
+
+;----------------------------------------------------------------
 :built_in_locals
 ;----------------------------------------------------------------
 	jsr built_in_params
