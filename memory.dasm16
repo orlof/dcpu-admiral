@@ -47,7 +47,7 @@
 		set pc, realloc__set_handle_values
 	
 	; remove handle from reserved list
-	set b, [heap_handle_head]
+	set b, heap_handle_head
 	sub b, HANDLE_NEXT
 
 :realloc__remove_from_list__loop

@@ -28,6 +28,27 @@
 	; init fpu
 	jsr float_init	
 
+	set push, STR_STARTUP
+	jsr print
+
+	set push, STR_STARTUP2
+	jsr print
+	
+	jsr mark
+	jsr compact
+
+	set a, [heap_handle_start]
+	sub a, [heap_free_start]
+	
+	set push, a
+	jsr uint16_to_int
+	
+	set push, x
+	jsr print
+
+	set push, STR_STARTUP3
+	jsr print
+
 :interpreter_loop
 	set push, STR_PROMPT
 	jsr raw_input
