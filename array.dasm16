@@ -2,24 +2,6 @@
 ; struct handle *array_create(uint16 len, uint16 type)
 ;  ugly hack to mimic call conventions
 ;----------------------------------------------------------------
-:array_create2
-	set push, a
-
-	set push, [sp + 3]		; size
-	add [sp], 1
-	set push, [sp + 3]		; type
-	jsr alloc
-	
-	set a, [x]
-	set [a], [sp + 3]
-
-	; restore stack
-	set a, pop
-	set [sp], pop
-	set [sp], pop
-
-	set pc, pop
-
 :array_create
 	set push, [sp + 2]		; size
 	add [sp], 1
