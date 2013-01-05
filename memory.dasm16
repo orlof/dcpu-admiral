@@ -7,46 +7,74 @@
 	set push, 0
 	jsr preamble
 
-	set a, [z+11]
-	ifl [a + HANDLE_SIZE], [z + 10]
-		set pc, realloc__enlarge
+	set c, [z+11]						; struct handle *
+	set a, [z+10]						; size
 
-	; shrink is easy
-	set [a + HANDLE_SIZE], [z+10]	
+	ifl [c + HANDLE_SIZE], a
+		set pc, realloc__grow
+
+	; shrinking is easy
+	set [c + HANDLE_SIZE], a	
 	set pc, postamble
 		
-:realloc__enlarge
-	; calculate required extra space
-	set c, [z + 10]				; c = new_size - old_size
-	sub c, [a + HANDLE_SIZE]
-	
-	; calculate available space
-	set b, [heap_handle_start]
-	sub b, [heap_free_start]
+:realloc__grow
+	jsr ensure_memory
 
-	ifl b, c						; if available space < required space
-		set pc, realloc__garbage_collect
+	; init allocated space
+	set i, [heap_free_start]			; first word of allocated memory region
+	add a, i							; first word after allocated memory
 
-	set [a + HANDLE_SIZE], [z + 10]
-	jsr compact
-	
-	set pc, postamble
+	set j, [c + HANDLE_PTR]				; first word of old region
+	set b, j							; first word after the old region
+	add b, [c + HANDLE_SIZE]
 
-:realloc__garbage_collect
-	jsr mark
-	jsr compact
-	
-	; calculate available space
-	set b, [heap_handle_start]
-	sub b, [heap_free_start]
+:realloc__copy_loop
+	ife j, b
+		set pc, realloc__zero_loop
 
-	ifl b, c						; if available space < required space
-		jsr recover
+	set [i], [j]			            ; default init with zero
+	sti pc, realloc__copy_loop
 	
-	set [a + HANDLE_SIZE], [z + 10]
-	jsr compact
+:realloc__zero_loop
+	ife i, a
+		set pc, realloc__remove_from_list
+
+	set [i], 0				            ; default init with zero
+	sti pc, realloc__zero_loop
+
+:realloc__remove_from_list
+	ife [heap_handle_tail], c
+		set pc, realloc__set_handle_values
 	
-	set pc, postamble
+	; remove handle from reserved list
+	set b, [heap_handle_head]
+	sub b, HANDLE_NEXT
+
+:realloc__remove_from_list__loop
+	ife [b + HANDLE_NEXT], c
+		set pc, realloc__remove_from_list__break
+		
+	set b, [b + HANDLE_NEXT]
+	set pc, realloc__remove_from_list__loop
+	
+:realloc__remove_from_list__break
+	set [b + HANDLE_NEXT], [c + HANDLE_NEXT]
+	
+	; append new handle to tail reserved handles list
+	set b, [heap_handle_tail]					; store pointer to last item in reserved handles list
+	set [heap_handle_tail], c					; set reserved handles tail pointer to point in new handle
+	set [b + HANDLE_NEXT], c					; set previous tail's next to point to new handle
+
+:realloc__set_handle_values
+    ; initialize handle structure
+	set [c + HANDLE_PTR], [heap_free_start]     ; pointer to allocated memory region
+	set [c + HANDLE_SIZE], [z+10]				; size of allocated memory region
+	set [c + HANDLE_NEXT], 0					; next handle in reserved handles list
+
+	set [heap_free_start], a					; update unallocated heap space pointer
+
+	set x, c									; return pointer to new handle
+	set pc, postamble	
 
 ;----------------------------------------------------------------
 ; struct handle *alloc(uint16 size, uint16 type)
@@ -61,12 +89,7 @@
 	set a, [z+11]
 	add a, SIZEOF_HANDLE
 
-	; calculate space in heap gap
-	set b, [heap_handle_start]
-	sub b, [heap_free_start]
-
-	ifl b, a						; if available space < required space
-		set pc, alloc__garbage_collect
+	jsr ensure_memory
 
 	;---------------------------------------
 	; handle cleanup
@@ -75,19 +98,7 @@
 	ife [heap_counter], HEAP_GC_TRIGGER
 		jsr mark
 
-	set pc, alloc__reserve_handle
-
-:alloc__garbage_collect
-	jsr mark
-	jsr compact
-	
-	set b, [heap_handle_start]
-	sub b, [heap_free_start]
-
-	ifl b, a							; if available space < required space
-		jsr recover
-	
-:alloc__reserve_handle
+	; try to get recycled handle
 	set c, [heap_handle_free]
 
 	; remove handle from free list
@@ -136,6 +147,33 @@
 	set x, c									; return pointer to new handle
 	set pc, postamble	
 
+;----------------------------------------------------------------
+:ensure_memory
+; fastcall
+;  a: required memory
+; return
+;  b: available space
+;  x: polluted
+;----------------------------------------------------------------
+	set x, ensure_memory__out_of_memory
+
+:ensure_memory__check
+	; calculate space in heap gap
+	set b, [heap_handle_start]
+	sub b, [heap_free_start]
+
+	ifl b, a						; if available space < required space
+		set pc, x
+
+	set pc, pop
+
+:ensure_memory__out_of_memory
+	jsr mark
+	jsr compact
+
+	set x, recover
+	set pc, ensure_memory__check
+	
 ;----------------------------------------------------------------
 ; void compact()
 ;----------------------------------------------------------------

@@ -163,3 +163,11 @@
 #define SCREEN_START		0
 #define SCREEN_END			1
 #define SCREEN_CURSOR		2
+
+; struct file_handle {
+;   struct handle *first_sector;
+;   struct handle *length;
+; }
+#define FILE_HANDLE__FIRST_SECTOR	1
+#define FILE_HANDLE__LENGTH			2
+
