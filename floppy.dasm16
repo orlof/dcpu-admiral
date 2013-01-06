@@ -1,3 +1,10 @@
+; admiral functions
+; format()
+; dict dir()
+; save(str, item)
+; item load(str)
+; del(str)
+
 ; memory buffer
 #define FILE_BUFFER_START	49152
 #define FILE_BUFFER_END		49664
