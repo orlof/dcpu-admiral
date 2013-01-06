@@ -5,22 +5,13 @@
 ; item load(str)
 ; del(str)
 
-; memory buffer
-#define FILE_BUFFER_START	49152
-#define FILE_BUFFER_END		49664
-
 ; these defines are only foor mbr
-#define FILE_FREE_HEAD			FILE_BUFFER_START
-#define FILE_FREE_TAIL			FILE_BUFFER_START + 1
-#define FILE_DIR_SECTOR			FILE_BUFFER_START + 2
+#define FILE_FREE_HEAD			MEM_FLOPPY_START
+#define FILE_FREE_TAIL			MEM_FLOPPY_START + 1
+#define FILE_DIR_SECTOR			MEM_FLOPPY_START + 2
 
 ; all other sectors
-#define FILE_NEXT_SECTOR		FILE_BUFFER_START
-
-; current file status
-:file_position			dat 0
-:file_buffer_position	dat 0
-:file_current_sector    dat 0
+#define FILE_NEXT_SECTOR		MEM_FLOPPY_START
 
 ;----------------------------------------------------------------
 ; struct handle *file__dir__read(void)
@@ -396,7 +387,7 @@
 ;----------------------------------------------------------------
 :file__write_word
 ;----------------------------------------------------------------
-	ife [file_buffer_position], FILE_BUFFER_END
+	ife [file_buffer_position], MEM_FLOPPY_END
         set pc, file__write_word__add_to_buffer
 
     jsr file__write_sector
@@ -415,7 +406,7 @@
 ;----------------------------------------------------------------
 :file__read_word
 ;----------------------------------------------------------------
-	ife [file_buffer_position], FILE_BUFFER_END
+	ife [file_buffer_position], MEM_FLOPPY_END
 		jsr file__next_sector
 
     set c, [file_buffer_position]
@@ -436,7 +427,7 @@
 
 	set a, 3
 	set x, [file_current_sector]
-	set y, FILE_BUFFER_START
+	set y, MEM_FLOPPY_START
 	hwi [floppy]
 	
 	set a, 0
@@ -458,7 +449,7 @@
 	set a, 2
 
 	set x, [file_current_sector]
-	set y, FILE_BUFFER_START
+	set y, MEM_FLOPPY_START
 	hwi [floppy]
 	
 	set a, 0
@@ -473,13 +464,13 @@
 :file__next_sector
 ;----------------------------------------------------------------
     ; get the next sector number
-    set [file_current_sector], [FILE_BUFFER_START]
+    set [file_current_sector], [MEM_FLOPPY_START]
 
     ; read the sector to memory buffer
     jsr file__read_sector
 
     ; reset buffer pointer
-    set [file_buffer_position], FILE_BUFFER_START + 1
+    set [file_buffer_position], MEM_FLOPPY_START + 1
 
     set pc, pop
         

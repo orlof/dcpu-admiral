@@ -747,27 +747,27 @@
 	jsr postamble
 
 ;----------------------------------------------------------------
-; extern struct handle *int_pow(struct handle *factor1, struct handle *factor2)
+; extern struct handle *int_pow(struct handle *base, struct handle *exp)
 ;----------------------------------------------------------------
 :int_pow
-	set push, 2
-	set push, 2
+	set push, 2						; number of function arguments (base and exp)
+	set push, 2						; number of heap handles
 	jsr preamble
 
-	set push, [z+10]
+	set push, [z+10]				; sgn(exp)
 	jsr int_sgn
 	
-	ife x, 0
-		set pc, int_pow_1
-	ife x, -1
-		set pc, int_pow_0
+	ife x, 0						; exp = 0
+		set pc, int_pow_1			; return 1
+	ife x, -1						; base < 0
+		set pc, int_pow_0			; return 0
 
-	set push, [z+10]
+	set push, [z+10]				; exp to register (only support exp < 2**16)
 	jsr int_to_int16
-	set c, x
+	set c, x						; c = (uint16) exp
 
-	set [z+-1], [z+11] ; p
-	set [z+-2], INT_HANDLE_1	; r
+	set [z+-1], [z+11] 				; p
+	set [z+-2], INT_HANDLE_1		; r
 	
 :int_pow_loop
 	ife c, 0
@@ -775,29 +775,35 @@
 
 	ifc c, 1
 		set pc, int_pow_skip
-		
+
+	; r = p * r
 	set push, [z+-2]
 	set push, [z+-1]
 	jsr int_mul
 	set [z+-2], x
 	
 :int_pow_skip
+	; p = p * p
 	set push, [z+-1]
 	set push, [z+-1]
 	jsr int_mul
 	set [z+-1], x
 
+	; c = c / 2
 	div c, 2
 	set pc, int_pow_loop
 
 :int_pow_break
+	; return r
 	set x, [z+-2]
 	set pc, postamble	
 
 :int_pow_0
+	; return 0
 	set x, INT_HANDLE_0
 	set pc, postamble
 :int_pow_1
+	; return 1
 	set x, INT_HANDLE_1
 	set pc, postamble
 

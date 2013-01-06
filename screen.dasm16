@@ -39,7 +39,7 @@
 ; fastcall
 ;----------------------------------------------------------------
 	set x, [current_screen]				; struct screen *cur
-	set x, [x + SCREEN_CURSOR]	
+	set x, [x + SCREEN__CURSOR]	
 	xor [x], 0xff80						; change colors
 	set pc, pop
 
@@ -50,11 +50,11 @@
 ;  y [sp+1]
 ;----------------------------------------------------------------
 	set x, [current_screen]
-	set [x+SCREEN_CURSOR], [x+SCREEN_START]
+	set [x+SCREEN__CURSOR], [x+SCREEN__START]
 	
 	mul [sp+1], SCREEN_COLS
-	add [x+SCREEN_CURSOR], [sp+1]
-	add [x+SCREEN_CURSOR], [sp+2]
+	add [x+SCREEN__CURSOR], [sp+1]
+	add [x+SCREEN__CURSOR], [sp+2]
 
 	set [sp], pop	; remove y
 	set [sp], pop	; remove x
@@ -69,10 +69,10 @@
 	set push, j
 
 	set a, [current_screen]
-	set [a + SCREEN_CURSOR], [a + SCREEN_START]
+	set [a + SCREEN__CURSOR], [a + SCREEN__START]
 
-	set i, [a + SCREEN_START]
-	set a, [a + SCREEN_END]
+	set i, [a + SCREEN__START]
+	set a, [a + SCREEN__END]
 	
 :screen_clear_loop
 	set [i], 0
@@ -96,7 +96,7 @@
 	set push, j
 	
 	set a, [current_screen]
-	set i, [a + SCREEN_CURSOR]
+	set i, [a + SCREEN__CURSOR]
 
 	ife [c + lexer_table], lexer_char_newline
 		set pc, add_char_newline
@@ -113,25 +113,25 @@
 	add i, SCREEN_COLS
 	
 :add_char_scroll
-	set [a + SCREEN_CURSOR], i
+	set [a + SCREEN__CURSOR], i
 
-	ifl i, [a + SCREEN_END]
+	ifl i, [a + SCREEN__END]
 		set pc, add_char_finish
 		
-	sub [a + SCREEN_CURSOR], 32
+	sub [a + SCREEN__CURSOR], 32
 	
-	set i, [a + SCREEN_START]
-	set j, [a + SCREEN_START]
+	set i, [a + SCREEN__START]
+	set j, [a + SCREEN__START]
 	add j, SCREEN_COLS
 	
 :add_char_copy
 	sti [i], [j]
-	ifl j, [a + SCREEN_END]
+	ifl j, [a + SCREEN__END]
 		set pc, add_char_copy
 	
 :add_char_clear
 	sti [i], 0
-	ifl i, [a + SCREEN_END]
+	ifl i, [a + SCREEN__END]
 		set pc, add_char_clear
 	
 :add_char_finish
@@ -142,8 +142,8 @@
 	set pc, pop
 
 :add_char_backspace
-	ifn i, [a + SCREEN_START]
+	ifn i, [a + SCREEN__START]
 		std [i+-1], 0
 
-	set [a + SCREEN_CURSOR], i
+	set [a + SCREEN__CURSOR], i
 	set pc, add_char_finish

@@ -215,12 +215,12 @@
 ;----------------------------------------------------------------	
 	set a, [current_screen]
 	set i, [win_start]
-	set j, [a + SCREEN_START]
+	set j, [a + SCREEN__START]
 
 :edit_win_draw_loop
 	jsr edit_line_draw
 
-	ifl j, [a + SCREEN_END]
+	ifl j, [a + SCREEN__END]
 		set pc, edit_win_draw_loop
 
 	set pc, pop

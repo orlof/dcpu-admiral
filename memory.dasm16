@@ -182,7 +182,7 @@
 	set push, 0
 	jsr preamble
 
-	set i, HEAP_START
+	set i, MEM_HEAP_START
 
 	set a, heap_handle_head			; struct handle *
 	sub a, HANDLE_NEXT
@@ -317,7 +317,7 @@
 	ifl x, [heap_handle_start]
 		set pc, pop
 	
-	ifg x, HEAP_END - SIZEOF_HANDLE
+	ifg x, MEM_HEAP_END - SIZEOF_HANDLE
 		set pc, pop
 	;---------------------------------------
 
