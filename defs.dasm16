@@ -1,20 +1,22 @@
 ;----------------------------------------------------------------
 ; MEMORY LAYOUT
 ;----------------------------------------------------------------
-#define MEM_CODE_SIZE			0x6000
-#define MEM_HEAP_SIZE			0x8000
-#define MEM_SCREEN_BUFFER_SIZE	0x480
-#define MEM_FLOPPY_BUFFER_SIZE	0x200
+#define MEM_CODE_SIZE			0x3000
+#define MEM_FLOPPY_SIZE			0x200
+#define MEM_SCREEN_SIZE			0x480
+#define MEM_STACK_SIZE			0x3000
 
 #define MEM_HEAP_START			MEM_CODE_SIZE
-#define MEM_HEAP_END			MEM_HEAP_START + MEM_HEAP_SIZE
+#define MEM_HEAP_END			MEM_FLOPPY_START
 
-#define MEM_SCREEN_START		MEM_HEAP_END
-#define MEM_SCREEN_END			MEM_SCREEN_START + MEM_SCREEN_BUFFER_SIZE
+#define MEM_FLOPPY_START		MEM_FLOPPY_END - MEM_FLOPPY_SIZE
+#define MEM_FLOPPY_END			MEM_SCREEN_START
 
-#define MEM_FLOPPY_START		MEM_SCREEN_END
-#define MEM_FLOPPY_END			MEM_FLOPPY_START + MEM_FLOPPY_BUFFER_SIZE
+#define MEM_SCREEN_START		MEM_SCREEN_END - MEM_SCREEN_SIZE
+#define MEM_SCREEN_END			MEM_STACK_START
 
+#define MEM_STACK_START			MEM_STACK_END - MEM_STACK_SIZE
+#define MEM_STACK_END			0x10000
 
 ;----------------------------------------------------------------
 ; PARAMETERS
