@@ -1,5 +1,5 @@
 ;----------------------------------------------------------------
-; struct handle *realloc(struct handle *handle, uint16 size)
+; void realloc(struct handle *handle, uint16 size)
 ; return pointer to allocated handle or zero if error
 ;----------------------------------------------------------------
 :realloc
