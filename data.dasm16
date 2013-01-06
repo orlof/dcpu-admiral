@@ -14,15 +14,18 @@
 ;----------------------------------------------------------------
 :current_screen dat screen_first
 
-:screen_first	dat 0xd000, 0xd180, 0xd000
-				dat 0xd180, 0xd300, 0xd180
-:screen_last	dat 0xd300, 0xd480, 0xd300
+:screen_first	dat MEM_SCREEN_START, MEM_SCREEN_START + 0x180, MEM_SCREEN_START
+				dat MEM_SCREEN_START + 0x180, MEM_SCREEN_START + 0x300, MEM_SCREEN_START + 0x180
+:screen_last	dat MEM_SCREEN_START + 0x300, MEM_SCREEN_START + 0x480, MEM_SCREEN_START + 0x300
 
 
 ;----------------------------------------------------------------
 ; GLOBAL FD VARIABLES
 ;----------------------------------------------------------------
-
+; current file status
+:file_position			dat 0
+:file_buffer_position	dat 0
+:file_current_sector    dat 0
 
 ;----------------------------------------------------------------
 ; RANDOM NUMBER GENERATORS
@@ -45,9 +48,9 @@
 ; GLOBAL HEAP MANAGEMENT VARIABLES
 ;----------------------------------------------------------------
 :heap_counter 		DAT 0
-:heap_free_start    DAT HEAP_START
+:heap_free_start    DAT MEM_HEAP_START
 
-:heap_handle_start  DAT HEAP_END
+:heap_handle_start  DAT MEM_HEAP_END
 :heap_handle_head   DAT 0
 :heap_handle_tail   DAT heap_handle_head - HANDLE_NEXT
 :heap_handle_free   DAT 0
