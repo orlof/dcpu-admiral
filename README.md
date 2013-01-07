@@ -19,9 +19,9 @@
 <h6>Implementation Principles</h6>
  - "First make it work. Then make it right. Then make it fast."
  - Memory allocation targets:
-   - 32 768 words for heap
+   - 40960 words for heap
    - 8 192 words for stack
-   - 24 576 words for admiral core (including static memory buffers)
+   - 16 384 words for admiral core (including static memory buffers)
  - Memory is conserved by using direct one-pass interpreter
  - Pratt’s algorithm for efficient expression parsing
  - Mark and sweep garbage collector for memory conservation and detecting trash even with reference loops
@@ -101,12 +101,14 @@ To build from source, run the following with the DCPU Toolchain (DCPUTeam/DCPUTo
 
     dtasm --binary admiral.dasm16 -o admiral.bin
     
-You can run the .bin provided, or the one you built as normal in Lettuce (SirCmpwn/Tomato), and with the following command with the Toolchain
+You can run the .bin provided with the following command with the Toolchain (currently edit() is not working with dtemu)
 
     dtemu admiral.bin
 
-You can also run Admiral in Devkit. Leave the admiral.dasm16 out of the project and specify interpreter.dasm16 as 
-the starting point for execution.
+You can also run admiral.bin with Lettuce (SirCmpwn/Tomato) (keyboard layouts are not working with Lettuce).
+
+To work with devkit, leave the admiral.dasm16 out of the project and specify interpreter.dasm16 as 
+the starting point for execution. (No known errors with devkit)
 
 <h4>USAGE</h4>
 
