@@ -108,21 +108,19 @@
 
 	set push, x
 	set push, std_print_iterator
-	set push, 0
-	jsr list_iterate
+	jsr array_map
 
 	set pc, std_print_loop
 
 :std_print_iterator
-	set push, [sp+2]
+	set push, [sp+1]
 	jsr print
 
 	set c, ' '
 	jsr screen_add_char
 
-	set x, [sp]
-	add sp, 3
-	set pc, x
+	set [sp], pop
+	set pc, pop
 
 :std_print_break_newline
 	set push, token_newline
@@ -141,13 +139,12 @@
 ;----------------------------------------------------------------
 	jsr lexer_next		; skip return
 
-	set push, 2			; create struct control
+	set push, SIZEOF_CONTROL				; create struct control
 	set push, TYPE_CONTROL
-	jsr alloc
+	jsr array_create
     set [z+-1], x
 
 	set a, [x]
-	set [a], 2
 	set [a + CONTROL_SIGNAL], token_return		; set control type
 	set [a + CONTROL_VALUE], NONE			; default: no return value
 
@@ -181,14 +178,13 @@
 	set push, token_newline		; verify newline
 	jsr lexer_advance
 
-	set push, 1			; create struct control
+	set push, SIZEOF_CONTROL			; create struct control
 	set push, TYPE_CONTROL
-	jsr alloc
+	jsr array_create
 
 	set a, [x]
-	set [a], 1
 	set [a + CONTROL_SIGNAL], b 	; set control signal
-
+	set [a + CONTROL_VALUE], NONE	; default: no return value
 	set pc, postamble
 
 ;----------------------------------------------------------------
@@ -778,7 +774,7 @@
 
 	set push, 0
 	set push, TYPE_TUPLE
-	jsr alloc
+	jsr array_create
 
 	set pc, postamble
 
@@ -876,13 +872,12 @@
 	; kv-pair
 	set push, 2
 	set push, TYPE_TUPLE
-	jsr alloc
+	jsr array_create
     set [z+-2], x
 
-	set x, [x]
-	set [x], 2
-    set [x+1], [z+-3]
-    set [x+2], [z+-4]
+	set a, [x]
+    set [a + DICT_ITEM_KEY],   [z+-3]
+    set [a + DICT_ITEM_VALUE], [z+-4]
 
     set push, [z+-1]
 	set push, -1
@@ -1183,7 +1178,7 @@
 :led_in_list
 	set push, x
     set push, [z+-1]
-	jsr list_find
+	jsr array_find
 	ife x, -1
 		set pc, led_in_not_found
 	set pc, led_in_found
@@ -1925,14 +1920,12 @@
 
 	set push, 2
 	set push, TYPE_NAME
-	jsr alloc
+	jsr array_create
     set [z+-2], x
 
-	set a, [x]
-	set [a], 2
-	set [a+1], '$'
-	
-	set [a+2], c
+	sti i, [x]
+	sti [i], '$'
+	set [i], c
 	add c, 1
 
 	set pc, parse_testlist_item_set
@@ -2005,11 +1998,10 @@
 
 	set push, 2
 	set push, TYPE_TUPLE
-	jsr alloc
+	jsr array_create
     set [z+-2], x
 
 	set x, [x]
-	set [x], 2
     set [x+1], [z+-3]           ; slice start
 
 	ife [lexer_token], token_rbrack
@@ -2063,15 +2055,13 @@
 	; construct return value
 	set push, 2
 	set push, TYPE_SUBSCRIPTION
-	jsr alloc
+	jsr array_create
 	set [z+-3], x			; result
 
-	set x, [x]
-	set [x], 2
-	set [x + SUBSCRIPTION_LIST], [z+-1]
-	set [x + SUBSCRIPTION_INDEX], [z+-2]
+	set a, [x]
+	set [a + SUBSCRIPTION_LIST], [z+-1]
+	set [a + SUBSCRIPTION_INDEX], [z+-2]
 
-	set x, [z+-3]
 	set pc, postamble
 
 ;----------------------------------------------------------------
@@ -2085,7 +2075,7 @@
 
 	set push, 2
 	set push, TYPE_REFERENCE
-	jsr alloc
+	jsr array_create
 	set [z+-1], x
 	
 	set push, [z+10]
@@ -2096,7 +2086,6 @@
 
 	set a, [z+-1]
 	set a, [a]
-	set [a], 2
 	set [a + REFERENCE_DICT], x
 	
 	jsr lexer_next
@@ -2309,6 +2298,24 @@
 	set pc, postamble
 
 ;----------------------------------------------------------------
+:built_in_mem
+;----------------------------------------------------------------
+	jsr built_in_params
+	ifn i, 0
+		jsr recover
+
+	jsr mark
+	jsr compact
+
+	set a, [heap_handle_start]
+	sub a, [heap_free_start]
+	
+	set push, a
+	jsr uint16_to_int
+
+	set pc, postamble	
+
+;----------------------------------------------------------------
 :built_in_locals
 ;----------------------------------------------------------------
 	jsr built_in_params
@@ -2367,11 +2374,10 @@
 
 	set push, 1
 	set push, TYPE_STRING
-	jsr alloc
+	jsr array_create
 	
-	set y, [x]
-	set [y], 1
-	set [y+1], a
+	sti i, [x]
+	set [i], a
 
 	set pc, postamble	
 

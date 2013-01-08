@@ -1,50 +1,3 @@
-; struct float {
-;	uint17 mantissa_len;
-;   uint16 mantissa[mantissa_len];
-;   uint16 exponent;
-;   uint16 flags;
-; }
-#define SIZEOF_FLOAT		FLOAT_PRECISION + 2
-
-#define FLOAT_CATEGORY		0
-#define FLOAT_EXPONENT		1
-#define FLOAT_MANTISSA		2
-
-#define FLOAT_CATEGORY_NAN		0x0000
-#define FLOAT_CATEGORY_PINF		0x0400
-#define FLOAT_CATEGORY_PNUM		0x0200
-#define FLOAT_CATEGORY_PZERO	0x0100
-#define FLOAT_CATEGORY_NINF		0x0004
-#define FLOAT_CATEGORY_NNUM		0x0002
-#define FLOAT_CATEGORY_NZERO	0x0001
-
-#define FLOAT_MASK_POSITIVE 	0x0f00
-#define FLOAT_MASK_NEGATIVE 	0x000f
-
-:FLOAT_NAN		DAT 0
-:FLOAT_PINF		DAT 0
-:FLOAT_NINF		DAT 0
-:FLOAT_PZERO	DAT 0
-:FLOAT_NZERO	DAT 0
-
-:FLOAT_0		DAT 0
-:FLOAT_1		DAT 0
-:FLOAT_2		DAT 0
-:FLOAT_3		DAT 0
-:FLOAT_4		DAT 0
-:FLOAT_5		DAT 0
-:FLOAT_6		DAT 0
-:FLOAT_7		DAT 0
-:FLOAT_8		DAT 0
-:FLOAT_9		DAT 0
-:FLOAT_10		DAT 0
-
-:STR_PINF			DAT STR_PINF+2, TYPE_STRING, 3, "inf"
-:STR_NINF			DAT STR_NINF+2, TYPE_STRING, 4, "-inf"
-:STR_PZERO			DAT STR_PZERO+2, TYPE_STRING, 3, "0.0"
-:STR_NZERO			DAT STR_NZERO+2, TYPE_STRING, 4, "-0.0"
-:STR_NAN			DAT STR_NAN+2, TYPE_STRING, 3, "nan"
-
 ;----------------------------------------------------------------
 ; void float_create(uint category, uint exponent, uint mantissa_pattern)
 ;----------------------------------------------------------------
@@ -1674,42 +1627,54 @@
 
 	set pc, postamble
 
+;----------------------------------------------------------------
+; uint float_pow(struct handle *float, struct handle *int)
+;----------------------------------------------------------------
 :float_pow
 	set push, 2
 	set push, 2
 	jsr preamble
 
 	set push, [z+10]
-	jsr int_to_int16
+	jsr int_sgn
 	set a, x
+	
+	set x, [FLOAT_1]
+	ife a, 0
+		set pc, postamble
 
-	set [z-1], [z+11]		; x
-	set [z-2], [FLOAT_1]	; aux
+	set x, [FLOAT_0]
+	ife a, -1
+		set pc, postamble
+
+	set push, [z+10]
+	jsr int_to_int16
+	set c, x
+
+	set [z+-1], [z+11] 			; p
+	set [z+-2], [FLOAT_1]		; r
 	
 :float_pow_loop
-	ife a, 0
-		set pc, float_pow_exit
-		
-	ifc a, 0x0001
-		set pc, float_pow_square
+	ife c, 0
+		set pc, float_pow_break
 
-	set push, [z-1]
-	set push, [z-2]
-	jsr float_mul
-	set [z-2], x
-	
-	ife a, 1
-		set pc, float_pow_exit
+	ifc c, 1
+		set pc, float_pow_skip
 		
-:float_pow_square
-	set push, [z-1]
-	set push, [z-1]
+	set push, [z+-2]
+	set push, [z+-1]
 	jsr float_mul
-	set [z-1], x
+	set [z+-2], x
 	
-	div a, 2
+:float_pow_skip
+	set push, [z+-1]
+	set push, [z+-1]
+	jsr float_mul
+	set [z+-1], x
+
+	div c, 2
 	set pc, float_pow_loop
 
-:float_pow_exit
-	set x, [z-1]
-	set pc, postamble
+:float_pow_break
+	set x, [z+-2]
+	set pc, postamble	

@@ -458,12 +458,11 @@
 
 	set push, 1
 	set push, TYPE_STRING
-	jsr alloc
+	jsr array_create
 	set [z+-1], x
 	set b, x
 
 	set c, [x]
-	set [c], 1
 	set [c+1], [z+10]
 
 	ife [a + HANDLE_TYPE], TYPE_NAME
@@ -738,6 +737,7 @@
 	set push, 39
 	jsr array_insert
 
+	set x, [z-1]
 	set pc, postamble
 
 
@@ -869,7 +869,7 @@ set pc, hwloop
 :raw_input_no_prompt
 ;	set y, [cursor]
 	set y, [current_screen]
-	set b, [y + SCREEN_CURSOR]
+	set b, [y + SCREEN__CURSOR]
 
 :next_char_loop
 	; start of input
@@ -890,7 +890,7 @@ set pc, hwloop
 		set pc, finish
 
 	ife c, KEY_BS
-		ife [y + SCREEN_CURSOR], b
+		ife [y + SCREEN__CURSOR], b
 			set pc, next_char_loop
 			
 	jsr screen_add_char
@@ -898,19 +898,18 @@ set pc, hwloop
 	set pc, next_char_loop
 
 :finish
-	set a, [y + SCREEN_CURSOR]
+	set a, [y + SCREEN__CURSOR]
 	sub a, b
 	add a, 1
 
 	set push, a
 	set push, TYPE_STRING
-	jsr alloc
+	jsr array_create
 
 	set j, [x]					; struct string *
-	set [j], a					; len
 	add j, [j]					; string[last]
 	set [j], 10					; set newline
-	std i, [y + SCREEN_CURSOR] 	; i = cursor -1
+	std i, [y + SCREEN__CURSOR] 	; i = cursor -1
 
 :finish_loop
 	ifl i, b

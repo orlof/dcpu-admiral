@@ -1,12 +1,47 @@
 ;----------------------------------------------------------------
+; MEMORY LAYOUT
+;----------------------------------------------------------------
+#define MEM_CODE_SIZE			0x3000
+#define MEM_FLOPPY_SIZE			0x200
+#define MEM_SCREEN_SIZE			0x480
+#define MEM_STACK_SIZE			0x3000
+
+#define MEM_HEAP_START			MEM_CODE_SIZE
+#define MEM_HEAP_END			MEM_FLOPPY_START
+
+#define MEM_FLOPPY_START		MEM_FLOPPY_END - MEM_FLOPPY_SIZE
+#define MEM_FLOPPY_END			MEM_SCREEN_START
+
+#define MEM_SCREEN_START		MEM_SCREEN_END - MEM_SCREEN_SIZE
+#define MEM_SCREEN_END			MEM_STACK_START
+
+#define MEM_STACK_START			MEM_STACK_END - MEM_STACK_SIZE
+#define MEM_STACK_END			0x10000
+
+;----------------------------------------------------------------
+; PARAMETERS
+;----------------------------------------------------------------
+#define EDIT_BUFFER_SIZE	0x0400
+#define HEAP_GC_TRIGGER 25
+#define FLOAT_PRECISION	2
+; 2*16=32 bits for mantissa
+
+;----------------------------------------------------------------
 ; CONSTANTS
 ;----------------------------------------------------------------
 #define TRUE            1
 #define FALSE           0
 
-#define HEAP_GC_TRIGGER 10
-#define FLOAT_PRECISION	2
-; 2*16=32 bits for mantissa
+#define FLOAT_CATEGORY_NAN		0x0000
+#define FLOAT_CATEGORY_PINF		0x0400
+#define FLOAT_CATEGORY_PNUM		0x0200
+#define FLOAT_CATEGORY_PZERO	0x0100
+#define FLOAT_CATEGORY_NINF		0x0004
+#define FLOAT_CATEGORY_NNUM		0x0002
+#define FLOAT_CATEGORY_NZERO	0x0001
+
+#define FLOAT_MASK_POSITIVE 	0x0f00
+#define FLOAT_MASK_NEGATIVE 	0x000f
 
 #define FONT_COLOR      0x7000
 #define SCREEN_COLS     32
@@ -32,7 +67,7 @@
 ; DATA TYPES
 ;----------------------------------------------------------------
 ; SPECIAL TYPES
-#define TYPE_END            0x1000
+#define TYPE_MARKED			0x1000
 #define TYPE_NONE           0x2000
 #define TYPE_ERROR          0x4000
 #define TYPE_CONTROL        0x8000
@@ -54,6 +89,8 @@
 #define TYPE_REFERENCE      0x0200
 #define TYPE_SUBSCRIPTION   0x0400
 
+; TYPE GROUPS
+#define TYPE_GROUP_CONTAINER	TYPE_CONTROL + TYPE_TUPLE + TYPE_LIST + TYPE_DICT + TYPE_TUPLE_COMMA + TYPE_REFERENCE + TYPE_SUBSCRIPTION
 
 ;----------------------------------------------------------------
 ; DATA STRUCTURE DEFINITIONS
@@ -61,28 +98,28 @@
 ;----------------------------------------------------------------
 ; MEMORY
 ;
-; struct heap {
-;   uint16 *start;
-;   uint16 *end;
-;   uint16 *free_start;
-;   uint16 *handle_start;
-;   struct handle *zero;
-;   struct handle *free;
-; }
-;
 ; struct handle {
 ;   uint16 *data;
 ;   uint16 type;
 ;   uint16 size;
-;   struct handle *prev;
 ;   struct handle *next;
 ; }
-#define SIZEOF_HANDLE       5
+#define SIZEOF_HANDLE       4
 #define HANDLE_PTR      0
 #define HANDLE_TYPE     1
 #define HANDLE_SIZE     2
-#define HANDLE_PREV     3
-#define HANDLE_NEXT     4
+#define HANDLE_NEXT     3
+
+; struct float {
+;	uint16 category;
+;   uint16 exponent;
+;   uint16[] mantissa;
+; }
+#define SIZEOF_FLOAT		FLOAT_PRECISION + 2
+
+#define FLOAT_CATEGORY		0
+#define FLOAT_EXPONENT		1
+#define FLOAT_MANTISSA		2
 
 ; struct int_value {
 ;   uint16 len;
@@ -115,6 +152,7 @@
 ;   uint16 token;
 ;   [struct handle *value;] # only for return
 ; }
+#define SIZEOF_CONTROL		3
 #define CONTROL_SIGNAL      1
 #define CONTROL_VALUE       2
 
@@ -142,6 +180,14 @@
 ;   uint16 *cursor;
 ; }
 #define SIZEOF_SCREEN		3
-#define SCREEN_START		0
-#define SCREEN_END			1
-#define SCREEN_CURSOR		2
+#define SCREEN__START		0
+#define SCREEN__END			1
+#define SCREEN__CURSOR		2
+
+; struct file_handle {
+;   struct handle *first_sector;
+;   struct handle *length;
+; }
+#define FILE_HANDLE__FIRST_SECTOR	1
+#define FILE_HANDLE__LENGTH			2
+
