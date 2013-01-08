@@ -14,15 +14,18 @@
 ;----------------------------------------------------------------
 :current_screen dat screen_first
 
-:screen_first	dat 0xc000, 0xc180, 0xc000
-				dat 0xc180, 0xc300, 0xc180
-:screen_last	dat 0xc300, 0xc480, 0xc300
+:screen_first	dat MEM_SCREEN_START, MEM_SCREEN_START + 0x180, MEM_SCREEN_START
+				dat MEM_SCREEN_START + 0x180, MEM_SCREEN_START + 0x300, MEM_SCREEN_START + 0x180
+:screen_last	dat MEM_SCREEN_START + 0x300, MEM_SCREEN_START + 0x480, MEM_SCREEN_START + 0x300
 
 
 ;----------------------------------------------------------------
 ; GLOBAL FD VARIABLES
 ;----------------------------------------------------------------
-
+; current file status
+:file_position			dat 0
+:file_buffer_position	dat 0
+:file_current_sector    dat 0
 
 ;----------------------------------------------------------------
 ; RANDOM NUMBER GENERATORS
@@ -44,13 +47,13 @@
 ;----------------------------------------------------------------
 ; GLOBAL HEAP MANAGEMENT VARIABLES
 ;----------------------------------------------------------------
-:heap_start         DAT 0
-:heap_end           DAT 0
-:heap_free_start    DAT 0
-:heap_handle_start  DAT 0
-:heap_zero          DAT 0
-:heap_free_list     DAT 0
-:heap_alloc_counter DAT 0
+:heap_counter 		DAT 0
+:heap_free_start    DAT MEM_HEAP_START
+
+:heap_handle_start  DAT MEM_HEAP_END
+:heap_handle_head   DAT 0
+:heap_handle_tail   DAT heap_handle_head - HANDLE_NEXT
+:heap_handle_free   DAT 0
 
 ;----------------------------------------------------------------
 ; GLOBAL LEXER VARIABLES
@@ -89,10 +92,14 @@
 :STR_EX         DAT STR_EX + 2, TYPE_NAME, 2, "ex"
 :STR_ME         DAT STR_ME + 2, TYPE_NAME, 2, "me"
 
-:STR_TRUE       DAT STR_TRUE+2, TYPE_STRING, 4, "true"
-:STR_FALSE      DAT STR_FALSE+2, TYPE_STRING, 5, "false"
+:STR_STARTUP	DAT STR_STARTUP + 2, TYPE_STRING, 32, " ** DCPU ADMIRAL INTERPRETER ** "
+:STR_STARTUP2	DAT STR_STARTUP2 + 2, TYPE_STRING, 16, "64K RAM SYSTEM  "
+:STR_STARTUP3	DAT STR_STARTUP3 + 2, TYPE_STRING, 11, " WORDS FREE"
+:STR_TRUE       DAT STR_TRUE + 2, TYPE_STRING, 4, "true"
+:STR_FALSE      DAT STR_FALSE + 2, TYPE_STRING, 5, "false"
 :STR_ERROR      DAT STR_ERROR + 2, TYPE_STRING, 5, "ERROR"
 :STR_PROMPT     DAT STR_PROMPT + 2, TYPE_STRING, 1, ">"
+:STR_FS_ROOT    DAT STR_FS_ROOT + 2, TYPE_STRING, 1, "/"
 :STR_EMPTY      DAT STR_EMPTY + 2, TYPE_STRING, 0
 
 :NONE           DAT 0, TYPE_NONE
@@ -138,6 +145,30 @@
 :INT_VALUE_14   dat 0x0001, 0x000E
 :INT_VALUE_15   dat 0x0001, 0x000F
 :INT_VALUE_16   dat 0x0001, 0x0010
+
+:FLOAT_NAN		DAT 0
+:FLOAT_PINF		DAT 0
+:FLOAT_NINF		DAT 0
+:FLOAT_PZERO	DAT 0
+:FLOAT_NZERO	DAT 0
+
+:FLOAT_0		DAT 0
+:FLOAT_1		DAT 0
+:FLOAT_2		DAT 0
+:FLOAT_3		DAT 0
+:FLOAT_4		DAT 0
+:FLOAT_5		DAT 0
+:FLOAT_6		DAT 0
+:FLOAT_7		DAT 0
+:FLOAT_8		DAT 0
+:FLOAT_9		DAT 0
+:FLOAT_10		DAT 0
+
+:STR_PINF			DAT STR_PINF+2, TYPE_STRING, 3, "inf"
+:STR_NINF			DAT STR_NINF+2, TYPE_STRING, 4, "-inf"
+:STR_PZERO			DAT STR_PZERO+2, TYPE_STRING, 3, "0.0"
+:STR_NZERO			DAT STR_NZERO+2, TYPE_STRING, 4, "-0.0"
+:STR_NAN			DAT STR_NAN+2, TYPE_STRING, 3, "nan"
 
 ;----------------------------------------------------------------
 ; TOKENS
@@ -249,6 +280,7 @@
 ;----------------------------------------------------------------
 :built_in_functions
 	dat 3, "id", built_in_id
+	dat 4, "mem", built_in_mem
 	dat 4, "rnd", built_in_rnd
 	dat 4, "int", built_in_int
 	dat 4, "str", built_in_str
@@ -339,7 +371,7 @@
     DAT lexer_char_exclamation   ; 33 ! (exclamation mark)
     DAT lexer_char_quotationmark ; 34 " (double quote)
     DAT lexer_char_comment       ; 35 # (number sign)
-    DAT lexer_char_letter_lc     ; 36 $ (dollar sign)
+    DAT lexer_char_letter        ; 36 $ (dollar sign)
     DAT lexer_char_percent       ; 37 % (percent)
     DAT lexer_char_ambersand     ; 38 & (ampersand)
     DAT lexer_char_quotationmark ; 39 ' (single quote)
@@ -368,64 +400,64 @@
     DAT lexer_char_greater       ; 62 > (greater than sign)
     DAT lexer_char_questionmark  ; 63 ? (question mark)
     DAT recover                  ; 64 @ (AT symbol)
-    DAT lexer_char_letter_uc     ; 65 A 
-    DAT lexer_char_letter_uc     ; 66 B 
-    DAT lexer_char_letter_uc     ; 67 C 
-    DAT lexer_char_letter_uc     ; 68 D 
-    DAT lexer_char_letter_uc     ; 69 E 
-    DAT lexer_char_letter_uc     ; 70 F 
-    DAT lexer_char_letter_uc     ; 71 G 
-    DAT lexer_char_letter_uc     ; 72 H 
-    DAT lexer_char_letter_uc     ; 73 I 
-    DAT lexer_char_letter_uc     ; 74 J 
-    DAT lexer_char_letter_uc     ; 75 K 
-    DAT lexer_char_letter_uc     ; 76 L 
-    DAT lexer_char_letter_uc     ; 77 M 
-    DAT lexer_char_letter_uc     ; 78 N 
-    DAT lexer_char_letter_uc     ; 79 O 
-    DAT lexer_char_letter_uc     ; 80 P 
-    DAT lexer_char_letter_uc     ; 81 Q 
-    DAT lexer_char_letter_uc     ; 82 R 
-    DAT lexer_char_letter_uc     ; 83 S 
-    DAT lexer_char_letter_uc     ; 84 T 
-    DAT lexer_char_letter_uc     ; 85 U 
-    DAT lexer_char_letter_uc     ; 86 V 
-    DAT lexer_char_letter_uc     ; 87 W 
-    DAT lexer_char_letter_uc     ; 88 X 
-    DAT lexer_char_letter_uc     ; 89 Y 
-    DAT lexer_char_letter_uc     ; 90 Z 
+    DAT lexer_char_letter        ; 65 A 
+    DAT lexer_char_letter        ; 66 B 
+    DAT lexer_char_letter        ; 67 C 
+    DAT lexer_char_letter        ; 68 D 
+    DAT lexer_char_letter        ; 69 E 
+    DAT lexer_char_letter        ; 70 F 
+    DAT lexer_char_letter        ; 71 G 
+    DAT lexer_char_letter        ; 72 H 
+    DAT lexer_char_letter        ; 73 I 
+    DAT lexer_char_letter        ; 74 J 
+    DAT lexer_char_letter        ; 75 K 
+    DAT lexer_char_letter        ; 76 L 
+    DAT lexer_char_letter        ; 77 M 
+    DAT lexer_char_letter        ; 78 N 
+    DAT lexer_char_letter        ; 79 O 
+    DAT lexer_char_letter        ; 80 P 
+    DAT lexer_char_letter        ; 81 Q 
+    DAT lexer_char_letter        ; 82 R 
+    DAT lexer_char_letter        ; 83 S 
+    DAT lexer_char_letter        ; 84 T 
+    DAT lexer_char_letter        ; 85 U 
+    DAT lexer_char_letter        ; 86 V 
+    DAT lexer_char_letter        ; 87 W 
+    DAT lexer_char_letter        ; 88 X 
+    DAT lexer_char_letter        ; 89 Y 
+    DAT lexer_char_letter        ; 90 Z 
     DAT lexer_char_lbrack        ; 91 [ (left opening bracket)
     DAT recover                  ; 92 \ (back slash)
     DAT lexer_char_rbrack        ; 93 ] (right closing bracket)
     DAT lexer_char_caret         ; 94 ^ (caret cirumflex)
-    DAT recover                  ; 95 _ (underscore)
+    DAT lexer_char_letter        ; 95 _ (underscore)
     DAT recover                  ; 96 ` 
-    DAT lexer_char_letter_lc     ; 97 a 
-    DAT lexer_char_letter_lc     ; 98 b 
-    DAT lexer_char_letter_lc     ; 99 c 
-    DAT lexer_char_letter_lc     ; 100 d 
-    DAT lexer_char_letter_lc     ; 101 e 
-    DAT lexer_char_letter_lc     ; 102 f 
-    DAT lexer_char_letter_lc     ; 103 g 
-    DAT lexer_char_letter_lc     ; 104 h 
-    DAT lexer_char_letter_lc     ; 105 i 
-    DAT lexer_char_letter_lc     ; 106 j 
-    DAT lexer_char_letter_lc     ; 107 k 
-    DAT lexer_char_letter_lc     ; 108 l 
-    DAT lexer_char_letter_lc     ; 109 m 
-    DAT lexer_char_letter_lc     ; 110 n 
-    DAT lexer_char_letter_lc     ; 111 o 
-    DAT lexer_char_letter_lc     ; 112 p 
-    DAT lexer_char_letter_lc     ; 113 q 
-    DAT lexer_char_letter_lc     ; 114 r 
-    DAT lexer_char_letter_lc     ; 115 s 
-    DAT lexer_char_letter_lc     ; 116 t 
-    DAT lexer_char_letter_lc     ; 117 u 
-    DAT lexer_char_letter_lc     ; 118 v 
-    DAT lexer_char_letter_lc     ; 119 w 
-    DAT lexer_char_letter_lc     ; 120 x 
-    DAT lexer_char_letter_lc     ; 121 y 
-    DAT lexer_char_letter_lc     ; 122 z 
+    DAT lexer_char_letter        ; 97 a 
+    DAT lexer_char_letter        ; 98 b 
+    DAT lexer_char_letter        ; 99 c 
+    DAT lexer_char_letter        ; 100 d 
+    DAT lexer_char_letter        ; 101 e 
+    DAT lexer_char_letter        ; 102 f 
+    DAT lexer_char_letter        ; 103 g 
+    DAT lexer_char_letter        ; 104 h 
+    DAT lexer_char_letter        ; 105 i 
+    DAT lexer_char_letter        ; 106 j 
+    DAT lexer_char_letter        ; 107 k 
+    DAT lexer_char_letter        ; 108 l 
+    DAT lexer_char_letter        ; 109 m 
+    DAT lexer_char_letter        ; 110 n 
+    DAT lexer_char_letter        ; 111 o 
+    DAT lexer_char_letter        ; 112 p 
+    DAT lexer_char_letter        ; 113 q 
+    DAT lexer_char_letter        ; 114 r 
+    DAT lexer_char_letter        ; 115 s 
+    DAT lexer_char_letter        ; 116 t 
+    DAT lexer_char_letter        ; 117 u 
+    DAT lexer_char_letter        ; 118 v 
+    DAT lexer_char_letter        ; 119 w 
+    DAT lexer_char_letter        ; 120 x 
+    DAT lexer_char_letter        ; 121 y 
+    DAT lexer_char_letter        ; 122 z 
     DAT lexer_char_lcurly        ; 123 { (left opening brace)
     DAT lexer_char_vbar          ; 124 | (vertical bar)
     DAT lexer_char_rcurly        ; 125 } (right closing brace)

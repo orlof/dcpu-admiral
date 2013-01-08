@@ -8,12 +8,7 @@
 
 	jsr detect_hardware
 	jsr screen_select
-
 	jsr screen_clear
-
-	set push, 0x6000
-	set push, 0x6000
-	jsr create_heap
 
 	set push, 10
 	set push, TYPE_DICT
@@ -32,6 +27,27 @@
 
 	; init fpu
 	jsr float_init	
+
+	set push, STR_STARTUP
+	jsr print
+
+	set push, STR_STARTUP2
+	jsr print
+	
+	jsr mark
+	jsr compact
+
+	set a, [heap_handle_start]
+	sub a, [heap_free_start]
+	
+	set push, a
+	jsr uint16_to_int
+	
+	set push, x
+	jsr print
+
+	set push, STR_STARTUP3
+	jsr print
 
 :interpreter_loop
 	set push, STR_PROMPT
@@ -181,14 +197,20 @@
 	set push, STR_ERROR
 	jsr print
 
-	set c, ':'
+	set c, 10
 	jsr screen_add_char
-	
-	jsr lexer_get_token_as_string
 
+	jsr lexer__get_line
 	set push, x
 	jsr print
 
+	set c, 10
+	jsr screen_add_char
+
+	jsr lexer__get_token_marker
+	set push, x
+	jsr print
+	
 	set c, 10
 	jsr screen_add_char
 

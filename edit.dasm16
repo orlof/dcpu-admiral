@@ -6,40 +6,49 @@
 	set push, 1
 	jsr preamble
 
+	; initialize cursor to top left corner
+	; these are screen coordinates (not column or line in text) as 
+	; screen scrolls in both axis
 	set [cur_x], 0
 	set [cur_y], 0
+
+	; prev_char is a hack used to test with continuous cursor
+	; movement while keeping button down - no luck
 	set [prev_char], 0
 
+	; initialize next screen
 	jsr screen_next
 	jsr screen_clear
 
-	set push, 1000
+	; reserve space for editing text as string (not _really_ correct)
+	set push, EDIT_BUFFER_SIZE
 	set push, TYPE_STRING
 	jsr alloc
 	set [z+-1], x
 
-	set x, [x]
-	add x, 1
+	set x, [x]			; x: struct string *
+
 	set [buf_start], x
 	set [gap_start], x
 	set [cur_pos], x
 	set [win_start], x
 	set [cur_line], x
 
-	add x, 1000
+	add x, EDIT_BUFFER_SIZE
 	set [buf_end], x
 	set [gap_end], x
 
 	set x, [z+10]
 	set x, [x]
 	set y, x
+	add y, 1
 	add x, [x]
 
 :edit_copy_arg_to_buffer
-	ife y, x
+	ifg y, x
 		set pc, edit_main_loop
 
-	set c, [y+1]
+	set c, [y]
 	jsr edit_insert_char
 	add y, 1
 	set pc, edit_copy_arg_to_buffer
@@ -98,12 +107,9 @@
 	
 	set push, c
 	set push, TYPE_STRING
-	jsr alloc
+	jsr array_create
 
-	set j, [x]
-	set [j], c
-	add j, 1
-	
+	sti j, [x]	
 	set i, [buf_start]
 
 :edit_copy_buffer_to_result
@@ -209,12 +215,12 @@
 ;----------------------------------------------------------------	
 	set a, [current_screen]
 	set i, [win_start]
-	set j, [a + SCREEN_START]
+	set j, [a + SCREEN__START]
 
 :edit_win_draw_loop
 	jsr edit_line_draw
 
-	ifl j, [a + SCREEN_END]
+	ifl j, [a + SCREEN__END]
 		set pc, edit_win_draw_loop
 
 	set pc, pop

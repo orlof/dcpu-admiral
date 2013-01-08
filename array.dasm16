@@ -1,4 +1,26 @@
 ;----------------------------------------------------------------
+; struct handle *array_create(uint16 len, uint16 type)
+;  ugly hack to mimic call conventions
+;----------------------------------------------------------------
+:array_create
+	set push, [sp + 2]		; size
+	add [sp], 1
+	set push, [sp + 2]		; type
+	jsr alloc
+	
+	set push, x
+	
+	set x, [x]
+	set [x], [sp + 3]
+	
+	; restore stack
+	set x, pop
+	set [sp], pop
+	set [sp], pop
+
+	set pc, pop
+
+;----------------------------------------------------------------
 :array_get
 ; fastcall
 ; a: struct handle *
@@ -88,8 +110,8 @@
 	set push, 0
 	jsr preamble
 
-	set a, [z+12]		; handle *
-	set b, [a]			; array *
+	set a, [z+12]		; struct handle *
+	set b, [a]			; struct array *
 
 	; check range
 	set c, [z+11]
@@ -106,11 +128,10 @@
 		set pc, array_insert_prepare
 	    
 	; increase list capacity
-	add i, 10   ; increase capacity
+	add i, 11   ; increase capacity
 	
 	set push, a
 	set push, i
-	set push, [a+1]
 	jsr realloc
 
 	set b, [a]			; realloc has moved the memory
@@ -160,7 +181,7 @@
 
 	set push, y
 	set push, [a + HANDLE_TYPE]
-	jsr alloc
+	jsr array_create
 	set [z+-1], x
 
 	add j, b
@@ -194,7 +215,7 @@
 	
 	set push, c
 	set push, [b + HANDLE_TYPE]
-	jsr alloc
+	jsr array_create
 	set [z+-1], x		; struct handle *result
 
 	set i, [x]			; struct string *result
@@ -287,7 +308,7 @@
 
 	set push, y
 	set push, [a + HANDLE_TYPE]
-	jsr alloc
+	jsr array_create
 
 	set c, [x]			; struct list *
 	set [c], y			; set size
@@ -367,7 +388,7 @@
 
 	set push, [i]
 	set push, [a + HANDLE_TYPE]
-	jsr alloc
+	jsr array_create
 
 	set j, [x]
 	set c, i
@@ -380,3 +401,60 @@
 	set [j], [i]
 	sti pc, array_clone_loop
 
+;----------------------------------------------------------------
+; void array_map(struct handle *array, *function map)
+;----------------------------------------------------------------
+:array_map
+	set push, 2
+	set push, 0
+	jsr preamble
+	
+	set a, [z + 11]				; struct handle *array
+	set b, [z + 10]				; *map()
+
+	set c, [a]
+	sti i, c
+	add c, [c]
+
+:array_map__loop
+	ifg i, c
+		set pc, postamble
+
+	set push, [i]
+	jsr b
+	
+	sti pc, array_map__loop
+		
+;----------------------------------------------------------------
+; void array_find(struct handle *array, void item, *compare_function)
+;----------------------------------------------------------------
+:array_find
+	set push, 3
+	set push, 0
+	jsr preamble
+	
+	set a, [z + 12]				; struct handle *array
+	set b, [z + 11]				; item
+	set c, [z + 10]				; compare_function*
+
+	set y, [a]					; struct array *
+	sti j, y					; ptr to current item
+	
+	add y, [y]					; ptr to last item
+
+	set i, 0					; index
+
+:array_find__loop
+	set x, -1
+	ifg j, y
+		set pc, postamble
+
+	set push, [j]
+	set push, b
+	jsr c
+	
+	ifn x, 0
+		sti pc, array_find__loop
+
+	set x, i
+	jsr postamble
