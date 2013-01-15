@@ -857,6 +857,9 @@ set pc, hwloop
 	ifn c, FALSE
 		set pc, win_getchar_release_loop
 
+	set a, 1
+	hwi [keyboard]
+
 	set a, 0
 	hwi [keyboard]
 
