@@ -14,8 +14,8 @@ run: $(TARGET).bin
 	$(EMU) $(TARGET).bin
 
 $(TARGET).bin: $(TARGET).dasm16
-	$(ASM) -o $@ -s $@.s $(TARGET).dasm16
+	$(ASM) -o $@.dobj16 -s $@.s -i $(TARGET).dasm16
+    $(LD) -O 3 -o $@.bin -s $@.s $(TARGET).dobj16 -k none
 
 clean:
-	rm -fv *.bin *.s *~
-
+	rm -fv *.bin *.dodj16 *.s *~

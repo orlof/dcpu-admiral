@@ -789,8 +789,20 @@ set pc, hwloop
 	; Handle keyboard input  
 	set a, 1                      ; store next key mode
 	hwi [keyboard]
-	ifn c, 0
+
+	; this keyboard handling is overly complicated as devkit and toolchain
+	; have different behaviour. toolchain returns control keys with a=1,
+	; while devkit requires button down queries with a=2
+	ifg c, 0x19
+		ifl c, 0x80
+			set pc, pop
+	ife c, KEY_NEWLINE
 		set pc, pop
+	ife c, KEY_BS
+		set pc, pop
+	ifg c, KEY_UP-1
+		ifl c, KEY_RIGHT+1
+			set pc, pop
 
 	set b, KEY_UP
 	jsr win_getchar_test_key
@@ -844,6 +856,9 @@ set pc, hwloop
 	hwi [keyboard]
 	ifn c, FALSE
 		set pc, win_getchar_release_loop
+
+	set a, 0
+	hwi [keyboard]
 
 	set pc, pop
 
