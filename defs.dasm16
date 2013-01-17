@@ -184,10 +184,10 @@
 #define SCREEN__END			1
 #define SCREEN__CURSOR		2
 
-; struct file_handle {
-;   struct handle *first_sector;
-;   struct handle *length;
+; struct inode {
+;   struct handle *sector;
+;   struct handle *size;
 ; }
-#define FILE_HANDLE__FIRST_SECTOR	1
-#define FILE_HANDLE__LENGTH			2
+#define INODE__SECTOR	1
+#define INODE__SIZE		2
 

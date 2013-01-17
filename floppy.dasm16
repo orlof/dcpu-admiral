@@ -6,100 +6,214 @@
 ; del(str)
 
 ; these defines are only foor mbr
-#define FILE_FREE_HEAD			MEM_FLOPPY_START
-#define FILE_FREE_TAIL			MEM_FLOPPY_START + 1
-#define FILE_DIR_SECTOR			MEM_FLOPPY_START + 2
+#define FLOPPY__MBR__SECTOR				0x00
+#define FLOPPY__MBR__HEAD_SECTOR		MEM_FLOPPY_START
+#define FLOPPY__MBR__TAIL_SECTOR		MEM_FLOPPY_START + 1
+#define FLOPPY__MBR__DIR_SECTOR			MEM_FLOPPY_START + 2
 
 ; all other sectors
-#define FILE_NEXT_SECTOR		MEM_FLOPPY_START
+#define FLOPPY__SECTOR__NEXT_SECTOR		MEM_FLOPPY_START
+#define FLOPPY__SECTOR__DATA_START		MEM_FLOPPY_START + 1
+
+#define FLOPPY__STATE__BUSY				0x03
+
+#define INODE_SECTOR					1
+#define INODE_SIZE						2
 
 ;----------------------------------------------------------------
-; struct handle *file__dir__read(void)
+; extern void file__format()
 ;----------------------------------------------------------------
-:file__dir__read
-	;---------------------------------------
-	; read mbr
-	;---------------------------------------
-	jsr file__mbr__read
-
-	;---------------------------------------
-	; read directory
-	;---------------------------------------
-	set push, [FILE_DIR_SECTOR]
-	jsr file__read_item_from_sector
-
-	set pc, pop
-
-;----------------------------------------------------------------
-; void file__dir__write(struct handle *dir)
-;----------------------------------------------------------------
-:file__dir__write
-	set push, 1
-	set push, 1
-	jsr preamble
-	
-	set push, [z+10]
-	jsr file__write
-	set [z-1], x
-
-	; get first_sector
-	set x, [x]
-	set push, [x + FILE_HANDLE__FIRST_SECTOR]
-	jsr int_to_int16
-	set a, x
-
-	;---------------------------------------
-	; read mbr
-	;---------------------------------------
-	jsr file__mbr__read
-	set [FILE_DIR_SECTOR], a
-	jsr file__mbr__write
-
-	set pc, postamble
-
-;----------------------------------------------------------------
-; void file__format()
-;----------------------------------------------------------------
-:file__format
+:floppy__format
 	set push, 0
 	set push, 1
 	jsr preamble
 
-	set [FILE_FREE_TAIL], 1439
-	set [FILE_DIR_SECTOR], 1
+	;---------------------------------------
+	; initialize all sectors
+	;---------------------------------------
+	set [FLOPPY__MBR__TAIL_SECTOR], 1439
+	set [FLOPPY__MBR__DIR_SECTOR], 1
 
 	set i, 0
-:file__format__next_sector
-	sti [file_current_sector], i
+:floppy__format__next_sector
+	sti [floppy__sector__current], i
 	ife i, 1440
 		set i, 0
-	set [FILE_NEXT_SECTOR], i
+	set [FLOPPY__SECTOR__NEXT_SECTOR], i
 	
-	jsr file__write_sector
+	jsr floppy__sector__write
 
 	ifn i, 0
-		set pc, file__format__next_sector
+		set pc, floppy__format__next_sector
 
+	;---------------------------------------
+	; create empty dir
+	;---------------------------------------
 	set push, 0
 	set push, TYPE_DICT
 	jsr array_create
 	set [z-1], x
 
 	set push, 1
-	jsr file__open
+	jsr floppy__file__open
 	
 	set push, [z-1]
-	jsr file__serialize
+	jsr floppy__item__serialize
 	
-	jsr file__close
+	jsr floppy__file__close
 
 	set pc, postamble
 	
 ;----------------------------------------------------------------
+; extern struct handle *file__dir__read(void)
+; return {} dir
+; reads the directory from floppy
+;----------------------------------------------------------------
+:floppy__dir__read
+	;---------------------------------------
+	; read mbr
+	;---------------------------------------
+	set push, FLOPPY__MBR__SECTOR
+	jsr floppy__sector__read
+
+	;---------------------------------------
+	; read directory
+	;---------------------------------------
+	set push, [FLOPPY__MBR__DIR_SECTOR]
+	jsr floppy__item__read_from_sector
+
+	set pc, pop
+
+;----------------------------------------------------------------
+; extern struct handle *floppy__item__read(struct handle *inode)
+;----------------------------------------------------------------
+:floppy__item__read
+    set push, 1
+    set push, 0
+    jsr preamble
+
+	set x, [z+10]		; struct handle *tuple
+	set x, [x]			; struct inode *
+
+	set push, [x + INODE__SECTOR]
+	jsr int_to_int16
+
+	set push, x
+	jsr floppy__item__read_from_sector
+	
+	set pc, postamble
+
+;----------------------------------------------------------------
+; extern void save(struct handle *filename, struct handle *item)
+;----------------------------------------------------------------
+:floppy__item__write
+    set push, 2
+    set push, 2
+    jsr preamble
+
+	;---------------------------------------
+	; store item to disk
+	;---------------------------------------
+	set push, [z+10]
+	jsr floppy__item__write_to_free_space
+	set [z-1], x							; inode
+	
+	;---------------------------------------
+	; update directory
+	;---------------------------------------
+	jsr floppy__dir__read
+	set [z-2], x
+	
+	set push, x
+	set push, [z+11]
+	jsr dict_get
+	
+	ife x, 0
+		set pc, floppy__item__write__update_dir
+
+	set x, [x]
+	set push, [x + INODE_SECTOR]
+	jsr floppy__sector__free
+
+:floppy__item__write__update_dir
+	set push, [z-2]
+	set push, [z+11]
+	set push, [z-1]
+	jsr dict_set
+
+	set push, [z-2]
+	jsr floppy__dir__write
+
+    set pc, postamble    
+
+;----------------------------------------------------------------
+; struct handle *file__delete(struct handle *filename)
+;----------------------------------------------------------------
+:floppy__file__delete
+    set push, 1
+    set push, 2
+    jsr preamble
+
+	;---------------------------------------
+	; update directory
+	;---------------------------------------
+	jsr floppy__dir__read
+	set [z-1], x
+	
+	set push, x
+	set push, [z+11]
+	jsr dict_del
+	set [z-2], x			; struct handle *tuple
+
+	ife x, 0
+		set pc, postamble
+
+	;---------------------------------------
+	; free space
+	;---------------------------------------
+	set x, [x]				; struct tuple *kv
+	set x, [x + DICT_ITEM_VALUE]	; struct handle *inode
+	set x, [x]				; struct inode *
+	set push, [x + INODE_SECTOR]
+	jsr floppy__sector__free
+	
+	set pc, postamble
+
+;----------------------------------------------------------------
+; void file__dir__write(struct handle *dir)
+;----------------------------------------------------------------
+:floppy__dir__write
+	set push, 1
+	set push, 1
+	jsr preamble
+	
+	set push, [z+10]
+	jsr floppy__item__write_to_free_space
+	set [z-1], x							; inode
+
+	; get first_sector
+	set x, [x]
+	set push, [x + INODE__SECTOR]
+	jsr int_to_int16
+	set a, x
+
+	; read mbr
+	set push, FLOPPY__MBR__SECTOR
+	jsr floppy__sector__read
+	
+	; update dir location
+	set [FLOPPY__MBR__DIR_SECTOR], a
+
+	; write mbr
+	jsr floppy__sector__write
+
+	set pc, postamble
+
+;----------------------------------------------------------------
 ; struct handle *file__deserialize(void)
 ;----------------------------------------------------------------
-:file__deserialize
-    set push, 1
+:floppy__item__deserialize
+    set push, 0
     set push, 0
     jsr preamble
     
@@ -109,7 +223,7 @@
 ;----------------------------------------------------------------
 ; void file__serialize(struct handle *item)
 ;----------------------------------------------------------------
-:file__serialize
+:floppy__item__serialize
     set push, 1
     set push, 0
     jsr preamble
@@ -127,14 +241,14 @@
 	;---------------------------------------
 	set y, [b]					; id == struct handle *
     set push, y
-    jsr file__write_word
+    jsr floppy__file__write_word
 
 	;---------------------------------------
 	; write TYPE
 	;---------------------------------------
 	set c, [y + HANDLE_TYPE]
     set push, c 				; type
-    jsr file__write_word
+    jsr floppy__file__write_word
 
 	;---------------------------------------
 	; write SIZE (actual)
@@ -146,7 +260,7 @@
 	    set j, SIZEOF_FLOAT		; float size
 
 	set push, j
-    jsr file__write_word
+    jsr floppy__file__write_word
 
 	;---------------------------------------
 	; write DATA
@@ -166,7 +280,7 @@
 		set pc, postamble
 
 	set push, [i]
-	jsr file__write_word
+	jsr floppy__file__write_word
 
 	ifc c, TYPE_GROUP_CONTAINER
 		sti pc, file__serialize__data__loop
@@ -188,107 +302,24 @@
 	sti pc, file__serialize__data__loop
   
 ;----------------------------------------------------------------
-; void save(struct handle *filename, struct handle *root)
+; struct handle *file__item__read_from_sector(uint16 sector)
 ;----------------------------------------------------------------
-:file__save
-    set push, 2
-    set push, 2
-    jsr preamble
-
-	;---------------------------------------
-	; store item to disk
-	;---------------------------------------
+:floppy__item__read_from_sector
+	set push, 1
+	set push, 0
+	jsr preamble
+	
 	set push, [z+10]
-	jsr file__write
-	set [z-1], x
-	
-	;---------------------------------------
-	; update directory
-	;---------------------------------------
-	jsr file__dir__read
-	set [z-2], x
-	
-	set push, x
-	set push, [z+11]
-	jsr dict_get
-	
-	ife x, 0
-		set pc, file__save__update_dir
+	jsr floppy__file__open		
 
-	set push, x
-	jsr file__delete
-
-:file__save__update_dir
-	set push, [z-2]
-	set push, [z+11]
-	set push, [z-1]
-	jsr dict_set
-
-	set push, [z-2]
-	jsr file__dir__write
-
-    set pc, postamble    
-
-;----------------------------------------------------------------
-; struct handle *file__read(struct handle *file_handle)
-;----------------------------------------------------------------
-:file__read
-    set push, 1
-    set push, 0
-    jsr preamble
-
-	set x, [z+10]		; struct handle *tuple
-	set x, [x]			; struct tuple *file_handle
-
-	set push, [x + FILE_HANDLE__FIRST_SECTOR]
-	jsr int_to_int16
-
-	set push, x
-	jsr file__read_item_from_sector
+	jsr floppy__item__deserialize
 	
 	set pc, postamble
-
-;----------------------------------------------------------------
-; struct handle *file__delete(struct handle *file_handle)
-;----------------------------------------------------------------
-:file__delete
-    set push, 1
-    set push, 0
-    jsr preamble
-
-	jsr file__mbr__read
-
-	set push, [FILE_FREE_TAIL]
-	jsr file__read_sector
-
-	set x, [z+10]		; struct handle *tuple
-	set x, [x]			; struct tuple *file_handle
-
-	set push, [x + FILE_HANDLE__FIRST_SECTOR]
-	jsr int_to_int16
-
-	set [FILE_NEXT_SECTOR], x
-	jsr file__write_sector
-	
-	set pc, postamble
-
-;----------------------------------------------------------------
-; struct handle *file__read_item_from_sector(uint16 sector)
-;----------------------------------------------------------------
-:file__read_item_from_sector
-	set x, [sp+1]
-	set [sp], pop
-
-	set push, x	
-	jsr file__open		
-	jsr file__deserialize
-	
-	set pc, pop
 
 ;----------------------------------------------------------------
 ; struct handle *file__write(struct handle *item)
 ;----------------------------------------------------------------
-:file__write
+:floppy__item__write_to_free_space
     set push, 1
     set push, 1
     jsr preamble
@@ -296,28 +327,30 @@
 	;---------------------------------------
 	; read mbr
 	;---------------------------------------
-	jsr file__mbr__read
-	set a, [FILE_FREE_HEAD]					; first sector
+	set push, FLOPPY__MBR__SECTOR 
+	jsr floppy__sector__read
+
+	set a, [FLOPPY__MBR__HEAD_SECTOR]		; first sector
 
 	;---------------------------------------
 	; write file to free space
 	;---------------------------------------
 	set push, a
-	jsr file__open
+	jsr floppy__file__open
 
 	; serialize object
     set push, [z+10]
-    jsr file__serialize
+    jsr floppy__item__serialize
 
-	set b, [file_position]					; file length
+	set b, [floppy__file__position]			; file length
 
 	;---------------------------------------
 	; terminate file and update list of free sectors
 	;---------------------------------------
-	jsr file__close
-
+	jsr floppy__file__close
+	
 	;---------------------------------------
-	; return file handle (first_sector, length)
+	; return struct handle *inode (sector, size)
 	;---------------------------------------
 	set push, 2
 	set push, TYPE_TUPLE
@@ -326,58 +359,45 @@
 
 	set c, [x]
 
-	set push, a					; first_sector
+	set push, a					; sector
 	jsr uint16_to_int
-	set [c + 1], x
+	set [c + INODE_SECTOR], x
 	
 	set push, b					; length
 	jsr uint16_to_int
-	set [c + 2], x
+	set [c + INODE_SIZE], x
 
 	set pc, postamble
 
 ;----------------------------------------------------------------
-:file__open
+:floppy__file__open
 ;----------------------------------------------------------------
-	set [file_current_sector], [sp+1]
-    jsr file__read_sector
+	set push, [sp + 1]
+    jsr floppy__sector__read
 
-	; initialize position pointers
-    set [file_buffer_position], 1
-    set [file_position], 0
+	; initialize file position
+    set [floppy__file__position], 0
     
     set [sp], pop
     set pc, pop
 
 ;----------------------------------------------------------------
-:file__close
+:floppy__file__close
 ;----------------------------------------------------------------
 	; store next free sector
-	set push, [FILE_NEXT_SECTOR]
+	set push, [FLOPPY__SECTOR__NEXT_SECTOR]
 
 	; terminate current sector list
-	set [FILE_NEXT_SECTOR], 0
-	jsr file__write_sector
+	set [FLOPPY__SECTOR__NEXT_SECTOR], 0
+	jsr floppy__sector__write
 
 	; update mbr
-	jsr file__mbr__read	
-	set [FILE_FREE_HEAD], pop
-	jsr file__mbr__write
+	set push, FLOPPY__MBR__SECTOR
+	jsr floppy__sector__read
+
+	set [FLOPPY__MBR__HEAD_SECTOR], pop
+	jsr floppy__sector__write
 	
-	set pc, pop
-
-;----------------------------------------------------------------
-:file__mbr__read
-;----------------------------------------------------------------
-    set [file_current_sector], 0
-    jsr file__read_sector
-	set pc, pop
-
-;----------------------------------------------------------------
-:file__mbr__write
-;----------------------------------------------------------------
-    set [file_current_sector], 0
-    jsr file__write_sector
 	set pc, pop
 
 ;----------------------------------------------------------------
@@ -385,92 +405,122 @@
 ;----------------------------------------------------------------
 
 ;----------------------------------------------------------------
-:file__write_word
+:floppy__file__write_word
 ;----------------------------------------------------------------
-	ife [file_buffer_position], MEM_FLOPPY_END
-        set pc, file__write_word__add_to_buffer
+	ifl [floppy__buffer__position], MEM_FLOPPY_END
+        set pc, floppy__file__write_word__to_buffer
 
-    jsr file__write_sector
-    jsr file__next_sector
+    jsr floppy__sector__write
 
-:file__write_word__add_to_buffer
-    set x, [file_buffer_position]
-    set [x], [sp+1]
+    ; read the next sector to memory buffer
+    set push, [FLOPPY__SECTOR__NEXT_SECTOR]
+    jsr floppy__sector__read
 
-    add [file_buffer_position], 1
-    add [file_position], 1
+:floppy__file__write_word__to_buffer
+    set x, [floppy__buffer__position]
+    set [x], [sp + 1]
+
+    add [floppy__buffer__position], 1
+    add [floppy__file__position], 1
     
 	set [sp], pop
     set pc, pop
 
 ;----------------------------------------------------------------
-:file__read_word
+:floppy__file__read_word
 ;----------------------------------------------------------------
-	ife [file_buffer_position], MEM_FLOPPY_END
-		jsr file__next_sector
+	ifl [floppy__buffer__position], MEM_FLOPPY_END
+        set pc, floppy__file__read_word__from_buffer
 
-    set c, [file_buffer_position]
-    set [c], c
+    ; read the next sector to memory buffer
+    set push, [FLOPPY__SECTOR__NEXT_SECTOR]
+    jsr floppy__sector__read
 
-    add [file_buffer_position], 1
-    add [file_position], 1
+:floppy__file__read_word__from_buffer
+    set c, [floppy__buffer__position]
+    set c, [c]
+
+    add [floppy__buffer__position], 1
+    add [floppy__file__position], 1
 
     set pc, pop
 
 ;----------------------------------------------------------------
-; void file__write_sector()
+; void floppy__sector__write()
 ;----------------------------------------------------------------
-:file__write_sector
+:floppy__sector__write
     set push, 0
     set push, 0
     jsr preamble
 
+	;---------------------------------------
+	; initiate write
+	;---------------------------------------
 	set a, 3
-	set x, [file_current_sector]
+	set x, [floppy__sector__current]
 	set y, MEM_FLOPPY_START
 	hwi [floppy]
-	
-	set a, 0
-:file__write_sector__loop
-	hwi [floppy]
-	ifn b, 0x0001
-		set pc, file__write_sector__loop
+	;---------------------------------------
+
+	jsr floppy__status__wait_ready
 
     set pc, postamble
 
 ;----------------------------------------------------------------
-; void file__read_sector()
+; void file__sector__read(uint16 _sector)
 ;----------------------------------------------------------------
-:file__read_sector
+:floppy__sector__read
+    set push, 1
     set push, 0
+    jsr preamble
+    
+	;---------------------------------------
+	; initiate read
+	;---------------------------------------
+	set a, 2					; read from floppy
+	set x, [z + 10]				; _sector
+	set y, MEM_FLOPPY_START
+	hwi [floppy]
+	;---------------------------------------
+	
+	; poll for ready
+	jsr floppy__status__wait_ready
+
+	; update current sector
+    set [floppy__sector__current], [z + 10]
+
+	; reset buffer pointer
+    set [floppy__buffer__position], FLOPPY__SECTOR__DATA_START
+
+    set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *floppy__sector__free(uint16 _sector)
+;----------------------------------------------------------------
+:floppy__sector__free
+    set push, 1
     set push, 0
     jsr preamble
 
-	set a, 2
+	set push, FLOPPY__MBR__SECTOR
+	jsr floppy__sector__read
 
-	set x, [file_current_sector]
-	set y, MEM_FLOPPY_START
-	hwi [floppy]
-	
+	set push, [FLOPPY__MBR__TAIL_SECTOR]
+	jsr floppy__sector__read
+
+	set [FLOPPY__SECTOR__NEXT_SECTOR], [z + 10]
+	jsr floppy__sector__write
+
+	set pc, postamble
+
+;----------------------------------------------------------------
+:floppy__status__wait_ready
+;----------------------------------------------------------------
 	set a, 0
-:file__read_sector__loop
+:floppy__status__wait_ready__loop
 	hwi [floppy]
-	ifb b, 0x0003
-		set pc, file__read_sector__loop
+	ife b, FLOPPY__STATE__BUSY
+		set pc, floppy__status__wait_ready__loop
 
-    set pc, postamble
-
-;----------------------------------------------------------------
-:file__next_sector
-;----------------------------------------------------------------
-    ; get the next sector number
-    set [file_current_sector], [MEM_FLOPPY_START]
-
-    ; read the sector to memory buffer
-    jsr file__read_sector
-
-    ; reset buffer pointer
-    set [file_buffer_position], MEM_FLOPPY_START + 1
-
-    set pc, pop
-        
+	set pc, pop
+	
