@@ -986,7 +986,7 @@
     ; allocate space for result int
 	set push, a
 	set push, TYPE_INT
-	jsr alloc
+	jsr array_create
 	set [z-1], x
 
 	set i, [z+10]               ; struct handle *float
@@ -1010,7 +1010,15 @@
 	ifl i, c
         ifl j, a
         	sti pc, float_to_int_loop
-    		
+    
+	set y, [z+10]
+	set y, [y]
+	ifc FLOAT_MASK_NEGATIVE, [y + FLOAT_CATEGORY]
+		set pc, postamble
+		
+	set push, x
+	jsr int_negate
+	
 	set pc, postamble
 
 ;----------------------------------------------------------------

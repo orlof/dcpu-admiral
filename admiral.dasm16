@@ -13,4 +13,3 @@
 #include "edit.dasm16"
 #include "screen.dasm16"
 #include "dict.dasm16"
-#include "floppy.dasm16"
