@@ -1643,22 +1643,24 @@
 	set push, 2
 	jsr preamble
 
-	set push, [z+10]
-	jsr int_sgn
-	set a, x
-	
-	set x, [FLOAT_1]
-	ife a, 0
-		set pc, postamble
-
-	set x, [FLOAT_0]
-	ife a, -1
-		set pc, postamble
+	set a, TRUE		; positive
 
 	set push, [z+10]
 	jsr int_to_int16
 	set c, x
 
+	set x, [FLOAT_1]
+	ife c, 0
+		set pc, postamble
+
+	ifc c, 0x8000
+		set pc, float_pow_calc
+
+	xor c, 0xffff
+	add c, 1
+	set a, FALSE
+
+:float_pow_calc
 	set [z+-1], [z+11] 			; p
 	set [z+-2], [FLOAT_1]		; r
 	
@@ -1685,4 +1687,12 @@
 
 :float_pow_break
 	set x, [z+-2]
+
+	ife a, TRUE
+		set pc, postamble	
+
+	set push, [FLOAT_1]
+	set push, x
+	jsr float_div
+
 	set pc, postamble	
