@@ -21,9 +21,11 @@
 ;----------------------------------------------------------------
 ; PARAMETERS
 ;----------------------------------------------------------------
-#define EDIT_BUFFER_SIZE	0x0400
-#define HEAP_GC_TRIGGER 25
-#define FLOAT_PRECISION	2
+#define EDIT_BUFFER_SIZE		0x0400
+#define HEAP_GC_TRIGGER 		25
+
+#define FLOAT_MANTISSA_WORDS	2
+#define FLOAT_PRECISION			(48 * FLOAT_MANTISSA_WORDS) / 10
 ; 2*16=32 bits for mantissa
 
 ;----------------------------------------------------------------
@@ -62,6 +64,18 @@
 
 #define SCOPE_MODE_UPDATE   0x0002
 #define SCOPE_MODE_INSERT   0x0004
+
+#define FLOPPY__MBR__SECTOR				0x00
+#define FLOPPY__MBR__FREE_HEAD			MEM_FLOPPY_START
+#define FLOPPY__MBR__FREE_TAIL			MEM_FLOPPY_START + 1
+#define FLOPPY__MBR__DIR_HEAD			MEM_FLOPPY_START + 2
+#define FLOPPY__MBR__DIR_TAIL			MEM_FLOPPY_START + 3
+
+; data sector definitions
+#define FLOPPY__SECTOR__NEXT			MEM_FLOPPY_START
+#define FLOPPY__SECTOR__DATA			MEM_FLOPPY_START + 1
+
+#define FLOPPY__STATE__BUSY				0x03
 
 ;----------------------------------------------------------------
 ; DATA TYPES
@@ -188,6 +202,10 @@
 ;   struct handle *sector;
 ;   struct handle *size;
 ; }
-#define INODE__SECTOR	1
-#define INODE__SIZE		2
+#define SIZEOF__INODE					4
+#define INODE__LENGTH					0
+#define INODE__SECTOR__HEAD				1
+#define INODE__SECTOR__TAIL				2
+#define INODE__SIZE						3
+
 

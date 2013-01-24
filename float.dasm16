@@ -16,7 +16,7 @@
 	sti [i], [z+11]
 
 	set a, i
-	add a, FLOAT_PRECISION - 1
+	add a, FLOAT_MANTISSA_WORDS - 1
 
 :float_create_loop
 	set [i], [z+10]
@@ -144,7 +144,7 @@
 	; compare positive or negative numbers
 	;---------------------------------------
 	sti c, i
-	add c, FLOAT_PRECISION + 1		; last word of mantissa
+	add c, FLOAT_MANTISSA_WORDS + 1		; last word of mantissa
 	
 :float_cmp_loop
 	ifg [i], [j]
@@ -300,18 +300,18 @@
 	;---------------------------------------
 	set x, i
 	add x, FLOAT_MANTISSA
-	add i, FLOAT_MANTISSA + FLOAT_PRECISION - 1
+	add i, FLOAT_MANTISSA + FLOAT_MANTISSA_WORDS - 1
 
 	set y, j
 	add y, FLOAT_MANTISSA
-	add j, FLOAT_MANTISSA + FLOAT_PRECISION - 1
+	add j, FLOAT_MANTISSA + FLOAT_MANTISSA_WORDS - 1
 
 	; calculate amount of word shifts
 	set b, a
 	div b, 16
 	
 	; quick exit if arg2 is too small
-	ifg b, FLOAT_PRECISION - 1
+	ifg b, FLOAT_MANTISSA_WORDS - 1
 		set pc, float_postamble
 
 	; skip b lsw
@@ -378,7 +378,7 @@
 	ife c, 0
 		set pc, float_postamble
 
-	add i, FLOAT_PRECISION - 1
+	add i, FLOAT_MANTISSA_WORDS - 1
 	set y, i
 
 :float_add_by_add_shift_loop
@@ -504,7 +504,7 @@
 
 	; reserve stack space for mantissa product
 	set c, sp
-	sub c, FLOAT_PRECISION + FLOAT_PRECISION
+	sub c, FLOAT_MANTISSA_WORDS + FLOAT_MANTISSA_WORDS
 
 	; init stack space with zero
 :float_mul_mantissa_init_loop
@@ -516,9 +516,9 @@
 	sti x, x				; advance i and j
 	set a, i				; a: f1.exp *
 	set b, j				; b: f2.exp *
-	add i, FLOAT_PRECISION	; i: f1.lsw *
-	add j, FLOAT_PRECISION	; j: f2.lsw *
-	add c, FLOAT_PRECISION + FLOAT_PRECISION -1	; c: product.lsw *
+	add i, FLOAT_MANTISSA_WORDS	; i: f1.lsw *
+	add j, FLOAT_MANTISSA_WORDS	; j: f2.lsw *
+	add c, FLOAT_MANTISSA_WORDS + FLOAT_MANTISSA_WORDS -1	; c: product.lsw *
 
 :float_mul_words_loop
 	set x, [j]
@@ -546,8 +546,8 @@
 	ifn j, b		; if f2 cword not out of bounds
 		set pc, float_mul_words_loop
 
-	add j, FLOAT_PRECISION		; set f2 cword back to lsw
-	add c, FLOAT_PRECISION		; move product cword back the same amount
+	add j, FLOAT_MANTISSA_WORDS		; set f2 cword back to lsw
+	add c, FLOAT_MANTISSA_WORDS		; move product cword back the same amount
 	
 	sub i, 1		; move f1 cwords towards msw
 	sub c, 1		; move product cword towards msw
@@ -565,7 +565,7 @@
 	sub [y + FLOAT_EXPONENT], 1
 
 	set c, sp
-	add c, FLOAT_PRECISION + FLOAT_PRECISION - 1
+	add c, FLOAT_MANTISSA_WORDS + FLOAT_MANTISSA_WORDS - 1
 	set i, sp
 
 :float_mul_shift_loop
@@ -581,7 +581,7 @@
 	add i, FLOAT_MANTISSA
 
 	set c, i
-	add c, FLOAT_PRECISION - 1
+	add c, FLOAT_MANTISSA_WORDS - 1
 	
 :float_mul_copy_loop
 	set [i], pop
@@ -707,7 +707,7 @@
 	; y: quotient.mantissa.lsw
 	set c, y
 	add c, FLOAT_MANTISSA
-	add y, FLOAT_MANTISSA + FLOAT_PRECISION -1
+	add y, FLOAT_MANTISSA + FLOAT_MANTISSA_WORDS -1
 	
 	set x, 0						; current word number
 	set [c], 1						; set sentinel
@@ -717,7 +717,7 @@
 	add i, FLOAT_MANTISSA           ; i: divident.mantissa.msw *
 	
 	set a, i
-	add a, FLOAT_PRECISION - 1      ; a: divident.mantissa.lsw *
+	add a, FLOAT_MANTISSA_WORDS - 1      ; a: divident.mantissa.lsw *
 	
 	set j, [z+10]					; struct handle *divisor
 	set j, [j]						; struct float *divisor
@@ -757,11 +757,11 @@
 	set a, i
 	add a, FLOAT_MANTISSA           ; a: divident.mantissa.msw
 
-	add i, FLOAT_PRECISION + 1      ; i: divident.mantissa.lsw
+	add i, FLOAT_MANTISSA_WORDS + 1      ; i: divident.mantissa.lsw
 
 	set j, [z+10]					; j: struct handle *divisor
 	set j, [j]						; j: struct float *divisor
-	add j, FLOAT_PRECISION + 1      ; j: divisor.mantissa.lsw
+	add j, FLOAT_MANTISSA_WORDS + 1      ; j: divisor.mantissa.lsw
 
     set x, 0						; initialize carry
 :float_div_subtract_loop
@@ -784,7 +784,7 @@
 	set a, i
 	add a, FLOAT_MANTISSA           ; a: divident.mantissa.msw
 
-	add i, FLOAT_PRECISION + 1      ; i: divident.mantissa.lsw
+	add i, FLOAT_MANTISSA_WORDS + 1      ; i: divident.mantissa.lsw
 	set x, 0
 
 :float_div_shift_loop
@@ -817,7 +817,7 @@
 	ife [b + FLOAT_EXPONENT], 0
 		set pc, float_postamble_zero
 
-	add i, FLOAT_PRECISION - 1	; quotient.lsw
+	add i, FLOAT_MANTISSA_WORDS - 1	; quotient.lsw
 	set x, 0
 
 :float_div_normalize_shift_loop
@@ -928,7 +928,7 @@
 	add y, FLOAT_MANTISSA		; msw
 	set j, y					; msw
 	set b, y
-	add b, FLOAT_PRECISION - 1	; lsw
+	add b, FLOAT_MANTISSA_WORDS - 1	; lsw
 
 :float_from_int_loop
 	set [j], [i]				; copy word from int to float
@@ -993,7 +993,7 @@
 	set i, [i]                  ; struct float *
 	add i, FLOAT_MANTISSA       ; float.mantissa.msw
 	set c, i                    ; float.mantissa.msw
-	add c, FLOAT_PRECISION - 1  ; float.mantissa.lsw
+	add c, FLOAT_MANTISSA_WORDS - 1  ; float.mantissa.lsw
 
 	set j, [x]                  ; struct int *
 	set [j], a                  ; set sizeof this int
@@ -1489,7 +1489,7 @@
 	add b, FLOAT_MANTISSA		; float.mantissa.msw
 
 	set c, b
-	add c, FLOAT_PRECISION - 1	; float.mantissa.lsw
+	add c, FLOAT_MANTISSA_WORDS - 1	; float.mantissa.lsw
 	
 	set i, b					; float.mantissa.msw
 
@@ -1596,7 +1596,7 @@
 	set [z-1], x
 
 	set c, [x]
-	add c, FLOAT_MANTISSA + FLOAT_PRECISION
+	add c, FLOAT_MANTISSA + FLOAT_MANTISSA_WORDS
 
 	set i, [x]
 	sti [i], FLOAT_CATEGORY_PNUM
@@ -1608,7 +1608,7 @@
 	ifl i, c
 		set pc, float_random_loop
 	
-	bor [c - FLOAT_PRECISION], 0x8000
+	bor [c - FLOAT_MANTISSA_WORDS], 0x8000
 	
 	; transpose 1.0-2.0 to 0.0-1.0	
 	set push, [z-1]
