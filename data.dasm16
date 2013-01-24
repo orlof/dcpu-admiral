@@ -22,10 +22,16 @@
 ;----------------------------------------------------------------
 ; GLOBAL FD VARIABLES
 ;----------------------------------------------------------------
-; current file status
-:floppy__file__position		dat 0
-:floppy__buffer__position	dat 0
-:floppy__sector__current    dat 0
+:floppy__file__position					dat 0
+:floppy__buffer__position				dat 0
+
+:floppy__free
+:floppy__free__head						DAT 0
+:floppy__free__tail						DAT 0
+
+:floppy__dir
+:floppy__dir__head						DAT 0
+:floppy__dir__tail						DAT 0
 
 ;----------------------------------------------------------------
 ; RANDOM NUMBER GENERATORS
@@ -280,6 +286,8 @@
 ;----------------------------------------------------------------
 :built_in_functions
 	dat 3, "id", built_in_id
+	dat 3, "rm", built_in_rm
+	dat 4, "dir", built_in_dir
 	dat 4, "mem", built_in_mem
 	dat 4, "rnd", built_in_rnd
 	dat 4, "int", built_in_int
@@ -291,11 +299,14 @@
 	dat 4, "cmp", built_in_cmp
 	dat 5, "bool", built_in_bool
 	dat 5, "edit", built_in_edit
+	dat 5, "load", built_in_load
 	dat 5, "repr", built_in_repr
+	dat 5, "save", built_in_save
 	dat 5, "sort", built_in_sort
 	dat 6, "range", built_in_range
 	dat 6, "float", built_in_float
 	dat 6, "input", built_in_input
+	dat 7, "format", built_in_format
 	dat 7, "locals", built_in_locals
 	dat 8, "globals", built_in_globals
 	dat 1, led_lparen_user_defined

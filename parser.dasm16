@@ -2513,6 +2513,77 @@
 	set pc, postamble	
 
 ;----------------------------------------------------------------
+:built_in_dir
+;----------------------------------------------------------------
+	jsr built_in_params
+	ifn i, 0
+		jsr recover
+
+	jsr floppy__dir__read
+
+	set pc, postamble	
+
+;----------------------------------------------------------------
+:built_in_format
+;----------------------------------------------------------------
+	jsr built_in_params
+	ifn i, 0
+		jsr recover
+
+	jsr floppy__format
+
+	set pc, postamble	
+
+;----------------------------------------------------------------
+:built_in_load
+;----------------------------------------------------------------
+	jsr built_in_params
+	ifn i, 1
+		jsr recover
+
+	set a, [z+-1]
+	ifc [a + HANDLE_TYPE], TYPE_STRING
+		jsr recover
+
+	set push, a
+	jsr floppy__file__read
+
+	set pc, postamble	
+
+;----------------------------------------------------------------
+:built_in_save
+;----------------------------------------------------------------
+	jsr built_in_params
+	ifn i, 2
+		jsr recover
+
+	set a, [z+-1]
+	ifc [a + HANDLE_TYPE], TYPE_STRING
+		jsr recover
+
+	set push, a
+	set push, [z-2]
+	jsr floppy__file__write
+
+	set pc, postamble	
+
+;----------------------------------------------------------------
+:built_in_rm
+;----------------------------------------------------------------
+	jsr built_in_params
+	ifn i, 1
+		jsr recover
+
+	set a, [z+-1]
+	ifc [a + HANDLE_TYPE], TYPE_STRING
+		jsr recover
+
+	set push, a
+	jsr floppy__file__delete
+
+	set pc, postamble	
+
+;----------------------------------------------------------------
 :built_in_int
 ;----------------------------------------------------------------
 	jsr built_in_params
