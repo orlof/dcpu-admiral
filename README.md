@@ -25,6 +25,7 @@
  - Memory is conserved by using direct one-pass interpreter
  - Pratt’s algorithm for efficient expression parsing
  - Mark and sweep garbage collector for memory conservation and detecting trash even with reference loops
+ - Floppy load/save uses object graph serialization e.g. save("big.obj", huge_obj) and huge_obj = load("big.obj")
 
 <h6>Examples</h6>
 
@@ -356,6 +357,13 @@ GENERIC FUNTIONS
   int id(list | tuple | dict | int | bool | str | float)
   int len(list | tuple | dict | str | int)
   int mem()
+
+FLOPPY FUNTIONS
+    void format()
+      {} dir()
+    void save(string filename, object root)
+  object load(string filename)
+    void rm(string filename)
 
 NUMERICAL FUNCTIONS
   int abs(int)
