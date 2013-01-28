@@ -25,11 +25,18 @@
  - Memory is conserved by using direct one-pass interpreter
  - Pratt’s algorithm for efficient expression parsing
  - Mark and sweep garbage collector for memory conservation and detecting trash even with reference loops
- - Floppy load/save uses object graph serialization e.g. save("big.obj", huge_obj) and huge_obj = load("big.obj")
+ - Floppy load/save uses object graph serialization e.g. save("big.obj", big_obj) and big_obj = load("big.obj")
 
 <h6>Examples</h6>
 
 Classic Hello World in Admiral.
+
+<pre>
+>print 'Hello World'
+Hello World
+</pre>
+
+..or as a function call:
 
 <pre>
 >output='print text'          # assign string to variable
@@ -71,10 +78,9 @@ return x                      # return value
      - Booleans, strings, lists, tuples and dicts
  - Interactive command prompt
  - Integrated code editor with gap buffer
+ - Object serialization for floppy
  
 <h6>Next in development</h6>
- - Disk support
-   - Low level api and serialization
  - Improved error reporting
  - Example code
  - Misc built-in functions
@@ -102,14 +108,15 @@ To build from source, run the following with the DCPU Toolchain (DCPUTeam/DCPUTo
 
     dtasm --binary admiral.dasm16 -o admiral.bin
     
-You can run the .bin provided with the following command with the Toolchain (currently edit() is not working with dtemu)
+You can run the .bin provided with the following command with the Toolchain:
 
     dtemu admiral.bin
 
 You can also run admiral.bin with Lettuce (SirCmpwn/Tomato) (keyboard layouts are not working with Lettuce).
 
 To work with devkit, leave the admiral.dasm16 out of the project and specify interpreter.dasm16 as 
-the starting point for execution. (No known errors with devkit)
+the starting point for execution. Devkit 1.7.6 is badly broken and it's current state cannot run Admiral. 
+Previous Devkit version 1.7.5 can compile and run Admiral, but does not support floppy.
 
 <h4>USAGE</h4>
 
