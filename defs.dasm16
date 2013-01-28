@@ -75,7 +75,10 @@
 #define FLOPPY__SECTOR__NEXT			MEM_FLOPPY_START
 #define FLOPPY__SECTOR__DATA			MEM_FLOPPY_START + 1
 
-#define FLOPPY__STATE__BUSY				0x03
+#define FLOPPY__STATE__NO_MEDIA				0x00
+#define FLOPPY__STATE__READY				0x01
+#define FLOPPY__STATE__READY_WP				0x02
+#define FLOPPY__STATE__BUSY					0x03
 
 ;----------------------------------------------------------------
 ; DATA TYPES
