@@ -62,13 +62,19 @@ return x                      # return value
 9
 </pre>
 
-Couple of other code examples:
+Couple of more examples:
 <pre>
 # variable swap
 >a=1
 >b=2
 >a,b=b,a
 (2,1)
+# dictionary printing
+>d={'a':1,'b':2}
+{'a':1,'b':2}
+for k,v in a: print k, v
+a 1
+b 2
 </pre>
 
 --
