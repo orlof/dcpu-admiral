@@ -25,7 +25,9 @@
  - Memory is conserved by using direct one-pass interpreter
  - Pratt’s algorithm for efficient expression parsing
  - Mark and sweep garbage collector for memory conservation and detecting trash even with reference loops
- - Floppy load/save uses object graph serialization e.g. save("big.obj", big_obj) and big_obj = load("big.obj")
+ - Floppy load/save uses object graph serialization e.g. 
+   - save("big.obj", big_obj)
+   - big_obj = load("big.obj")
 
 <h6>Examples</h6>
 
@@ -104,13 +106,13 @@ b 2
 <h6>Later plans</h6>
  - 200-400% speed improvements
    - different concepts (code/algo optimization, number cache)
- - Support for 3D
+ - SPED-3 support
  - Command line editor
  - Screen library
  - More built-in functions
  - Exception handling
  - Trigonometric functions
- - Dict implementation with TST
+ - Dict implementation with binary search
  - Embedded assembler (editor + assembler)
 
 --
@@ -127,11 +129,12 @@ You can run the .bin provided with the following command with the Toolchain:
 
     dtemu admiral.bin
 
-You can also run admiral.bin with Lettuce (SirCmpwn/Tomato) (keyboard layouts are not working with Lettuce).
+You can also run admiral.bin with Lettuce (SirCmpwn/Tomato) (international (non-US?) keyboard layouts 
+are not working with Lettuce).
 
 To work with devkit, leave the admiral.dasm16 out of the project and specify interpreter.dasm16 as 
-the starting point for execution. Devkit 1.7.6 is badly broken and it's current state cannot run Admiral. 
-Previous Devkit version 1.7.5 can compile and run Admiral, but does not support floppy.
+the starting point for execution. Devkit 1.7.6 is badly broken and cannot run Admiral. Devkit version 
+1.7.5 can compile and run Admiral, but does not support floppy.
 
 <h4>USAGE</h4>
 
@@ -148,19 +151,22 @@ When Admiral starts, it will show an interactive prompt '>' and wait for input. 
 </pre>
 
 Admiral also has a built-in text editor to facilitate software development in deep space colonies. It is 
-started by calling:
+started by calling edit(). edit() returns the edited text as string that can be assigned to a variable.
+To exit the editor type CTRL (press AND release) followed by x. If you want to discard your editing, 
+use CTRL followed by c, which will return the original string instead of the edited version.
 
     result=edit()
+    print edit()
 
-To exit the editor press CTRL (press AND release) followed by x. If you want to discard your editing, use CTRL followed by c.
-
-If you later need to edit your text, it can be done by specifying a string argument for edit():
+If you need to edit an existing text, you can give a string argument for edit():
 
     result=edit(result)
 
 Since Admiral is pure interpreter all strings are callable (i.e. can be used as functions):
 
 <pre>
+>'print "Hello World"'()
+Hello World
 >'print arg1'(arg1='Hello World again!') 
 Hello World again!
 </pre>
@@ -214,7 +220,7 @@ Dicts and prototype assignment operator provide "poor mans" objects :-)
 
 <h4>STATEMENTS</h4>
 
-Here is a complete list of all te Admiral statements.
+Here is a complete list of all the Admiral's statements.
 
 <h5>SIMPLE STATEMENTS</h5>
 
@@ -485,6 +491,29 @@ Admiral currently allows augmented assignments to be chained. I will remove that
 Currently Admiral does not support assigning to slices: 
 i.e. a[1:3]=(1,2,3) is not working. 
 If that REALLY is a language feature that anyone would use, I will consider adding it :-)
+
+UNKNOWN IDENTS IN FUNCTIONS
+
+Currently Admiral does not produce error if unknown variable name is present in function body, but it is not
+evaluated. E.g.
+
+<pre>
+>f=edit()
+'print "Hello"
+foobar
+print "The End"
+</pre>
+
+foobar would not yeld error, as it is not used for anything. However,
+
+<pre>
+>f=edit()
+'print "Hello"
+foobar+1
+print "The End"
+</pre>
+
+will yeld error, as unknown IDENT (foobar) cannot be evaluated for addition operator.
 
 PYTHON FEATURES MISSING (INCOMPLETE LIST)
 
