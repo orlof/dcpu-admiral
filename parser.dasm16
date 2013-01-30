@@ -107,18 +107,21 @@
     set [z+-1], x
 
 	set push, x
+
 	set push, std_print_iterator
 	jsr array_map
 
 	set pc, std_print_loop
 
 :std_print_iterator
-	set push, [sp+1]
+	set push, c
+	set push, [sp+2]
 	jsr print
 
 	set c, ' '
 	jsr screen_add_char
 
+	set c, pop
 	set [sp], pop
 	set pc, pop
 
