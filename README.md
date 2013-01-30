@@ -251,14 +251,28 @@ the nearest enclosing loop.
 
 <h6>print</h6>
 <pre>
-print_stmt ::=  "print" [expression ("," expression)* ]
+print_stmt ::=  "print" [expression ([","] expression)* ]
 </pre>
 
 print evaluates each expression in turn and writes the resulting object to LEM screen. If an object is not 
 a string, it is first converted to a string using the rules for string conversions. A space is written 
-between each object.
+between each object separated by comma. You can also leave out the comma, but then items are written without 
+separator.
 
-Concatenating prints with comma is much faster than using "+".
+e.g.
+<pre>
+>print "Hello", "World"
+Hello World
+>print "Hello" "World"
+HelloWorld
+>name="Orlof"
+'Orlof'
+>print "My name is " name "."
+My name is Orlof.
+</pre>
+
+Usage of plus operator to concatenate string in print statement is not recommended as it is much slower 
+than using comma or implicit concatenation.
 
 <pre>
 >print "This", "is", "good"
