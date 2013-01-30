@@ -62,6 +62,15 @@ return x                      # return value
 9
 </pre>
 
+Couple of other code examples:
+<pre>
+# variable swap
+>a=1
+>b=2
+>a,b=b,a
+(2,1)
+</pre>
+
 --
 
 <h4>Development status</h4>
