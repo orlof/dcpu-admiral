@@ -197,7 +197,7 @@
 	jsr edit_remove_char
 	set pc, edit_main_loop
 ;----------------------------------------------------------------
-:edit_key_newline
+;:edit_key_newline
 :edit_key_character
 ;----------------------------------------------------------------
 	jsr edit_insert_char
@@ -208,7 +208,18 @@
 	; }
 
 	set pc, edit_main_loop
-	
+
+:edit_key_newline
+	jsr edit_insert_char
+
+	set b, [cur_line]	
+	set c, ' '
+:edit_key_newline_loop
+	ifn [b], c
+		set pc, edit_main_loop
+	jsr edit_insert_char
+	add b, 1
+	set pc, edit_key_newline_loop
 
 ;----------------------------------------------------------------
 :edit_win_draw
