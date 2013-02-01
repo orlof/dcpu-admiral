@@ -298,7 +298,10 @@ This is BAD!
 del_stmt ::=  "del" target_list
 </pre>
 
-TODO
+Deletion removes the binding of that name from the local or global namespace. If the name is unbound, 
+an error will be raised.
+
+Deletion of attribute reference removes the attribute from the primary object involved
 
 <h6>cls</h6>
 <pre>
