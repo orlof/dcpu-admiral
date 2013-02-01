@@ -2711,6 +2711,81 @@
 	set pc, postamble
 
 ;----------------------------------------------------------------
+:built_in_getchar
+;----------------------------------------------------------------
+	jsr built_in_params
+	ifn i, 0
+		set pc, recover
+
+:built_in_getchar_loop
+	set a, 1              ; store next key mode
+	hwi [keyboard]
+
+	ife c, 0
+		set pc, built_in_getchar_loop
+
+	set push, 1
+	set push, TYPE_STRING
+	jsr array_create
+	
+	sti i, [x]
+	set [i], c
+
+	set pc, postamble	
+
+;----------------------------------------------------------------
+:built_in_key
+;----------------------------------------------------------------
+	jsr built_in_params
+	ife i, 1
+		set pc, built_in_key_1
+	
+	ifn i, 0
+		jsr recover
+
+	set a, 1              ; store next key mode
+	hwi [keyboard]
+	
+	set x, INT_HANDLE_0
+	ife c, 0
+		set pc, postamble 
+
+	set push, c
+	jsr int16_to_int
+
+	set pc, postamble
+
+:built_in_key_1
+	set a, [z-1]
+	ife [a + HANDLE_TYPE], TYPE_INT
+		set pc, built_in_key_1_int
+		
+	ifn [a + HANDLE_TYPE], TYPE_STRING
+		jsr recover
+		
+	set a, [a]
+	ifn [a], 1
+		jsr recover
+
+	set b, [a + 1]
+	set pc, built_in_key_1_key
+
+:built_in_key_1_int
+	set push, a
+	jsr int_to_int16
+	set b, x
+
+:built_in_key_1_key
+	set a, 2              ; store next key mode
+	hwi [keyboard]
+	
+	set x, BOOL_HANDLE_TRUE
+	ife c, 0
+		set x, BOOL_HANDLE_FALSE
+
+	set pc, postamble
+
+;----------------------------------------------------------------
 :built_in_sort
 ;----------------------------------------------------------------
 	jsr built_in_params
