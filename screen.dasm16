@@ -95,6 +95,8 @@
 	set push, i
 	set push, j
 	
+	;set x, 0
+
 	set a, [current_screen]
 	set i, [a + SCREEN__CURSOR]
 
@@ -117,8 +119,9 @@
 
 	ifl i, [a + SCREEN__END]
 		set pc, add_char_finish
-		
-	sub [a + SCREEN__CURSOR], 32
+
+	;set x, SCREEN_COLS
+	sub [a + SCREEN__CURSOR], SCREEN_COLS
 	
 	set i, [a + SCREEN__START]
 	set j, [a + SCREEN__START]
