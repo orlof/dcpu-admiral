@@ -460,6 +460,18 @@ point number, and a floating point number with the same value is returned.
 Return a string containing an object representation of an object. For strings, this 
 returns the string itself.
 
+<h5>GENERIC FUNCTIONS</h5>
+
+<h6>id(object)</h6>
+Return the “identity” of an object. This is an integer which is guaranteed to be unique and constant for this object during its lifetime. Two objects with non-overlapping lifetimes may have the same id() value.
+
+<h6>len(S)</h6>
+Return the length (the number of items) of an object. The argument may be a sequence (string, tuple or list) or a mapping (dictionary).
+
+<h6>mem()</h6>
+Runs the garbage collector and returns the amount of free heap space in words.
+
+Calling the gc method makes Admiral expend effort to recycling unused objects in order to make the memory they currently occupy available for quick reuse. When control returns from the method call, the Admiral has made a best effort to reclaim space from all discarded objects.
 
 
 <h4>EXPRESSION PRECEDENCE TABLE</h4>
