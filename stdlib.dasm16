@@ -557,8 +557,9 @@
 ; utility subroutines to handle function setup and cleanup
 ;----------------------------------------------------------------
 
-; postamble - function can call this subroutine to cleanup stack, restore 
-; registers and return from subroutine
+; postamble - subroutines must call postamble to return from
+; if subroutine was intitialized by preamble. postamble will
+; restore register and stack to original state and do rts.
 ; x:   return value
 :postamble
 	set sp, z				; free local vars and heap refs
@@ -586,8 +587,10 @@
 
 	set pc, pop				; rts
 
-; preamble - subroutine must push sizeof(args), sizeof(heap refs) and sizeof(locals) 
-; and then call preamble before doing ANYTHING else 
+; preamble - subroutines must 
+;  1. push number of subroutine arguments
+;  2. push number of required heap references 
+;  3. call preamble before doing ANYTHING else 
 ;
 ; Stack after preamble
 ;         [preamble]
@@ -750,33 +753,28 @@
 
 	set pc, postamble
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-;   find the devices
-;
+;----------------------------------------------------------------
 :detect_hardware
-set j, 0xFFFF
-hwn i
-:hwloop
-add j, 1
-hwq j
-ife j, i
-   set pc, pop
-ife a, 0xf615
-    ife b, 0x7349
-        set [monitor], j
-ife a, 0x7406
-    ife b, 0x30cf
-        set [keyboard], j
-ife a, 0xb402
-    ife b, 0x12d0
-        set [clock], j
-ife a, 0x24c5
-    ife b, 0x4fd5
-        set [floppy], j
-set pc, hwloop
-     
-     
+;----------------------------------------------------------------
+	hwn i
+:detect_hardware__loop
+	ife i, 0xffff
+	   set pc, pop
+	hwq i
+	ife a, 0xf615
+	    ife b, 0x7349
+	        set [monitor], i
+	ife a, 0x7406
+	    ife b, 0x30cf
+	        set [keyboard], i
+	ife a, 0xb402
+	    ife b, 0x12d0
+	        set [clock], i
+	ife a, 0x24c5
+	    ife b, 0x4fd5
+	        set [floppy], i
+	std pc, detect_hardware__loop
+          
 ;----------------------------------------------------------------
 :win_getchar
 ; c: delayed key
@@ -910,7 +908,14 @@ set pc, hwloop
 	ife c, KEY_BS
 		ife [y + SCREEN__CURSOR], b
 			set pc, next_char_loop
-			
+
+	set a, [y + SCREEN__END]
+	sub a, 1
+	ifn c, KEY_BS
+		ifn c, KEY_NEWLINE
+			ife [y + SCREEN__CURSOR], a
+				sub b, SCREEN_COLS
+
 	jsr screen_add_char
 
 	set pc, next_char_loop
