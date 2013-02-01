@@ -417,6 +417,9 @@ NUMERICAL FUNCTIONS
 CHARACTER FUNCTIONS
   int ord(str)
   str chr(int)
+  str getc()                     blocking get next typed key 
+  int key()                      non-blocking which key is down
+  bool key(int)                  non-blocking is key down
   str input([str])
   str edit([str])
   str repr(list | tuple | dict | int | bool | str | float)
