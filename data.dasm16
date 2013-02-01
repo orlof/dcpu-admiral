@@ -297,8 +297,10 @@
 	dat 4, "ord", built_in_ord
 	dat 4, "chr", built_in_chr
 	dat 4, "cmp", built_in_cmp
+	dat 4, "key", built_in_key
 	dat 5, "bool", built_in_bool
 	dat 5, "edit", built_in_edit
+	dat 5, "getc", built_in_getchar
 	dat 5, "load", built_in_load
 	dat 5, "repr", built_in_repr
 	dat 5, "save", built_in_save
