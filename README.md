@@ -473,6 +473,21 @@ Runs the garbage collector and returns the amount of free heap space in words.
 
 Calling the gc method makes Admiral expend effort to recycling unused objects in order to make the memory they currently occupy available for quick reuse. When control returns from the method call, the Admiral has made a best effort to reclaim space from all discarded objects.
 
+<h5>FLOPPY FUNCTIONS</h5>
+
+<h6>format()</h6>
+Format is used to initialize a DCPU M35FD floppy for use. It erases all information off the floppy.
+
+<h6>dir()</h6>
+The dir command returns a dictionary containing the available files in DCPU M35FD floppy.
+
+<h6>load(filename)</h6>
+The load command returns the object stored in DCPU M35FD floppy with the given filename.
+
+<h6>save(filename, object)</h6>
+The save command serializes the defined with given filename to DCPU M35FD floppy.
+
+
 
 <h4>EXPRESSION PRECEDENCE TABLE</h4>
 <table cellpadding="1">
