@@ -436,6 +436,32 @@ CONTAINER FUNCTIONS
   {} globals()
 </pre>
 
+<h5>TYPE CONVERSION FUNCTIONS</h5>
+
+<h6>bool(x)</h6>
+Convert a value to a Boolean, using the standard truth testing procedure.
+
+The following values are interpreted as false: false, numeric zero of all types, 
+and empty strings and containers (including tuples, lists and dictionaries). All 
+other values are interpreted as true.
+
+<h6>int(x)</h6>
+Convert a number or string x to an integer. If x is a number, it can be a boolean, 
+a plain integer, or a floating point number. If x is floating point, the conversion 
+truncates towards zero.
+
+<h6>float(x)</h6>
+Convert a string or a number to floating point. If the argument is a string, it must 
+contain a possibly signed decimal or floating point number. The argument may also be 
+[+|-]nan or [+|-]inf. Otherwise, the argument may be a plain integer or a floating 
+point number, and a floating point number with the same value is returned.
+
+<h6>str(x)</h6>
+Return a string containing an object representation of an object. For strings, this 
+returns the string itself.
+
+
+
 <h4>EXPRESSION PRECEDENCE TABLE</h4>
 <table cellpadding="1">
 <tr><th>OPERATOR</th><th>DESCRIPTION</th><th>ASSOCIATIVITY</th></tr>
