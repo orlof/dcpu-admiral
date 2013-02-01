@@ -487,6 +487,22 @@ The load command returns the object stored in DCPU M35FD floppy with the given f
 <h6>save(filename, object)</h6>
 The save command serializes the defined with given filename to DCPU M35FD floppy.
 
+<h5>NUMERICAL FUNCTIONS</h5>
+
+<h6>abs(x)</h6>
+Return the absolute value of a number. The argument may be a plain integer or a floating point number.
+
+<h6>rnd([[start, ]end])</h6>
+Return the next pseudorandom number. TODO
+
+<h6>cmp(x, y)</h6>
+Compare the two objects x and y and return an integer according to the outcome. The return value is negative if x < y, zero if x == y and strictly positive if x > y.
+
+ - Numbers are compared arithmetically.
+ - Strings are compared lexicographically using the numeric equivalents (the result of the built-in function ord()) of their characters.
+ - Tuples and lists are compared lexicographically using comparison of corresponding elements. This means that to compare equal, each element must compare equal and the two sequences must be of the same type and have the same length.
+ - If not equal, the sequences are ordered the same as their first differing elements. For example, cmp([1,2,x], [1,2,y]) returns the same as cmp(x,y). If the corresponding element does not exist, the shorter sequence is ordered first (for example, [1,2] < [1,2,3]).
+ - Other objects of built-in types compare unequal unless they are the same object; the choice whether one object is considered smaller or larger than another one is made arbitrarily but consistently within one execution of a program.
 
 
 <h4>EXPRESSION PRECEDENCE TABLE</h4>
