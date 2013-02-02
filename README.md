@@ -101,7 +101,7 @@ b 2
  - Improved error reporting
  - Example code
  - Misc built-in functions
- - BETA RELEASE (est. 1/2013)
+ - BETA RELEASE (est. 2/2013)
 
 <h6>Later plans</h6>
  - 200-400% speed improvements
@@ -111,6 +111,7 @@ b 2
  - Screen library
  - More built-in functions
  - Exception handling
+ - Library version of admiral to run on top of DCPU operating systems
  - Trigonometric functions
  - Dict implementation with binary search
  - Embedded assembler (editor + assembler)
