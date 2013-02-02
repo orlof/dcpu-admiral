@@ -2715,7 +2715,7 @@
 ;----------------------------------------------------------------
 	jsr built_in_params
 	ifn i, 0
-		set pc, recover
+		jsr recover
 
 :built_in_getchar_loop
 	set a, 1              ; store next key mode

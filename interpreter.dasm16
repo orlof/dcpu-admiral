@@ -131,7 +131,7 @@
 	jsr dict_get
 	
 	ife x, 0
-		set pc, recover
+		jsr recover
 		
 	set push, x
 	set push, [z + 10]
@@ -189,6 +189,7 @@
 :recover
 ; fastcall
 ;----------------------------------------------------------------
+	set a, pop
 	set z, [recovery_fp]
 	set sp, [recovery_sp]
 
@@ -197,6 +198,9 @@
 	set push, STR_ERROR
 	jsr print
 
+	set push, a
+	jsr debug
+	
 	set c, 10
 	jsr screen_add_char
 
