@@ -487,6 +487,9 @@ The load command returns the object stored in DCPU M35FD floppy with the given f
 <h6>save(filename, object)</h6>
 The save command serializes the defined with given filename to DCPU M35FD floppy.
 
+<h6>rm(filename)</h6>
+Removes serialized object with given filename from DCPU M35FD floppy and frees the reserved disk space.
+
 <h5>NUMERICAL FUNCTIONS</h5>
 
 <h6>abs(x)</h6>
@@ -504,6 +507,26 @@ Compare the two objects x and y and return an integer according to the outcome. 
  - If not equal, the sequences are ordered the same as their first differing elements. For example, cmp([1,2,x], [1,2,y]) returns the same as cmp(x,y). If the corresponding element does not exist, the shorter sequence is ordered first (for example, [1,2] < [1,2,3]).
  - Other objects of built-in types compare unequal unless they are the same object; the choice whether one object is considered smaller or larger than another one is made arbitrarily but consistently within one execution of a program.
 
+<h5>CHARACTER FUNCTIONS</h5>
+
+<h6>ord(c)</h6>
+Given a string of length one, return the value of the byte. For example, ord('a') returns the integer 97. This is the
+inverse of chr().
+
+<h6>chr(i)</h6>
+Return a string of one character whose ASCII code is the integer i. For example, chr(97) returns the string 'a'. This is the inverse of ord().
+
+<h6>getc()</h6>
+Blocks until user types a key and return the key typed as a string of one character.
+
+<h6>key([i])</h6>
+Without argument return immediately the next key typed from keyboard buffer, or 0 if the buffer is empty. If i is
+specified return true if the specified key is down or false otherwise.
+
+<h6>input([s])</h6>
+<h6>edit([s])</h6>
+<h6>repr()</h6>
+<h6>sort(S)</h6>
 
 <h4>EXPRESSION PRECEDENCE TABLE</h4>
 <table cellpadding="1">
