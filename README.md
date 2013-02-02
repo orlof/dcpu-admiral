@@ -403,12 +403,12 @@ GENERIC FUNTIONS
   int len(list | tuple | dict | str | int)
   int mem()
 
-FLOPPY FUNTIONS
-    void format()
-      {} dir()
-    void save(string filename, object root)
+FLOPPY FUNCTIONS
+  void format()
+  {} dir()
+  void save(string filename, object root)
   object load(string filename)
-    void rm(string filename)
+  void rm(string filename)
 
 NUMERICAL FUNCTIONS
   int abs(int)
@@ -473,6 +473,12 @@ Runs the garbage collector and returns the amount of free heap space in words.
 
 Calling the gc method makes Admiral expend effort to recycling unused objects in order to make the memory they currently occupy available for quick reuse. When control returns from the method call, the Admiral has made a best effort to reclaim space from all discarded objects.
 
+<h6>globals()</h6>
+Return a dictionary representing the current global symbol table.
+
+<h6>locals()</h6>
+Return a dictionary representing the current local symbol table.
+
 <h5>FLOPPY FUNCTIONS</h5>
 
 <h6>format()</h6>
@@ -506,6 +512,13 @@ Compare the two objects x and y and return an integer according to the outcome. 
  - Tuples and lists are compared lexicographically using comparison of corresponding elements. This means that to compare equal, each element must compare equal and the two sequences must be of the same type and have the same length.
  - If not equal, the sequences are ordered the same as their first differing elements. For example, cmp([1,2,x], [1,2,y]) returns the same as cmp(x,y). If the corresponding element does not exist, the shorter sequence is ordered first (for example, [1,2] < [1,2,3]).
  - Other objects of built-in types compare unequal unless they are the same object; the choice whether one object is considered smaller or larger than another one is made arbitrarily but consistently within one execution of a program.
+
+<h6>range(stop) or range(start, stop[, step])</h6>
+This is a versatile function to create lists containing arithmetic progressions. It is most often used in for loops. 
+The arguments must be plain integers. If the step argument is omitted, it defaults to 1. If the start argument is 
+omitted, it defaults to 0. The full form returns a list of plain integers [start, start + step, start + 2 * step, ...]. 
+If step is positive, the last element is the largest start + i * step less than stop; if step is negative, the last 
+element is the smallest start + i * step greater than stop. step must not be zero.
 
 <h5>CHARACTER FUNCTIONS</h5>
 
