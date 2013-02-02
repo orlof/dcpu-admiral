@@ -523,10 +523,26 @@ Blocks until user types a key and return the key typed as a string of one charac
 Without argument return immediately the next key typed from keyboard buffer, or 0 if the buffer is empty. If i is
 specified return true if the specified key is down or false otherwise.
 
-<h6>input([s])</h6>
-<h6>edit([s])</h6>
-<h6>repr()</h6>
-<h6>sort(S)</h6>
+<h6>input([prompt])</h6>
+If the prompt argument is present, it is written to standard output without a trailing newline. The function 
+then reads a line from input, converts it to a string (stripping a trailing newline), and returns that.
+
+<h6>edit([input])</h6>
+Function opens a text editor. If the input argument is present, editor is initialized with input string.
+Editor can be used to modify the contents. Editing can be canceled by typing (press and release) CTRL followed
+by typing 'c', or confirmed by typing CTRL and 'x'. The function then converts editor contents (confirm) or the
+original input string (cancel) to a string, and returns that.
+
+<h6>repr(object)</h6>
+Return a string containing a printable representation of an object. This is similar to str funtion, but surrounds
+string type values in quotes.
+
+<h6>sort(iterable[, reverse])</h6>
+Return a sorted version from the items in iterable. 
+
+Strings and tuples are sorted by creating a new sorted iterable and lists are sorted in place.
+
+Reverse is a boolean value. If set to True, then the list elements are sorted as if each comparison were reversed.
 
 <h4>EXPRESSION PRECEDENCE TABLE</h4>
 <table cellpadding="1">
