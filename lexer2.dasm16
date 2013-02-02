@@ -133,7 +133,7 @@
 :lexer_advance
 	set x, pop
 	ifn [lexer_token], pop
-		set pc, recover
+		jsr recover
 	
 	set push, x
 	jsr lexer_next
@@ -164,7 +164,7 @@
 	set [lexer_start], b	; token start index
 
 	ifg x, 127
-		set pc, recover
+		jsr recover
 
 	set pc, [x + lexer_table]
 
@@ -619,5 +619,5 @@
 
 :lexer_char_whitespace
 :lexer_char_comment
-	set pc, recover
+	jsr recover
 

@@ -120,7 +120,7 @@
 		set c, [b]
 		
 	ifg c, [b]
-		set pc, recover
+		jsr recover
 	
 	std i, [a + HANDLE_SIZE]
 

@@ -94,7 +94,7 @@
 	jsr scope_get
 
 	ife x, 0
-		set pc, recover
+		jsr recover
 
 	set pc, postamble
 
@@ -144,7 +144,7 @@
 	ife [b + HANDLE_TYPE], TYPE_STRING
 		set pc, eval_subscription_str
 
-	set pc, recover
+	jsr recover
 
 :eval_subscription_dict
 	set push, b
@@ -158,7 +158,7 @@
 		set pc, eval_subscription_array_index
 	ife [c + HANDLE_TYPE], TYPE_TUPLE
 		set pc, eval_subscription_array_slice
-	set pc, recover
+	jsr recover
 
 :eval_subscription_array_index
 	set push, b
@@ -188,7 +188,7 @@
 		set pc, eval_subscription_str_index
 	ife [c + HANDLE_TYPE], TYPE_TUPLE
 		set pc, eval_subscription_str_slice
-	set pc, recover
+	jsr recover
 
 :eval_subscription_str_index
 	set push, b
@@ -271,7 +271,7 @@
 	ifb [a + HANDLE_TYPE], TYPE_TUPLE + TYPE_LIST + TYPE_DICT
 		set pc, sort_array
 		
-	set pc, recover
+	jsr recover
 
 :sort_string
 	set push, a
@@ -363,7 +363,7 @@
 	ife [a + HANDLE_TYPE], TYPE_SUBSCRIPTION
 		set pc, assign_subscription
 
-	set pc, recover
+	jsr recover
 
 :assign_subscription
 	set a, [a]
@@ -377,7 +377,7 @@
 		ife [c + HANDLE_TYPE], TYPE_INT
 			set pc, assign_subscription_list_int
 
-	set pc, recover
+	jsr recover
 
 :assign_subscription_list_int
 	set push, y
@@ -420,7 +420,7 @@
 
 	set y, [b]
 	ifn [y], c			; if leftLen != rightLen
-		set pc, recover
+		jsr recover
 
 :assign_tuple_loop
 	ife i, c
