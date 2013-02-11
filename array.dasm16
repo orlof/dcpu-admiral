@@ -182,7 +182,7 @@
 	set push, y
 	set push, [a + HANDLE_TYPE]
 	jsr array_create
-	set [z-1], x
+	set [z+-1], x
 
 	add j, b
 	add c, b
@@ -216,7 +216,7 @@
 	set push, c
 	set push, [b + HANDLE_TYPE]
 	jsr array_create
-	set [z-1], x		; struct handle *result
+	set [z+-1], x		; struct handle *result
 
 	set i, [x]			; struct string *result
 	set [i], c			; set length
@@ -269,6 +269,8 @@
 	ife j, b
 	    set pc, array_cmp_loop_break
 
+	set push, [i]
+	set push, [j]
 	jsr [z+10]
 
 	ife x, 0

@@ -58,7 +58,7 @@
 ;----------------------------------------------------------------
 :list_cmp
 	set push, [sp + 2]
-	set push, [sp + 1]
+	set push, [sp + 2]
 	set push, val_cmp
 	jsr array_cmp
 	
