@@ -414,7 +414,7 @@
 	set push, x			; set parent scope
 	set push, STR_UNDERSCORE
     set push, [z+-1]
-	jsr dict_set
+	jsr dict__set
 	;----------------------------------------------------------------
 
 	set pc, pop
@@ -1704,7 +1704,7 @@
 	set push, x
 	set push, STR_UNDERSCORE
     set push, [z+-1]
-	jsr dict_set
+	jsr dict__set
 
 	set push, [z+10]
     set push, [z+-2]
@@ -1831,7 +1831,7 @@
 	set push, x			; add global scope (ex)
 	set push, STR_EX
 	set push, [global_scope]
-	jsr dict_set
+	jsr dict__set
 	
 	set a, [z+10]		; if call is by reference, add path dict to scope (me)
 	ifn [a + HANDLE_TYPE], TYPE_REFERENCE
@@ -1842,7 +1842,7 @@
     set push, [z+-1]
 	set push, STR_ME
 	set push, [a + REFERENCE_DICT]
-	jsr dict_set
+	jsr dict__set
 
 :led_lparen_args
 	jsr lexer_next	; skip '(' or ','
@@ -1854,7 +1854,7 @@
     set push, [z+-1]
     set push, [z+-2]
     set push, [z+-3]
-	jsr dict_set
+	jsr dict__set
 	
 	ife [lexer_token], token_comma
 		set pc, led_lparen_args

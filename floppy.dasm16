@@ -118,7 +118,7 @@
 	set push, [z-2]
 	set push, [z+11]
 	set push, [z-1]
-	jsr dict_set
+	jsr dict__set
 
 	; write updated dir
 	set push, [z-2]

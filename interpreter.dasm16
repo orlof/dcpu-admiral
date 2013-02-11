@@ -180,7 +180,7 @@
 	set push, [z+13]
 	set push, [z+12]
 	set push, [z+11]
-	jsr dict_set
+	jsr dict__set
 
 	set x, 1
 	jsr postamble
