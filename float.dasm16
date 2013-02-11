@@ -526,7 +526,7 @@
 
 	set y, ex		; store product high
 	add [c], x		; add product low
-	adx [c+-1], y	; add product high
+	adx [c-1], y	; add product high
 	set x, ex
 
 	set y, c		; y: product current word
@@ -968,7 +968,7 @@
 
 	set x, INT_HANDLE_0
 	ifb [y + FLOAT_CATEGORY], FLOAT_CATEGORY_NZERO + FLOAT_CATEGORY_PZERO
-		set pc, postamble		; +-0 is just 0
+		set pc, postamble		; -0 is just 0
 
 	set a, [y + FLOAT_EXPONENT]	; a = float.exp
 	ifg 0x8000, a				; if float < 1
@@ -1661,8 +1661,8 @@
 	set a, FALSE
 
 :float_pow_calc
-	set [z+-1], [z+11] 			; p
-	set [z+-2], [FLOAT_1]		; r
+	set [z-1], [z+11] 			; p
+	set [z-2], [FLOAT_1]		; r
 	
 :float_pow_loop
 	ife c, 0
@@ -1671,22 +1671,22 @@
 	ifc c, 1
 		set pc, float_pow_skip
 		
-	set push, [z+-2]
-	set push, [z+-1]
+	set push, [z-2]
+	set push, [z-1]
 	jsr float_mul
-	set [z+-2], x
+	set [z-2], x
 	
 :float_pow_skip
-	set push, [z+-1]
-	set push, [z+-1]
+	set push, [z-1]
+	set push, [z-1]
 	jsr float_mul
-	set [z+-1], x
+	set [z-1], x
 
 	div c, 2
 	set pc, float_pow_loop
 
 :float_pow_break
-	set x, [z+-2]
+	set x, [z-2]
 
 	ife a, TRUE
 		set pc, postamble	

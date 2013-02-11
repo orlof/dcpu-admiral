@@ -66,7 +66,7 @@
 	set push, 1			; sizeof(refs)
 	jsr preamble
 
-	set [z+-1], INT_HANDLE_0
+	set [z-1], INT_HANDLE_0
 
 	set a, [z+10]		; struct handle *str
 	set b, 0			; index
@@ -87,29 +87,29 @@
 		set pc, int_parse_sign
 
 	set push, INT_HANDLE_10
-	set push, [z+-1]
+	set push, [z-1]
 	jsr int_mul
-	set [z+-1], x
+	set [z-1], x
 
 	sub c, '0'						; convert char to int
 	shl c, 1
 	add c, INT_HANDLE
 
-	set push, [z+-1]
+	set push, [z-1]
 	set push, c
 	jsr int_add	
-	set [z+-1], x
+	set [z-1], x
 	
 	add b, 1
 	jsr array_get
 	set pc, int_parse_loop	
 
 :int_parse_sign
-	set x, [z+-1]
+	set x, [z-1]
 	ife y, FALSE
 		set pc, postamble
 
-	set push, [z+-1]
+	set push, [z-1]
 	jsr int_negate
 
 	set pc, postamble
@@ -126,16 +126,16 @@
 
 	set push, [z+10]
 	jsr int_abs
-	set [z+-1], x
+	set [z-1], x
 
 	; character count
 	set i, 0
 
 :int_to_str_loop
-	set push, [z+-1]
+	set push, [z-1]
 	set push, INT_HANDLE_10
 	jsr int_division
-	set [z+-1], x
+	set [z-1], x
 
 	set a, [x]	; struct list *tuple
 	set b, [a + INT_DIVISION_REMAINDER]	; struct handle *remainder
@@ -145,9 +145,9 @@
 	add b, '0'
 	sti push, b
 
-	set [z+-1], [a + INT_DIVISION_QUOTIENT]
+	set [z-1], [a + INT_DIVISION_QUOTIENT]
 
-	set push, [z+-1]
+	set push, [z-1]
 	jsr int_sgn
 
 	ifn x, 0
@@ -166,7 +166,7 @@
 	set push, i
 	set push, TYPE_STRING
 	jsr array_create
-	set [z+-1], x
+	set [z-1], x
 
 	set a, [x]
 	add a, i
@@ -217,15 +217,15 @@
 	ifg i, a
 		std pc, int_random_loop
 
-	set push, [z+-2]
-	set push, [z+-1]
+	set push, [z-2]
+	set push, [z-1]
 	jsr int_division
 	
 	set x, [x]
-	set [z+-1], [x + INT_DIVISION_REMAINDER]
+	set [z-1], [x + INT_DIVISION_REMAINDER]
 
 	set push, [z+11]
-	set push, [z+-1]
+	set push, [z-1]
 	jsr int_add
 
 	set pc, postamble
@@ -297,7 +297,7 @@
 	set push, [z+10]
 	set push, c
 	jsr int_extend
-	set [z+-2], x
+	set [z-2], x
 	set b, x
 	set b, [b]
 	set j, b
@@ -306,7 +306,7 @@
 	set push, [z+11]
 	set push, c
 	jsr int_extend
-	set [z+-1], x
+	set [z-1], x
 	set a, x
 	set a, [a]
 	set i, a
@@ -381,7 +381,7 @@
 	set push, [z+11]
 	set push, c
 	jsr int_extend
-	set [z+-1], x
+	set [z-1], x
 
 	; x: struct handle *new
 	; c: size of new int
@@ -531,7 +531,7 @@
 	set push, [i]	; len
 	set push, TYPE_INT
 	jsr array_create
-	set [z+-1], x
+	set [z-1], x
 	
 	set a, [x]	; struct int *
 
@@ -661,10 +661,10 @@
 
 	set push, [z+10]           ; negate subtrahend
 	jsr int_negate
-	set [z+-1], x
+	set [z-1], x
 
 	set push, [z+11]
-	set push, [z+-1]
+	set push, [z-1]
 	jsr int_add
 
 	jsr postamble
@@ -731,7 +731,7 @@
 	set push, c
 	set push, TYPE_INT
 	jsr array_create
-	set [z+-1], x
+	set [z-1], x
 	
 	sti i, [x]
 	add c, i
@@ -741,7 +741,7 @@
 	ifn i, c
 		set pc, int_add_copy_loop
 
-	set push, [z+-1]
+	set push, [z-1]
 	jsr int_normalize
 
 	jsr postamble
@@ -766,8 +766,8 @@
 	jsr int_to_int16
 	set c, x						; c = (uint16) exp
 
-	set [z+-1], [z+11] 				; p
-	set [z+-2], INT_HANDLE_1		; r
+	set [z-1], [z+11] 				; p
+	set [z-2], INT_HANDLE_1		; r
 	
 :int_pow_loop
 	ife c, 0
@@ -777,17 +777,17 @@
 		set pc, int_pow_skip
 
 	; r = p * r
-	set push, [z+-2]
-	set push, [z+-1]
+	set push, [z-2]
+	set push, [z-1]
 	jsr int_mul
-	set [z+-2], x
+	set [z-2], x
 	
 :int_pow_skip
 	; p = p * p
-	set push, [z+-1]
-	set push, [z+-1]
+	set push, [z-1]
+	set push, [z-1]
 	jsr int_mul
-	set [z+-1], x
+	set [z-1], x
 
 	; c = c / 2
 	div c, 2
@@ -795,7 +795,7 @@
 
 :int_pow_break
 	; return r
-	set x, [z+-2]
+	set x, [z-2]
 	set pc, postamble	
 
 :int_pow_0
@@ -817,7 +817,7 @@
 
 	set push, [z+11]	; struct handle *factor1
 	jsr int_abs
-	set [z+-1], x		; struct handle *f1
+	set [z-1], x		; struct handle *f1
 	set a, [x]			; a: struct int *f1
 
 	set i, a
@@ -825,7 +825,7 @@
 	
 	set push, [z+10]	; struct handle *factor2
 	jsr int_abs
-	set [z+-2], x		; struct handle *f2
+	set [z-2], x		; struct handle *f2
 	set b, [x]			; b: struct int *f2
 
 	set j, b			; j: lsw of f2
@@ -838,7 +838,7 @@
 	set push, TYPE_INT
 	jsr array_create
 
-	set [z+-3], x
+	set [z-3], x
 	
 	set c, [x]
 	add c, [c]			; c: product lsw
@@ -855,7 +855,7 @@
 
 	set y, ex		; store product high
 	add [c], x		; add product low
-	adx [c+-1], y	; add product high
+	adx [c-1], y	; add product high
 	set x, ex
 
 	set y, c		; y: product current word
@@ -886,9 +886,9 @@
 
 	; all multiplications done here
 
-	set push, [z+-3]
+	set push, [z-3]
 	jsr int_normalize
-	set [z+-3], x
+	set [z-3], x
 
 	set push, [z+10]	; factor 2 sign
 	jsr int_sgn
@@ -898,12 +898,12 @@
 	jsr int_sgn
 	xor a, x
 
-	set x, [z+-3]
+	set x, [z-3]
 	ifc a, 0x8000
 		jsr postamble
 
 	; negate product
-	set push, [z+-3]
+	set push, [z-3]
 	jsr int_negate
 	
 	jsr postamble
@@ -946,9 +946,9 @@
 ;  todo optimize shifts only to one word and aggregate 16 shifts
 ;  as word copy
 ; references
-; [z+-1] quotient
-; [z+-2] divisor
-; [z+-3] remainder
+; [z-1] quotient
+; [z-2] divisor
+; [z-3] remainder
 ;----------------------------------------------------------------
 :int_division
 	set push, 2
@@ -957,12 +957,12 @@
 
 	set push, [z+11]
 	jsr int_abs
-	set [z+-1], x
+	set [z-1], x
 	set a, x
 
 	set push, [z+10]
 	jsr int_abs
-	set [z+-2], x
+	set [z-2], x
 
 	set a, [a]
 	set b, [x]
@@ -972,23 +972,23 @@
 	ifg [b], [a]
 		set c, [b]
 
-	set push, [z+-1]
+	set push, [z-1]
 	set push, c
 	jsr int_extend
-	set [z+-1], x	; quotient
+	set [z-1], x	; quotient
 	set a, x
 
-	set push, [z+-2]
+	set push, [z-2]
 	set push, c
 	jsr int_extend
-	set [z+-2], x	; divisor
+	set [z-2], x	; divisor
 	set b, x
 
 	set push, c
 	set push, TYPE_INT
 	jsr array_create
 
-	set [z+-3], x	; remainder
+	set [z-3], x	; remainder
 	set c, [x]
 
 	set a, [a]
@@ -1067,13 +1067,13 @@
 	set pc, division_loop
 
 :division_finish
-	set push, [z+-1]
+	set push, [z-1]
 	jsr int_normalize
-	set [z+-1], x
+	set [z-1], x
 
-	set push, [z+-3]
+	set push, [z-3]
 	jsr int_normalize
-	set [z+-3], x
+	set [z-3], x
 
 	; figure out signs
 	set i, [z+11]
@@ -1090,22 +1090,22 @@
 		set pc, division_set_modulo_sign
 
 	; negate quotient and invert modulo
-	set push, [z+-1]
+	set push, [z-1]
 	jsr int_negate
-	set [z+-1], x
+	set [z-1], x
 
-	set push, [z+-2]
-	set push, [z+-3]
+	set push, [z-2]
+	set push, [z-3]
 	jsr int_sub
-	set [z+-3], x
+	set [z-3], x
 
 :division_set_modulo_sign
 	ifc j, 0x8000
 		set pc, division_return_tuple
 
-	set push, [z+-3]
+	set push, [z-3]
     jsr int_negate
-    set [z+-3], x
+    set [z-3], x
 
 :division_return_tuple
 	; finally create result tuple
@@ -1115,8 +1115,8 @@
 	
 	sti i, [x]
 
-	sti [i], [z+-1]
-	set [i], [z+-3]
+	sti [i], [z-1]
+	set [i], [z-3]
 	
 	jsr postamble
 
@@ -1164,7 +1164,7 @@
 	set push, TYPE_INT
 	jsr array_create
 
-	set [z+-1], x
+	set [z-1], x
 
 	set a, [z+10]
 	set a, [a]
@@ -1195,7 +1195,7 @@
 	set push, TYPE_INT
 	jsr array_create
 
-	set [z+-1], x
+	set [z-1], x
 
 	set b, [x]		; b: struct int *new
 	set j, b		; j: new lsw

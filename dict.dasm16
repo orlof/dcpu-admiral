@@ -59,7 +59,7 @@
 	set push, 2
 	set push, TYPE_TUPLE
 	jsr array_create
-	set [z+-1], x
+	set [z-1], x
 
 	sti i, [x]
 
@@ -78,7 +78,7 @@
 
 	set push, [z+12]
 	set push, -1
-	set push, [z+-1]
+	set push, [z-1]
 	jsr array_insert
 
 	jsr postamble
@@ -86,7 +86,7 @@
 :dict_set_to_index
 	set a, [z + 12]
 	set b, x
-	set c, [z+-1]
+	set c, [z-1]
 	jsr array_set
 
 	jsr postamble
@@ -131,7 +131,7 @@
 	set push, 10
 	set push, TYPE_STRING
 	jsr alloc
-	set [z+-1], x
+	set [z-1], x
 
 	set push, x
 	set push, -1
@@ -149,7 +149,7 @@
 	ife i, 0
 		set pc, dict_repr_skip_comma
 
-	set push, [z+-1]					; struct handle *str
+	set push, [z-1]					; struct handle *str
 	set push, -1
 	set push, ','
 	jsr array_insert
@@ -165,14 +165,14 @@
 	set x, [c]				; struct tuple *
 	set push, [x+1]
 	jsr repr
-	set [z+-2], x
+	set [z-2], x
 
-	set push, [z+-1]
-	set push, [z+-2]
+	set push, [z-1]
+	set push, [z-2]
 	jsr array_merge
-	set [z+-1], x
+	set [z-1], x
 
-	set push, [z+-1]
+	set push, [z-1]
 	set push, -1
 	set push, ':'
 	jsr array_insert
@@ -180,20 +180,20 @@
 	set x, [c]				; struct tuple *
 	set push, [x+2]
 	jsr repr
-	set [z+-2], x
+	set [z-2], x
 
-	set push, [z+-1]
-	set push, [z+-2]
+	set push, [z-1]
+	set push, [z-2]
 	jsr array_merge
-	set [z+-1], x
+	set [z-1], x
 
 	sti pc, dict_repr_loop
 		
 :dict_repr_finish
-	set push, [z+-1]
+	set push, [z-1]
 	set push, -1
 	set push, '}'
 	jsr array_insert
 
-	set x, [z+-1]
+	set x, [z-1]
 	jsr postamble
