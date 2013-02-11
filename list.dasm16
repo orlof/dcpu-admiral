@@ -79,7 +79,7 @@
 	set push, 10
 	set push, TYPE_STRING
 	jsr alloc
-	set [z+-1], x
+	set [z-1], x
 
 	set push, x
 	set push, -1
@@ -100,7 +100,7 @@
 	ife i, 0
 		set pc, list_repr_skip_comma
 
-	set push, [z+-1]					; struct handle *str
+	set push, [z-1]					; struct handle *str
 	set push, -1
 	set push, ','
 	jsr array_insert
@@ -111,17 +111,17 @@
 	
 	set push, [x+1]			; get repr of next item
 	jsr repr
-	set [z+-2], x
+	set [z-2], x
 	
-	set push, [z+-1]
-	set push, [z+-2]
+	set push, [z-1]
+	set push, [z-2]
 	jsr array_merge
-	set [z+-1], x
+	set [z-1], x
 
 	sti pc, list_repr_loop
 		
 :list_repr_finish
-	set push, [z+-1]
+	set push, [z-1]
 	set push, -1
 	ife [y + HANDLE_TYPE], TYPE_TUPLE
 		set push, ')'
@@ -129,6 +129,6 @@
 		set push, ']'
 	jsr array_insert
 
-	set x, [z+-1]
+	set x, [z-1]
 	jsr postamble
 

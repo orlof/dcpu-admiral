@@ -276,7 +276,7 @@
 :sort_string
 	set push, a
 	jsr array_clone
-	set [z+-1], x
+	set [z-1], x
 
 	set push, x
 	ife b, BOOL_HANDLE_TRUE
@@ -285,7 +285,7 @@
 		set push, char_comparator
 		
 	jsr array_sort
-	set x, [z+-1]
+	set x, [z-1]
 	set pc, postamble
 	
 :char_comparator
@@ -459,7 +459,7 @@
 	set push, 1
 	set push, TYPE_STRING
 	jsr array_create
-	set [z+-1], x
+	set [z-1], x
 	set b, x
 
 	set c, [x]
@@ -541,14 +541,14 @@
 :itof_left
 	set push, a
 	jsr float_from_int
-	set [z+-1], x
+	set [z-1], x
 	set a, x
 	set pc, pop
 
 :itof_right
 	set push, b
 	jsr float_from_int
-	set [z+-2], x
+	set [z-2], x
 	set b, x
 	set pc, pop
 
@@ -660,7 +660,7 @@
 :print_with_repr
 	set push, [z+10]
 	jsr repr
-	set [z+-1], x
+	set [z-1], x
 	set a, x
 
 :print_skip_repr
@@ -688,7 +688,7 @@
 
 ;	set push, [z+10]
 ;	jsr eval
-;	set [z+-1], x
+;	set [z-1], x
 ;	set a, x
 
 	set x, [z+10]
@@ -723,19 +723,19 @@
 	set push, a
 	set push, TYPE_STRING
 	jsr alloc
-	set [z+-1], x
+	set [z-1], x
 	
-	set push, [z+-1]
+	set push, [z-1]
 	set push, -1
 	set push, 39
 	jsr array_insert
 	
-	set push, [z+-1]
+	set push, [z-1]
 	set push, [z+10]
 	jsr array_merge
-	set [z+-1], x
+	set [z-1], x
 
-	set push, [z+-1]
+	set push, [z-1]
 	set push, -1
 	set push, 39
 	jsr array_insert
@@ -877,9 +877,9 @@
 	; print prompt
 	set push, [z+10]
 	jsr eval
-	set [z+-1], x
+	set [z-1], x
 	
-	set push, [z+-1]
+	set push, [z-1]
 	jsr print
 	
 :raw_input_no_prompt

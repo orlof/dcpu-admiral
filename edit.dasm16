@@ -24,7 +24,7 @@
 	set push, EDIT_BUFFER_SIZE
 	set push, TYPE_STRING
 	jsr alloc
-	set [z+-1], x
+	set [z-1], x
 
 	set x, [x]			; x: struct string *
 
@@ -307,7 +307,7 @@
 	ifl j, [cur_pos]
 		sti [i], [j]
 	ifg i, [cur_pos]
-		std [j+-1], [i+-1]
+		std [j-1], [i-1]
 	ifn i, [cur_pos]
 		ifn j, [cur_pos]
 			set pc, edit_gap_move_loop
