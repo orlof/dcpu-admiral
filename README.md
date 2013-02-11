@@ -96,6 +96,7 @@ b 2
  - Interactive command prompt
  - Integrated code editor with gap buffer
  - Object serialization for floppy
+ - Dict implementation with binary search
  
 <h6>Next in development</h6>
  - Improved error reporting
@@ -113,7 +114,6 @@ b 2
  - Exception handling
  - Library version of admiral to run on top of DCPU operating systems
  - Trigonometric functions
- - Dict implementation with binary search
  - Embedded assembler (editor + assembler)
 
 --
