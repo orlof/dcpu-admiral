@@ -31,7 +31,7 @@
 	ifb [a + HANDLE_TYPE], TYPE_STRING + TYPE_NAME
 		set c, str_cmp
 
-	ifb [a + HANDLE_TYPE], TYPE_LIST + TYPE_TUPLE
+	ifb [a + HANDLE_TYPE], TYPE_LIST + TYPE_TUPLE + TYPE_DICT
 		set c, list_cmp
 
 	ife c, 0
@@ -268,7 +268,7 @@
 
 	ife [a + HANDLE_TYPE], TYPE_STRING
 		set pc, sort_string
-	ifb [a + HANDLE_TYPE], TYPE_TUPLE + TYPE_LIST + TYPE_DICT
+	ifb [a + HANDLE_TYPE], TYPE_TUPLE + TYPE_LIST
 		set pc, sort_array
 		
 	jsr recover
