@@ -399,7 +399,7 @@
 	set push, [a + REFERENCE_NAME]
 :assign_reference_or_subscription_dict
 	set push, b
-	jsr dict_set
+	jsr dict__set
 	set x, b
 	set pc, postamble
 	
@@ -470,7 +470,7 @@
 
 	set y, recover
 	ife [a + HANDLE_TYPE], TYPE_REFERENCE
-		set y, dict_set
+		set y, dict__set
 	ife [a + HANDLE_TYPE], TYPE_SUBSCRIPTION
 		set y, list_set
 
