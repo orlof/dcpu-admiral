@@ -122,7 +122,8 @@ b 2
 
 https://github.com/orlof/dcpu-admiral
 
-To build from source, run the following with the DCPU Toolchain (DCPUTeam/DCPUToolchain)
+To build from source, run the following with the DCPU Toolchain (http://dcputoolcha.in/). I recommend trying 
+the experimental build if stable build is far behind.
 
     dtasm --binary admiral.dasm16 -o admiral.bin
     
