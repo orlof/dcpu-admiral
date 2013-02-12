@@ -134,6 +134,8 @@ You can run the .bin provided with the following command with the Toolchain:
 You can also run admiral.bin with Lettuce (SirCmpwn/Tomato) (international (non-US?) keyboard layouts 
 are not working with Lettuce).
 
+    organic.exe --long-literals admiral.dasm16 admiral.bin
+
 To work with devkit, leave the admiral.dasm16 out of the project and specify interpreter.dasm16 as 
 the starting point for execution. Devkit 1.7.6 is badly broken and cannot run Admiral. Devkit version 
 1.7.5 can compile and run Admiral, but does not support floppy.
