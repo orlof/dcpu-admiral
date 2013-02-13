@@ -71,7 +71,7 @@
 	set push, [z+12]	; dict
 	set push, i			; index
 	set push, [z-3]		; tuple
-	jsr array_insert
+	jsr array__insert
 
 	set pc, postamble
 
@@ -100,7 +100,7 @@
 
 	set a, [z+11]
 	set b, c
-	jsr array_del
+	jsr array__del
 
 	jsr postamble
 
@@ -167,9 +167,8 @@
 	set [z-1], x
 
 	set push, x
-	set push, -1
 	set push, '{'
-	jsr array_insert
+	jsr array__append
 
 	set i, 0					; index
 	set b, [y]					; struct list *
@@ -183,9 +182,8 @@
 		set pc, dict_repr_skip_comma
 
 	set push, [z-1]					; struct handle *str
-	set push, -1
 	set push, ','
-	jsr array_insert
+	jsr array__append
 
 :dict_repr_skip_comma
 	set x, [y]				; struct dict *
@@ -206,9 +204,8 @@
 	set [z-1], x
 
 	set push, [z-1]
-	set push, -1
 	set push, ':'
-	jsr array_insert
+	jsr array__append
 
 	set x, [c]				; struct tuple *
 	set push, [x+2]
@@ -224,9 +221,8 @@
 		
 :dict_repr_finish
 	set push, [z-1]
-	set push, -1
 	set push, '}'
-	jsr array_insert
+	jsr array__append
 
 	set x, [z-1]
 	jsr postamble

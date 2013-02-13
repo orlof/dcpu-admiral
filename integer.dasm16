@@ -72,13 +72,13 @@
 	set b, 0			; index
 	set y, FALSE		; negative flag
 
-	jsr array_get
+	jsr array__get
 	ifn [x + lexer_table], lexer_char_minus
 		set pc, int_parse_loop
 
 	set y, TRUE
 	add b, 1
-	jsr array_get
+	jsr array__get
 			
 :int_parse_loop
 	set c, x
@@ -101,7 +101,7 @@
 	set [z-1], x
 	
 	add b, 1
-	jsr array_get
+	jsr array__get
 	set pc, int_parse_loop	
 
 :int_parse_sign

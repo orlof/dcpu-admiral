@@ -24,9 +24,8 @@
 		sti pc, float_create_loop	
 
 	set push, [builtin]
-	set push, -1
 	set push, x
-	jsr array_insert
+	jsr array__append
 
 	set x, [z-1]
 	set pc, postamble
@@ -79,9 +78,8 @@
 	set [j], x
 
 	set push, [builtin]
-	set push, -1
 	set push, x
-	jsr array_insert
+	jsr array__append
 
 	ifl i, 10
 		sti pc, float_init_loop
@@ -1124,7 +1122,7 @@
 	set b, 0					; index in str
 
 :ffs_loop
-	jsr array_get
+	jsr array__get
 	add b, 1
 	set c, x
 
@@ -1327,9 +1325,8 @@
 		set pc, fts_scale_down
 
 	set push, [z-1]
-	set push, -1
 	set push, '-'
-	jsr array_insert
+	jsr array__append
 	
 :fts_scale_down
 	set push, [z-2]
@@ -1354,9 +1351,8 @@
 	add x, '0'			; change number to character
 
 	set push, [z-1]		; add character to string
-	set push, -1
 	set push, x
-	jsr array_insert
+	jsr array__append
 
 	set push, [z-2]
 	set push, [FLOAT_0 + c]
@@ -1385,9 +1381,8 @@
 		set pc, fts_print
 
 	set push, [z-1]		; add character to string
-	set push, -1
 	set push, '.'
-	jsr array_insert
+	jsr array__append
 	
 	set pc, fts_print
 
@@ -1399,9 +1394,8 @@
 		set pc, fts_finish
 		
 	set push, [z-1]		; add character to string
-	set push, -1
 	set push, '0'
-	jsr array_insert
+	jsr array__append
 	
 	set pc, fts_fill_with_zero
 

@@ -88,3 +88,19 @@
 	set x, -1
 	jsr postamble
 
+
+:built_in__str_crypt
+:built_in__str_encrypt
+:built_in__str_lower
+:built_in__str_upper
+:built_in__str_append
+:built_in__str_insert
+:built_in__str_find
+:built_in__str_replace
+:built_in__str_split
+:built_in__str_endswith
+:built_in__str_startswith
+:built_in__str_is_alpha
+:built_in__str_is_digit
+	set pc, recover
+

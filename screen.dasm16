@@ -61,6 +61,84 @@
 	set pc, pop
 
 ;----------------------------------------------------------------
+; void screen__scroll(int16 dx, int16 dy)
+;----------------------------------------------------------------
+:screen__scroll
+
+;----------------------------------------------------------------
+; void screen__get(int16 x, int16 y)
+;----------------------------------------------------------------
+:screen__get
+	mul [sp+1], SCREEN_COLS
+	add [sp+1], [sp+2]
+	
+	set x, [current_screen]
+	add [sp+1], [x + SCREEN__START]
+
+	set x, [sp+1]
+	set x, [x]
+	and x, 0x007f
+
+	set [sp], pop
+	set [sp], pop
+	set pc, pop
+	
+;----------------------------------------------------------------
+; void screen__set(int16 x, int16 y, uint16 char)
+;----------------------------------------------------------------
+:screen__set
+	mul [sp+2], SCREEN_COLS
+	add [sp+2], [sp+3]
+	
+	set x, [current_screen]
+	add [sp+2], [x + SCREEN__START]
+	
+	bor [sp+1], FONT_COLOR
+	
+	set x, [sp+2]
+	set [x], [sp+1]
+
+	set [sp], pop
+	set [sp], pop
+	set [sp], pop
+	set pc, pop
+	
+;----------------------------------------------------------------
+; struct handle *screen__get_cursor()
+;----------------------------------------------------------------
+:screen__get_cursor
+	set push, 0
+	set push, 1
+	jsr preamble
+
+	set b, [current_screen]
+	set a, [b + SCREEN__CURSOR]
+	sub a, [b + SCREEN__START]
+
+	set push, 2
+	set push, TYPE_TUPLE
+	jsr array_create
+	set [z-1], x
+	set b, [x]
+	
+	set c, a
+	mod c, SCREEN_COLS
+	
+	set push, c
+	jsr int16_to_int
+	set [b+1], x
+
+	set c, a
+	div c, SCREEN_COLS
+	
+	set push, c
+	jsr int16_to_int
+	set [b+2], x
+
+	set x, [z-1]
+	set pc, postamble
+
+;----------------------------------------------------------------
 ; void cls(void)
 ;----------------------------------------------------------------
 :screen_clear

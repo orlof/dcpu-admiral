@@ -21,140 +21,190 @@
 	set pc, pop
 
 ;----------------------------------------------------------------
-:array_get
+; internal array access -> 0
+; array[1]       -> error
+; =array[1]      -> error
+; array.insert() -> bounded
+; array.append() -> no error
+;----------------------------------------------------------------
+
+;----------------------------------------------------------------
+:array__get
 ; fastcall
 ; a: struct handle *
 ; b: index
 ; return x: uint16 at specified index or 0
 ;----------------------------------------------------------------
-	jsr array_element
-	set x, [x]
+	jsr array__get_memory_addr
+	
+	ifn x, 0
+		set x, [x]
+	
 	set pc, pop	
 
 ;----------------------------------------------------------------
-:array_set
+:array__set
 ; fastcall
 ; a: struct handle *
 ; b: index
-; c: uint16
+; c: item (struct handle * or char)
 ;----------------------------------------------------------------
-	jsr array_element
+	jsr array__get_memory_addr
+	
+	ife x, 0
+		jsr recover
+	
 	set [x], c
+
 	set pc, pop	
 
 ;----------------------------------------------------------------
-:array_del
+:array__del
 ; fastcall
 ; a: struct handle *
 ; b: index
 ;----------------------------------------------------------------
-	jsr array_element
+	jsr array__get_memory_addr
+	
+	ife x, 0
+		set pc, recover
 
-	set push, a
 	set push, i
-	set push, [x]
+	set push, j
 
-	set a, [a]
-	sub [a], 1
+	set i, [a]
+	set j, [i]
+
+	sub [i], 1
 	
-	add a, [a]
-	set i, x
+	add i, [i]
 
-:loop	
-	ifg i, a
-		set pc, array_del_finish
-	sti [i], [i+1]
-	set pc, loop
-	
-:array_del_finish
-	set x, pop
-	set i, pop
-	set a, pop
-	set pc, pop	
-
-;----------------------------------------------------------------
-:array_element
-; fastcall
-; a: struct handle *
-; b: index
-;----------------------------------------------------------------
-	set push, y
-	set y, [a]			; array_data *
-	set x, b
-
-	ifb b, 0x8000
-		add x, [y]			; len
+:array__del__loop
+	ifl i, x
+		set pc, array__del__finish
 		
+	set [i], [j]
+	std pc, array__del__loop
+	
+:array__del__finish
+	set j, pop
+	set i, pop
+	set pc, pop
+
+;----------------------------------------------------------------
+:array__get_memory_addr
+; fastcall
+; a: struct handle *array
+; b: index
+; return x: memory location or 0 for out of bounds
+;----------------------------------------------------------------
+	set push, a
+	
+	set a, [a]			; struct array *
+
+	set x, b
+	ifb b, 0x8000
+		add x, [a]
+
 	ifb x, 0x8000
-		set pc, array_return_0
+		set pc, array__get_memory_addr__out_of_bounds
 
 	add x, 1
-	ifg x, [y]
-		set pc, array_return_0
+	ifg x, [a]
+		set pc, array__get_memory_addr__out_of_bounds
 
-	add x, y
-	set y, pop
+	add x, a
+	
+	set a, pop
 	set pc, pop
 
-:array_return_0
-	set y, pop
+:array__get_memory_addr__out_of_bounds
+	set a, pop
 	set x, 0
-	add sp, 1
 	set pc, pop
 
 ;----------------------------------------------------------------
-; extern struct handle *array_insert(struct handle *arr, uint index, void item)
+; extern struct handle *array_insert(struct handle *array, uint index, void item)
 ;----------------------------------------------------------------
-:array_insert
+:array__insert
 	set push, 3
 	set push, 0
 	jsr preamble
 
-	set a, [z+12]		; struct handle *
-	set b, [a]			; struct array *
+	; calculate index to b
+	set a, [z+12]		; struct handle *array
+	set c, [a]			; struct array *
 
-	; check range
-	set c, [z+11]
-	
-	ifb c, 0x8000
-		set c, [b]
+	set b, [z+11]		; index
+
+	ifb b, 0x8000		; if index < 0
+		add b, [c]		;   index += len
+
+	ifb b, 0x8000		; if index < 0
+		set b, 0		;   index = 0
+
+	ifg b, [c]			; if index > len
+		set b, [c]		;   index = len
+
+	jsr array__increment_length
+
+	set i, [a]			; realloc has moved the memory
+	add i, [i]
+
+	set j, [a]
+	add j, [j]
+	sub j, 1
+
+	add b, [a]
+
+:array__insert__loop
+	ife j, b
+		set pc, array__insert__finish
 		
-	ifg c, [b]
-		jsr recover
+	set [i], [j]
+	std pc, array__insert__loop
 	
-	std i, [a + HANDLE_SIZE]
-
-	ifl [b], i
-		set pc, array_insert_prepare
-	    
-	; increase list capacity
-	add i, 11   ; increase capacity
-	
-	set push, a
-	set push, i
-	jsr realloc
-
-	set b, [a]			; realloc has moved the memory
-		
-:array_insert_prepare
-	set i, b
-	add i, [b]
-
-	add [b], 1
-	add b, c	
-
-:array_insert_copy
-	ife i, b
-		set pc, array_insert_finish
-
-	std [i+1], [i]
-	set pc, array_insert_copy
-	
-:array_insert_finish
-	set [i+1], [z+10]
-
+:array__insert__finish
+	set [i], [z+10]
 	jsr postamble
 
+;----------------------------------------------------------------
+; extern struct handle *array_insert(struct handle *array, void item)
+;----------------------------------------------------------------
+:array__append
+	set push, 2
+	set push, 0
+	jsr preamble
+
+	set a, [z+11]
+	jsr array__increment_length
+
+	set a, [a]
+	add a, [a]
+
+	set [a], [z+10]
+
+	set pc, postamble
+
+;----------------------------------------------------------------
+:array__increment_length
+; fastcall
+; a: struct handle *array
+;----------------------------------------------------------------	
+	set x, [a]
+	add [x], 1
+	
+	ifl [x], [a + HANDLE_SIZE]				; if len < capacity+1
+		set pc, pop
+
+	; increase list capacity
+	set push, a
+	set push, [x]
+	add [sp], 9
+	jsr realloc
+
+	set pc, pop
+	
 ;----------------------------------------------------------------
 ; extern struct handle *array_split(struct handle *orig, uint start, uint end)
 ;----------------------------------------------------------------
@@ -175,6 +225,9 @@
 	set c, [z+10]
 	ifb c, 0x8000
 		add c, [b]
+
+	ifg c, [b]
+		set c, [b]
 
 	set y, c
 	sub y, j

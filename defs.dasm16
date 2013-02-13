@@ -107,7 +107,8 @@
 #define TYPE_SUBSCRIPTION   0x0400
 
 ; TYPE GROUPS
-#define TYPE_GROUP_CONTAINER	TYPE_CONTROL + TYPE_TUPLE + TYPE_LIST + TYPE_DICT + TYPE_TUPLE_COMMA + TYPE_REFERENCE + TYPE_SUBSCRIPTION
+#define TYPE_GROUP_CONTAINER		TYPE_CONTROL + TYPE_TUPLE + TYPE_LIST + TYPE_DICT + TYPE_TUPLE_COMMA + TYPE_REFERENCE + TYPE_SUBSCRIPTION
+#define TYPE_GROUP_CAN_REFERENCE	TYPE_LIST + TYPE_DICT
 
 ;----------------------------------------------------------------
 ; DATA STRUCTURE DEFINITIONS
@@ -178,8 +179,8 @@
 ;   struct handle *dict;
 ;   struct handle *name;
 ; }
-#define REFERENCE_DICT      1
-#define REFERENCE_NAME      2
+#define REFERENCE_LEFT		1
+#define REFERENCE_RIGHT		2
 
 ; struct subscription {
 ;   uint16 length;
