@@ -883,9 +883,8 @@
     set [a + DICT_ITEM_VALUE], [z-4]
 
     set push, [z-1]
-	set push, -1
     set push, [z-2]
-	jsr array_insert
+	jsr array__append
 
 	ife [lexer_token], token_comma
 		set pc, nud_lcurly_loop
@@ -1841,7 +1840,7 @@
 		
     set push, [z-1]
 	set push, STR_ME
-	set push, [a + REFERENCE_DICT]
+	set push, [a + REFERENCE_LEFT]
 	jsr dict__set
 
 :led_lparen_args
@@ -2083,13 +2082,13 @@
 	
 	set push, [z+10]
 	jsr eval
-	
-	ifn [x + 1], TYPE_DICT
+
+	ifc [x + 1], TYPE_GROUP_CAN_REFERENCE
 		jsr recover
 
 	set a, [z-1]
 	set a, [a]
-	set [a + REFERENCE_DICT], x
+	set [a + REFERENCE_LEFT], x
 	
 	jsr lexer_next
 
@@ -2100,7 +2099,7 @@
 
 	set a, [z-1]
 	set a, [a]
-	set [a + REFERENCE_NAME], x
+	set [a + REFERENCE_RIGHT], x
 
 	jsr lexer_next
 	
@@ -2186,19 +2185,46 @@
 	set [z-2], x
 
 	set push, [z-1]
-	set push, -1
 	set push, [z-2]
-	jsr array_insert
+	jsr array__append
 
 :led_comma_end
 	set x, [z-1]	; expr
 	set pc, postamble
 
-
 ;----------------------------------------------------------------
 :built_in
 ;----------------------------------------------------------------
 	set a, [z+10]
+	ife [a+1], TYPE_NAME
+		set pc, built_in__global_functions
+	ife [a+1], TYPE_REFERENCE
+		set pc, built_in__object_functions
+		
+	set pc, led_lparen_user_defined
+
+:built_in__object_functions
+	set a, [a]
+	set b, [a + REFERENCE_LEFT]
+
+	; ADD HERE OBJECT TYPES THAT HAVE METHODS
+	ife [b + HANDLE_TYPE], TYPE_LIST
+		set pc, built_in__list_functions
+	
+	set pc, led_lparen_user_defined
+
+:built_in__list_functions
+	set a, [a + REFERENCE_RIGHT]
+	set a, [a]
+	
+	set b, [a]
+	add a, 1
+
+	set x, built_in__list_methods
+	jsr built_in_matcher
+	set pc, c
+
+:built_in__global_functions
 	set a, [a]
 	
 	set b, [a]
@@ -2207,6 +2233,44 @@
 	set x, built_in_functions
 	jsr built_in_matcher
 	set pc, c
+
+;----------------------------------------------------------------
+:built_in__list_append
+;----------------------------------------------------------------
+	jsr built_in_params
+	ifn i, 1
+		jsr recover
+
+	set a, [z+10]
+	set a, [a]
+
+	set push, [a + REFERENCE_LEFT]
+	set push, [z-1]
+	jsr array__append
+
+	set x, [a + REFERENCE_LEFT]
+	set pc, postamble
+
+;----------------------------------------------------------------
+:built_in__list_insert
+;----------------------------------------------------------------
+	jsr built_in_params
+	ifn i, 2
+		jsr recover
+
+	set a, [z+10]
+	set a, [a]
+
+	set push, [z-1]		; struct handle *index
+	jsr int_to_int16
+
+	set push, [a + REFERENCE_LEFT]
+	set push, x
+	set push, [z-2]
+	jsr array__insert
+
+	set x, [a + REFERENCE_LEFT]
+	set pc, postamble
 
 ;----------------------------------------------------------------
 :built_in_id
@@ -2285,9 +2349,8 @@
 		set pc, built_in_range_break
 
 	set push, [z-4]
-	set push, -1
 	set push, [z-1]
-	jsr array_insert	
+	jsr array__append
 
 	set push, [z-1]
 	set push, [z-3]
@@ -2806,6 +2869,97 @@
 	set push, [z-2]
 	jsr sort
 
+	set pc, postamble
+
+;----------------------------------------------------------------
+:built_in_cursor
+;----------------------------------------------------------------
+	jsr built_in_params
+	ife i, 0
+		set pc, built_in_cursor_coords
+	ifn i, 2
+		jsr recover
+
+	jsr screen__get_x
+	set push, x
+
+	jsr screen__get_y
+	set push, x
+
+	jsr screen_move_cursor
+	
+:built_in_cursor_coords
+	jsr screen__get_cursor
+	
+	set pc, postamble
+
+:screen__get_x
+	set push, [z-1]
+	jsr int_to_int16
+
+	ifb x, 0x8000
+		set x, 0		
+	ifg x, SCREEN_COLS - 1
+		set x, SCREEN_COLS - 1
+		
+	set pc, pop
+
+:screen__get_y
+	set push, [z-2]
+	jsr int_to_int16
+
+	ifb x, 0x8000
+		set x, 0		
+	ifg x, SCREEN_ROWS - 1
+		set x, SCREEN_ROWS - 1
+
+	set pc, pop
+
+;----------------------------------------------------------------
+:built_in_win_get
+;----------------------------------------------------------------
+	jsr built_in_params
+	ifn i, 2
+		jsr recover
+
+	jsr screen__get_x
+	set push, x
+
+	jsr screen__get_y
+	set push, x
+
+	jsr screen__get
+	set c, x
+
+	set push, 1
+	set push, TYPE_STRING
+	jsr array_create
+	
+	sti i, [x]
+	set [i], c
+
+	set pc, postamble		
+
+;----------------------------------------------------------------
+:built_in_win_set
+;----------------------------------------------------------------
+	jsr built_in_params
+	ifn i, 3
+		jsr recover
+
+	jsr screen__get_x
+	set push, x
+
+	jsr screen__get_y
+	set push, x
+
+	set x, [z-3]
+	set x, [x]
+	set push, [x+1]
+
+	jsr screen__set
+
+	set x, NONE
 	set pc, postamble
 
 ;----------------------------------------------------------------

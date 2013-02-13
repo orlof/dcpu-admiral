@@ -12,7 +12,7 @@
 	jsr int_to_int16
 	set b, x
 
-	jsr array_get
+	jsr array__get
 
 	jsr postamble
 	
@@ -31,7 +31,7 @@
 	set b, x
 	
 	set c, [z+10]
-	jsr array_set
+	jsr array__set
 
 	jsr postamble
 
@@ -49,7 +49,7 @@
 	jsr int_to_int16
 	set b, x
 
-	jsr array_del
+	jsr array__del
 
 	jsr postamble
 	
@@ -82,12 +82,11 @@
 	set [z-1], x
 
 	set push, x
-	set push, -1
 	ife [y + HANDLE_TYPE], TYPE_TUPLE
 		set push, '('
 	ife [y + HANDLE_TYPE], TYPE_LIST
 		set push, '['
-	jsr array_insert
+	jsr array__append
 
 	set i, 0					; index
 	set b, [y]					; struct list *
@@ -101,9 +100,8 @@
 		set pc, list_repr_skip_comma
 
 	set push, [z-1]					; struct handle *str
-	set push, -1
 	set push, ','
-	jsr array_insert
+	jsr array__append
 
 :list_repr_skip_comma
 	set x, [y]				; struct list *
@@ -122,13 +120,20 @@
 		
 :list_repr_finish
 	set push, [z-1]
-	set push, -1
 	ife [y + HANDLE_TYPE], TYPE_TUPLE
 		set push, ')'
 	ife [y + HANDLE_TYPE], TYPE_LIST
 		set push, ']'
-	jsr array_insert
+	jsr array__append
 
 	set x, [z-1]
 	jsr postamble
+
+
+
+:built_in__list_append
+:built_in__list_sort
+:built_in__list_reverse
+:built_in__list_insert
+	set pc, recover
 

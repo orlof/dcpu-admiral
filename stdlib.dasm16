@@ -124,8 +124,8 @@
 
 :eval_reference
 	set a, [x]
-	set push, [a + REFERENCE_DICT]		; struct handle *dict or *list
-	set push, [a + REFERENCE_NAME]		; struct handle *key or index
+	set push, [a + REFERENCE_LEFT]		; struct handle *dict or *list
+	set push, [a + REFERENCE_RIGHT]		; struct handle *key or index
 	jsr scope_get
 
 	set pc, postamble
@@ -395,8 +395,8 @@
 
 :assign_reference
 	set a, [a]
-	set push, [a + REFERENCE_DICT]
-	set push, [a + REFERENCE_NAME]
+	set push, [a + REFERENCE_LEFT]
+	set push, [a + REFERENCE_RIGHT]
 :assign_reference_or_subscription_dict
 	set push, b
 	jsr dict__set
@@ -475,8 +475,8 @@
 		set y, list_set
 
 	set a, [a]
-	set push, [a + REFERENCE_DICT] ; = SUBSCRIPTION_LIST
-	set push, [a + REFERENCE_NAME] ; = SUBSCRIPTION_INDEX
+	set push, [a + REFERENCE_LEFT] ; = SUBSCRIPTION_LIST
+	set push, [a + REFERENCE_RIGHT] ; = SUBSCRIPTION_INDEX
 	set push, b
 	jsr y
 	
@@ -503,8 +503,8 @@
 		set y, list_del
 
 	set a, [a]
-	set push, [a + REFERENCE_DICT] ; = SUBSCRIPTION_LIST
-	set push, [a + REFERENCE_NAME] ; = SUBSCRIPTION_INDEX
+	set push, [a + REFERENCE_LEFT] ; = SUBSCRIPTION_LIST
+	set push, [a + REFERENCE_RIGHT] ; = SUBSCRIPTION_INDEX
 	jsr y
 	
 	set x, NONE
@@ -667,7 +667,7 @@
 	set b, 0			; index
 
 :print_loop
-	jsr array_get
+	jsr array__get
 	ife x, 0
 		set pc, postamble
 	
@@ -726,9 +726,8 @@
 	set [z-1], x
 	
 	set push, [z-1]
-	set push, -1
 	set push, 39
-	jsr array_insert
+	jsr array__append
 	
 	set push, [z-1]
 	set push, [z+10]
@@ -736,9 +735,8 @@
 	set [z-1], x
 
 	set push, [z-1]
-	set push, -1
 	set push, 39
-	jsr array_insert
+	jsr array__append
 
 	set x, [z-1]
 	set pc, postamble
