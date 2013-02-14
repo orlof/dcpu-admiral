@@ -128,12 +128,3 @@
 
 	set x, [z-1]
 	jsr postamble
-
-
-
-:built_in__list_append
-:built_in__list_sort
-:built_in__list_reverse
-:built_in__list_insert
-	set pc, recover
-

@@ -979,13 +979,15 @@
 
     set pc, built_in_matcher_list_loop
 
-:list
-    dat 3, "if", 1
-    dat 3, "or", 2
-    dat 4, "cls", 3
-    dat 1, 0
+;----------------------------------------------------------------
+:return_true
+;----------------------------------------------------------------
+	set x, BOOL_HANDLE_TRUE
+	set pc, postamble
 
-:text
-    dat "xxx"
-
+;----------------------------------------------------------------
+:return_false
+;----------------------------------------------------------------
+	set x, BOOL_HANDLE_FALSE
+	set pc, postamble
 

@@ -21,14 +21,6 @@
 	set pc, pop
 
 ;----------------------------------------------------------------
-; internal array access -> 0
-; array[1]       -> error
-; =array[1]      -> error
-; array.insert() -> bounded
-; array.append() -> no error
-;----------------------------------------------------------------
-
-;----------------------------------------------------------------
 :array__get
 ; fastcall
 ; a: struct handle *

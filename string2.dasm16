@@ -44,6 +44,41 @@
 	set pc, str_comparator_select
 
 ;----------------------------------------------------------------
+; uint str_cmp(struct handle *haystack, struct handle *needle, uint16 start, uint16 end)
+;----------------------------------------------------------------
+:str_search_3
+	set push, 4
+	set push, 0
+	jsr preamble
+
+	set a, [z+13]	; struct handle *haystack	
+	set a, [a]
+
+	set x, [z+11]
+	ifu x, 0
+		add x, [a]
+	ifu x, 0
+		sub x, x
+	ifa x, [a]
+		set x, [a]
+		
+	set push, [z+10]
+	ifu [sp], 0
+		add [sp], [a]
+	ifu [sp], 0
+		sub [sp], [sp]
+	ifa [sp], [a]
+		set [sp], [a]
+	
+	set b, [z+12]	; struct handle *needle
+	set b, [b]
+
+	set y, b	; needle last char *
+	add y, [b]
+
+	set pc, str_search_outer_loop
+
+;----------------------------------------------------------------
 ; uint str_cmp(struct handle *haystack, struct handle *needle)
 ;----------------------------------------------------------------
 :str_search
@@ -51,21 +86,22 @@
 	set push, 0
 	jsr preamble
 
-	set a, [z+11]	; struct handle *haystack	
-	set b, [z+10]	; struct handle *needle
+	set x, 0	; haystack walker
 
+	set a, [z+11]	; struct handle *haystack	
 	set a, [a]
+	set push, [a]
+
+	set b, [z+10]	; struct handle *needle
 	set b, [b]
 
 	set y, b	; needle last char *
 	add y, [b]
 
-	set x, 0	; haystack walker
-
 :str_search_outer_loop
 	set c, x	; haystack_walker + needle_len <= haystack_len
 	add c, [b]
-	ifg c, [a]
+	ifg c, [sp]
 		set pc, str_search_no_match
 
 	set i, a	; target[i+j]
@@ -88,19 +124,165 @@
 	set x, -1
 	jsr postamble
 
+;----------------------------------------------------------------
+:built_in__str_is_alpha
+;----------------------------------------------------------------
+	jsr built_in__object_method__init
+
+	ifn i, 0
+		jsr recover
+
+	set i, [a]
+	add i, [i]
+
+:built_in__str_is_alpha_loop
+	ife i, [a]
+		set pc, return_true
+
+	ifg [i], 'A'-1
+		ifl [i], 'Z'+1
+			std pc, built_in__str_is_alpha_loop
+
+	ifg [i], 'a'-1
+		ifl [i], 'z'+1
+			std pc, built_in__str_is_alpha_loop
+
+	set pc, return_false
+
+;----------------------------------------------------------------
+:built_in__str_is_digit
+;----------------------------------------------------------------
+	jsr built_in__object_method__init
+
+	ifn i, 0
+		jsr recover
+
+	set i, [a]
+	add i, [i]
+
+:built_in__str_is_digit_loop
+	ife i, [a]
+		set pc, return_true
+		
+	ifg [i], '0'-1
+		ifl [i], '9'+1
+			std pc, built_in__str_is_digit_loop
+		
+	set pc, return_false
+
+;----------------------------------------------------------------
+:built_in__str_lower
+;----------------------------------------------------------------
+	jsr built_in__object_method__init
+
+	ifn i, 0
+		jsr recover
+
+	set push, a
+	jsr array_clone
+	
+	set i, [x]
+	add i, [i]
+
+:built_in__str_lower_loop
+	ife i, [x]
+		set pc, postamble
+
+	ifg [i], 'A'-1
+		ifl [i], 'Z'+1
+			add [i], ('a'-'A')
+
+	std pc, built_in__str_lower_loop
+	
+	set pc, postamble
+
+;----------------------------------------------------------------
+:built_in__str_upper
+;----------------------------------------------------------------
+	jsr built_in__object_method__init
+
+	ifn i, 0
+		jsr recover
+
+	set push, a
+	jsr array_clone
+	
+	set i, [x]
+	add i, [i]
+
+:built_in__str_upper_loop
+	ife i, [x]
+		set pc, postamble
+
+	ifg [i], 'a'-1
+		ifl [i], 'z'+1
+			sub [i], ('a'-'A')
+
+	std pc, built_in__str_upper_loop
+
+;----------------------------------------------------------------
+:built_in__str_find
+;----------------------------------------------------------------
+	jsr built_in__object_method__init
+
+	set push, a
+	set a, [a]
+
+	ife i, 0
+		jsr recover
+		
+	ifg i, 3
+		jsr recover
+
+	set x, [z-1]
+	ifn [x + HANDLE_TYPE], TYPE_STRING
+		jsr recover
+
+	set push, x
+		
+	ife i, 1
+		set pc, built_in__str_find__no_start
+
+	set x, [z-2]
+	ifn [x + HANDLE_TYPE], TYPE_INT
+		jsr recover
+		
+	set push, x
+	jsr int_to_int16
+	set push, x
+	
+	ife i, 2
+		set pc, built_in__str_find__no_end
+
+	set x, [z-3]
+	ifn [x + HANDLE_TYPE], TYPE_INT
+		jsr recover
+		
+	set push, x
+	jsr int_to_int16
+	set push, x
+	
+	set pc, built_in__str_find__finish
+
+:built_in__str_find__no_start
+	set push, 0
+
+:built_in__str_find__no_end
+	set push, [a]
+	
+:built_in__str_find__finish
+	jsr str_search_3
+	
+	set push, x
+	jsr int16_to_int
+	
+	set pc, postamble	
 
 :built_in__str_crypt
 :built_in__str_encrypt
-:built_in__str_lower
-:built_in__str_upper
-:built_in__str_append
-:built_in__str_insert
-:built_in__str_find
 :built_in__str_replace
 :built_in__str_split
 :built_in__str_endswith
 :built_in__str_startswith
-:built_in__str_is_alpha
-:built_in__str_is_digit
-	set pc, recover
+	jsr recover
 
