@@ -2083,7 +2083,7 @@
 	set push, [z+10]
 	jsr eval
 
-	ifc [x + 1], TYPE_GROUP_CAN_REFERENCE
+	ifc [x + HANDLE_TYPE], TYPE_GROUP_CAN_REFERENCE
 		jsr recover
 
 	set a, [z-1]
@@ -2196,9 +2196,9 @@
 :built_in
 ;----------------------------------------------------------------
 	set a, [z+10]
-	ife [a+1], TYPE_NAME
+	ife [a+HANDLE_TYPE], TYPE_NAME
 		set pc, built_in__global_functions
-	ife [a+1], TYPE_REFERENCE
+	ife [a+HANDLE_TYPE], TYPE_REFERENCE
 		set pc, built_in__object_functions
 		
 	set pc, led_lparen_user_defined
@@ -2208,19 +2208,21 @@
 	set b, [a + REFERENCE_LEFT]
 
 	; ADD HERE OBJECT TYPES THAT HAVE METHODS
+	set x, 0
 	ife [b + HANDLE_TYPE], TYPE_LIST
-		set pc, built_in__list_functions
-	
-	set pc, led_lparen_user_defined
+		set x, built_in__list_methods
+	ife [b + HANDLE_TYPE], TYPE_STRING
+		set x, built_in__str_methods
 
-:built_in__list_functions
+	ife x, 0
+		set pc, led_lparen_user_defined
+
 	set a, [a + REFERENCE_RIGHT]
 	set a, [a]
 	
 	set b, [a]
 	add a, 1
 
-	set x, built_in__list_methods
 	jsr built_in_matcher
 	set pc, c
 
@@ -2235,41 +2237,47 @@
 	set pc, c
 
 ;----------------------------------------------------------------
-:built_in__list_append
+:built_in__object_method__init
 ;----------------------------------------------------------------
 	jsr built_in_params
-	ifn i, 1
-		jsr recover
 
 	set a, [z+10]
 	set a, [a]
+	set a, [a + REFERENCE_LEFT]
 
-	set push, [a + REFERENCE_LEFT]
+	set pc, pop
+
+;----------------------------------------------------------------
+:built_in__list_append
+;----------------------------------------------------------------
+	jsr built_in__object_method__init
+
+	ifn i, 1
+		jsr recover
+
+	set push, a
 	set push, [z-1]
 	jsr array__append
 
-	set x, [a + REFERENCE_LEFT]
+	set x, a
 	set pc, postamble
 
 ;----------------------------------------------------------------
 :built_in__list_insert
 ;----------------------------------------------------------------
-	jsr built_in_params
+	jsr built_in__object_method__init
 	ifn i, 2
 		jsr recover
-
-	set a, [z+10]
-	set a, [a]
 
 	set push, [z-1]		; struct handle *index
 	jsr int_to_int16
 
-	set push, [a + REFERENCE_LEFT]
+	set push, a
 	set push, x
 	set push, [z-2]
 	jsr array__insert
 
-	set x, [a + REFERENCE_LEFT]
+	set x, a
 	set pc, postamble
 
 ;----------------------------------------------------------------
