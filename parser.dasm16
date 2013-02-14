@@ -2963,6 +2963,26 @@
 	set pc, postamble
 
 ;----------------------------------------------------------------
+:built_in_scroll
+;----------------------------------------------------------------
+	jsr built_in_params
+	ifn i, 2
+		jsr recover
+
+	set push, [z-1]
+	jsr int_to_int16
+	set push, x
+
+	set push, [z-2]
+	jsr int_to_int16
+	set push, x
+
+	jsr screen__scroll
+	
+	set x, NONE
+	set pc, postamble
+
+;----------------------------------------------------------------
 :built_in_params
 ; util function used by built-in impls to parse arguments
 ;----------------------------------------------------------------

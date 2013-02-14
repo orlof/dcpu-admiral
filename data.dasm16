@@ -313,7 +313,7 @@
 	dat 7, "cursor", built_in_cursor
 	dat 7, "format", built_in_format
 	dat 7, "locals", built_in_locals
-;	dat 7, "scroll", built_in_win_scroll
+	dat 7, "scroll", built_in_scroll
 	dat 8, "globals", built_in_globals
 	dat 1, led_lparen_user_defined
 
