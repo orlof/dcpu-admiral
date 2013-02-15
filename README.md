@@ -579,6 +579,53 @@ Strings and tuples are sorted by creating a new sorted iterable and lists are so
 
 Reverse is a boolean value. If set to True, then the list elements are sorted as if each comparison were reversed.
 
+<h5>LIST API</h5>
+
+<h6>list.append(x)</h6>
+
+Add an item to the end of the list.
+
+<h6>list.insert(i, x)</h6>
+
+Insert an item at a given position. The first argument is the index of the element before which to insert, 
+so a.insert(0, x) inserts at the front of the list, and a.insert(len(a), x) is equivalent to a.append(x).
+
+<h5>STRING API</h5>
+
+<h6>str.encrypt(key[, iv])
+
+Encrypts the string using hummingbird2 codec.
+
+<h6>str.decrypt(key)
+
+Decrypts the string encrypted with hummingbird2 codec and given key.
+
+<h6>str.lower()</h6>
+
+Return a copy of the string with all the cased characters converted to lowercase.
+
+<h6>str.upper()</h6>
+
+Return a copy of the string with all the cased characters converted to uppercase.
+
+<h6></h6>
+<h6></h6>
+<h6></h6>
+<h6></h6>
+<h6></h6>
+<h6></h6>
+
+
+	dat 5, "find", built_in__str_find
+	dat 8, "replace", built_in__str_replace
+	dat 6, "split", built_in__str_split
+	dat 9, "endswith", built_in__str_endswith
+	dat 11, "startswith", built_in__str_startswith
+	dat 9, "is_alpha", built_in__str_is_alpha
+	dat 9, "is_digit", built_in__str_is_digit
+	dat 1, led_lparen_user_defined
+
+
 <h4>EXPRESSION PRECEDENCE TABLE</h4>
 <table cellpadding="1">
 <tr><th>OPERATOR</th><th>DESCRIPTION</th><th>ASSOCIATIVITY</th></tr>
