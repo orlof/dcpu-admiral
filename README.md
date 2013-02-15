@@ -592,7 +592,7 @@ so a.insert(0, x) inserts at the front of the list, and a.insert(len(a), x) is e
 
 <h5>STRING API</h5>
 
-<h6>str.encrypt(key[, iv])<h6>
+<h6>str.encrypt(key[, iv])</h6>
 
 Encrypts the string using hummingbird2 codec.
 
