@@ -120,25 +120,43 @@ b 2
 
 <h4>INSTALLATION</h4>
 
-https://github.com/orlof/dcpu-admiral
+Clone git repository from github 
+    https://github.com/orlof/dcpu-admiral
 
-To build from source, run the following with the DCPU Toolchain (http://dcputoolcha.in/). I recommend trying 
-the experimental build if stable build is far behind.
+<h5>Toolchain</h5>
+
+Currently toolchain is the preferred assembler-emulator package. I has no known issues.
+
+Install toolchain from 
+    http://dcputoolcha.in/
+
+I recommend using the experimental build if stable build is far behind.
+
+Admiral can be compiled with the following command:
 
     dtasm --binary admiral.dasm16 -o admiral.bin
     
-You can run the .bin provided with the following command with the Toolchain:
+You can run the compiled admiral.bin with the following command:
 
     dtemu admiral.bin
 
-You can also run admiral.bin with Lettuce (SirCmpwn/Tomato) (international (non-US?) keyboard layouts 
-are not working with Lettuce).
+<h5>Organic + Lettuce</h5>
+
+Organic assembler has one known issue with Admiral. Organic must be used with --long-literals option, as admirals large
+codebase is too much for organic's optimizer. 
 
     organic.exe --long-literals admiral.dasm16 admiral.bin
 
-To work with devkit, leave the admiral.dasm16 out of the project and specify interpreter.dasm16 as 
-the starting point for execution. Devkit 1.7.6 is badly broken and cannot run Admiral. Devkit version 
-1.7.5 can compile and run Admiral, but does not support floppy.
+You run admiral.bin with Lettuce (SirCmpwn/Tomato), but Lettuce has some issues with international (non-US?) keyboard 
+layouts.
+
+<h5>Devkit</h5>
+
+Use following instructions to run Admiral with Devkit:
+ - Leave the admiral.dasm16 out of the project
+ - Specify interpreter.dasm16 as the execution starting point
+ - Devkit 1.7.6 is badly broken and cannot run Admiral
+ - Devkit version 1.7.5 can compile and run Admiral, but does not support floppy.
 
 <h4>USAGE</h4>
 
