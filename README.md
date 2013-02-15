@@ -592,11 +592,11 @@ so a.insert(0, x) inserts at the front of the list, and a.insert(len(a), x) is e
 
 <h5>STRING API</h5>
 
-<h6>str.encrypt(key[, iv])
+<h6>str.encrypt(key[, iv])<h6>
 
 Encrypts the string using hummingbird2 codec.
 
-<h6>str.decrypt(key)
+<h6>str.decrypt(key)</h6>
 
 Decrypts the string encrypted with hummingbird2 codec and given key.
 
@@ -608,23 +608,60 @@ Return a copy of the string with all the cased characters converted to lowercase
 
 Return a copy of the string with all the cased characters converted to uppercase.
 
-<h6></h6>
-<h6></h6>
-<h6></h6>
-<h6></h6>
-<h6></h6>
-<h6></h6>
+<h6>str.find(sub[, start[, end]])</h6>
 
+Return the lowest index in the string where substring sub is found, such that sub is contained in the slice 
+s[start:end]. Optional arguments start and end are interpreted as in slice notation. Return -1 if sub is not found.
 
-	dat 5, "find", built_in__str_find
-	dat 8, "replace", built_in__str_replace
-	dat 6, "split", built_in__str_split
-	dat 9, "endswith", built_in__str_endswith
-	dat 11, "startswith", built_in__str_startswith
-	dat 9, "is_alpha", built_in__str_is_alpha
-	dat 9, "is_digit", built_in__str_is_digit
-	dat 1, led_lparen_user_defined
+The find() method should be used only if you need to know the position of sub. To check if sub is a substring 
+or not, use the in operator:
 
+    >"mi" in "Admiral"
+    True
+
+<h6>str.replace(old, new[, count])</h6>
+
+Return a copy of the string with all occurrences of substring old replaced by new. If the optional argument 
+count is given, only the first count occurrences are replaced.
+
+<h6>str.split([sep])</h6>
+
+Return a list of the words in the string, using sep as the delimiter string. Consecutive delimiters are not 
+grouped together and are deemed to delimit empty strings:
+    >'1,,2'.split(',')
+    ['1','','2'])
+
+The sep argument may consist of multiple characters
+    >'1<>2<>3'.split('<>')
+    ['1','2','3']). 
+
+Splitting an empty string with a specified separator returns [''].
+
+If sep is not specified, a different splitting algorithm is applied: runs of consecutive whitespace are regarded 
+as a single separator, and the result will contain no empty strings at the start or end if the string has leading 
+or trailing whitespace. Consequently, splitting an empty string or a string consisting of just whitespace with 
+a None separator returns [].
+
+    >' 1  2   3  '.split()
+    ['1','2','3']
+
+<h6>str.endswith(suffix)</h6>
+
+Return True if the string ends with the specified suffix, otherwise return False. suffix can also be a tuple 
+of suffixes to look for.
+
+<h6>str.startswith(prefix)</h6>
+
+Return True if string starts with the prefix, otherwise return False. prefix can also be a tuple of prefixes to 
+look for.
+
+<h6>str.isalpha()</h6>
+
+Return true if all characters in the string are alphabetic and there is at least one character, false otherwise.
+
+<h6>str.isdigit()</h6>
+
+Return true if all characters in the string are digits and there is at least one character, false otherwise.
 
 <h4>EXPRESSION PRECEDENCE TABLE</h4>
 <table cellpadding="1">
