@@ -579,6 +579,12 @@ Strings and tuples are sorted by creating a new sorted iterable and lists are so
 
 Reverse is a boolean value. If set to True, then the list elements are sorted as if each comparison were reversed.
 
+<h5>DICT API</h5>
+
+<h6>dict.create()</h6>
+
+Return a new dict object that has the object set as prototype.
+
 <h5>LIST API</h5>
 
 <h6>list.append(x)</h6>
@@ -619,10 +625,9 @@ or not, use the in operator:
     >"mi" in "Admiral"
     True
 
-<h6>str.replace(old, new[, count])</h6>
+<h6>str.replace(old, new)</h6>
 
-Return a copy of the string with all occurrences of substring old replaced by new. If the optional argument 
-count is given, only the first count occurrences are replaced.
+Return a copy of the string with all occurrences of substring old replaced by new.
 
 <h6>str.split([sep])</h6>
 
