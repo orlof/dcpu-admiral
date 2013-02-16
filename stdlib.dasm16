@@ -149,7 +149,7 @@
 :eval_subscription_dict
 	set push, b
 	set push, c
-	jsr dict_get
+	jsr scope_get
 
 	set pc, postamble
 

@@ -239,8 +239,7 @@
 :lexer_char_colon
 ;----------------------------------------------------------------
 	set [lexer_token], token_colon
-	set c, token_prototype
-	set pc, check_augass
+	set pc, lexer_finish_advance
 
 ;----------------------------------------------------------------
 :lexer_char_questionmark
@@ -459,20 +458,58 @@
 ;----------------------------------------------------------------
 :lexer_char_digit
 ;----------------------------------------------------------------
+	ifn x, '0'
+		set pc, lexer_char_digit_start
+
+	add b, 1
+	jsr array__get
+	
+	ife x, 'x'
+		set pc, lexer_char_hex
+
+	ife x, 'X'
+		set pc, lexer_char_hex
+
+	set pc, lexer_char_digit_start
+
+:lexer_char_digit_loop
 	add b, 1
 	jsr array__get
 
+:lexer_char_digit_start
 	ife x, '.'		; discard int and go for float
 		set pc, lexer_float
 	ife x, 'e'		; discard int and go for float
 		set pc, lexer_float
 
 	ife [x + lexer_table], lexer_char_digit
-		set pc, lexer_char_digit
+		set pc, lexer_char_digit_loop
 
 	set [lexer_end], b			; lexer.data1
 
 	set [lexer_token], token_int
+	set pc, lexer_finish
+
+;----------------------------------------------------------------
+:lexer_char_hex
+;----------------------------------------------------------------
+	add b, 1
+	jsr array__get
+
+	ife [x + lexer_table], lexer_char_digit
+		set pc, lexer_char_hex
+
+	ifg x, 'a'-1
+		ifl x, 'f'+1
+			set pc, lexer_char_hex
+
+	ifg x, 'A'-1
+		ifl x, 'F'+1
+			set pc, lexer_char_hex
+
+	set [lexer_end], b			; lexer.data1
+
+	set [lexer_token], token_hex
 	set pc, lexer_finish
 
 ;----------------------------------------------------------------

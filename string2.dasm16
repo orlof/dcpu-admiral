@@ -477,5 +477,111 @@
 :built_in__str_split
 ;----------------------------------------------------------------
 	jsr built_in__object_method__init
-	set pc, postamble	
+
+	set [z-2], a
+
+	set push, 10
+	set push, TYPE_LIST
+	jsr alloc
+	set [z-3], x			; return list
+
+	set b, 0				; cpos
+
+	ife i, 0
+		set pc, built_in__str_split__ws
+	ifn i, 1
+		jsr recover
+
+	; str split with defined separator
+	set x, [z-1]			; sep str
+	ifc [x + HANDLE_TYPE], TYPE_STRING
+		jsr recover
+
+	set c, [x]
+	set c, [c]				; sep.len
+
+:built_in__str_split__loop
+	set push, [z-2]
+	set push, [z-1]
+	set push, b
+	set push, 0x7fff
+	jsr str_search_3
+	set j, x				; npos
+
+	ife j, -1
+		set j, 0x7fff
+
+	set push, [z-2]
+	set push, b
+	set push, j
+	jsr array_split
+	set [z-4], x
+	
+	set b, j
+	
+	set push, [z-3]
+	set push, x
+	jsr array__append
+
+	set x, [z-3]
+	ife j, 0x7fff
+		set pc, postamble	
+
+	add b, c
+	set pc, built_in__str_split__loop
+
+:built_in__str_split__ws
+	; [z-1] is used as str nursery
+	; [z-2] original str
+	; [z-3] list
+	jsr array__get
+	
+	add b, 1
+	
+	ife x, 0
+		set pc, built_in__str_split__ws_finish
+
+	ife x, ' '
+		set pc, built_in__str_split__ws__handle_ws
+		
+	; handle text
+	set c, x
+	ifn [z-1], 0
+		set pc, built_in__str_split__ws__add_char
+
+	set push, 6
+	set push, TYPE_STRING
+	jsr alloc
+	set [z-1], x
+
+:built_in__str_split__ws__add_char
+	set push, [z-1]
+	set push, c
+	jsr array__append
+	set pc, built_in__str_split__ws
+
+:built_in__str_split__ws__handle_ws
+	ife [z-1], 0
+		set pc, built_in__str_split__ws
+
+	set push, [z-3]
+	set push, [z-1]
+	jsr array__append
+	
+	set [z-1], 0
+
+	set pc, built_in__str_split__ws
+
+:built_in__str_split__ws_finish
+	ife [z-1], 0
+		set pc, built_in__str_split__ws_exit
+
+	set push, [z-3]
+	set push, [z-1]
+	jsr array__append
+
+:built_in__str_split__ws_exit
+	set x, [z-3]
+	set pc, postamble
+	
 
