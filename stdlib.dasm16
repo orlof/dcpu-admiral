@@ -200,6 +200,14 @@
 	set y, [b]
 	ifb x, 0x8000
 		add x, [y]
+		
+	ifa x, [y]
+		jsr recover
+	ife x, [y]
+		jsr recover
+	ifu x, 0
+		jsr recover
+		
 	set push, x		; start
 
 	add x, 1		; end

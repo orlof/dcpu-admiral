@@ -195,10 +195,13 @@
 
 :lexer_char_newline_break
 	ife [lexer_table + x], lexer_char_comment
-		jsr lexer_skip_comment
+		jsr lexer__goto_eol
 
 	ife [lexer_table + x], lexer_char_newline
 		set pc, lexer_char_newline_restart
+
+	ife x, 0
+		set pc, lexer_char_eof
 
 	set [lexer_target_indent], c
 
@@ -547,6 +550,11 @@
 	add b, 1
 	jsr array__get
 
+	ife x, 0
+		jsr recover
+	ife [x + lexer_table], lexer_char_newline
+		jsr recover
+
 	ifn x, y
 		set pc, lexer_literal_string_loop
 
@@ -642,19 +650,12 @@
 	set pc, lexer_skip_white
 
 ;----------------------------------------------------------------
-:lexer_skip_comment
-; a: struct handle *
-; b: index
+:lexer_char_comment
 ;----------------------------------------------------------------
-	jsr array__get
-	ife [lexer_table + x], lexer_char_newline
-		set pc, pop
-	ife [lexer_table + x], lexer_char_eof
-		set pc, pop
 	add b, 1
-	set pc, lexer_skip_comment
+	jsr lexer__goto_eol
+	set pc, lexer_char_newline
 
 :lexer_char_whitespace
-:lexer_char_comment
 	jsr recover
 
