@@ -187,6 +187,7 @@
 
 ; atoms
 :token_int          dat std_expression, nud_int, recover, 0x0000
+:token_hex          dat std_expression, nud_hex, recover, 0x0000
 :token_float        dat std_expression, nud_float, recover, 0x0000
 :token_name         dat std_expression, nud_name, recover, 0x0000
 :token_str          dat std_expression, nud_str, recover, 0x0000
@@ -225,7 +226,6 @@
 :token_augass_lshift    dat recover, recover, led_augass_lshift, 0x0010
 :token_augass_rshift    dat recover, recover, led_augass_rshift, 0x0010
 :token_cond_assign      dat recover, recover, led_cond_assign, 0x0010
-:token_prototype        dat recover, recover, led_prototype, 0x0010
 
 ; tuple constructor
 :token_comma            dat recover, recover, led_comma, 0x0020
@@ -320,6 +320,10 @@
 :built_in__list_methods
 	dat 7, "append", built_in__list_append
 	dat 7, "insert", built_in__list_insert
+	dat 1, led_lparen_user_defined
+
+:built_in__dict_methods
+	dat 7, "create", built_in__dict_create
 	dat 1, led_lparen_user_defined
 
 :built_in__str_methods

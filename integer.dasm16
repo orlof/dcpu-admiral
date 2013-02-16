@@ -84,7 +84,7 @@
 	set c, x
 
 	ifn [c + lexer_table], lexer_char_digit
-		set pc, int_parse_sign
+		set pc, int_parse_finish
 
 	set push, INT_HANDLE_10
 	set push, [z-1]
@@ -104,7 +104,7 @@
 	jsr array__get
 	set pc, int_parse_loop	
 
-:int_parse_sign
+:int_parse_finish
 	set x, [z-1]
 	ife y, FALSE
 		set pc, postamble
@@ -113,6 +113,79 @@
 	jsr int_negate
 
 	set pc, postamble
+
+;----------------------------------------------------------------
+; extern struct handle *int_parse_hex(struct handle *string)
+;----------------------------------------------------------------
+:int_parse_hex
+	set push, 1			; sizeof(args)
+	set push, 1			; sizeof(refs)
+	jsr preamble
+
+	set [z-1], INT_HANDLE_0
+
+	set a, [z+10]		; struct handle *str
+	set b, 0			; index
+	set y, FALSE		; negative flag
+
+	jsr array__get
+	ifn [x + lexer_table], lexer_char_minus
+		set pc, int_parse_hex_0x
+
+	set y, TRUE
+	add b, 1
+
+:int_parse_hex_0x
+	add b, 2
+	jsr array__get
+
+:int_parse_hex_loop
+	set c, x
+
+	ifg c, '0'-1
+		ifl c, '9'+1
+			set pc, int_parse_hex_loop_continue
+
+	ifg c, 'a'-1
+		ifl c, 'f'+1
+			set pc, int_parse_hex_loop_continue
+
+	ifg c, 'A'-1
+		ifl c, 'F'+1
+			set pc, int_parse_hex_loop_continue
+
+	set pc, int_parse_finish
+
+:int_parse_hex_loop_continue
+	set push, INT_HANDLE_16
+	set push, [z-1]
+	jsr int_mul
+	set [z-1], x
+
+	set x, c
+	ifg c, '0'-1
+		ifl c, '9'+1
+			sub x, '0'
+
+	ifg c, 'a'-1
+		ifl c, 'f'+1
+			sub x, 'a'-10
+
+	ifg c, 'A'-1
+		ifl c, 'F'+1
+			sub x, 'A'-10
+	
+	shl x, 1
+	add x, INT_HANDLE
+
+	set push, [z-1]
+	set push, x
+	jsr int_add	
+	set [z-1], x
+	
+	add b, 1
+	jsr array__get
+	set pc, int_parse_hex_loop	
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_to_str(struct handle *integer)
