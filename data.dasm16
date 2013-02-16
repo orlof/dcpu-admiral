@@ -323,7 +323,7 @@
 	dat 1, led_lparen_user_defined
 
 :built_in__str_methods
-	dat 6, "crypt", built_in__str_crypt
+	dat 8, "decrypt", built_in__str_decrypt
 	dat 8, "encrypt", built_in__str_encrypt
 	dat 6, "lower", built_in__str_lower
 	dat 6, "upper", built_in__str_upper
@@ -332,8 +332,8 @@
 	dat 6, "split", built_in__str_split
 	dat 9, "endswith", built_in__str_endswith
 	dat 11, "startswith", built_in__str_startswith
-	dat 9, "is_alpha", built_in__str_is_alpha
-	dat 9, "is_digit", built_in__str_is_digit
+	dat 8, "isalpha", built_in__str_isalpha
+	dat 8, "isdigit", built_in__str_isdigit
 	dat 1, led_lparen_user_defined
 
 ;----------------------------------------------------------------

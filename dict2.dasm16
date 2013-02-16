@@ -84,6 +84,10 @@
 	set push, 2
 	jsr preamble
 
+	set a, [z+11]
+	ifc [a + HANDLE_TYPE], TYPE_DICT
+		jsr recover
+
 	set [z-1], [z+11]
 	set [z-2], [z+10]
 

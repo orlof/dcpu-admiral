@@ -44,7 +44,7 @@
 	set pc, str_comparator_select
 
 ;----------------------------------------------------------------
-; uint str_cmp(struct handle *haystack, struct handle *needle, uint16 start, uint16 end)
+; uint str_search_3(struct handle *haystack, struct handle *needle, uint16 start, uint16 end)
 ;----------------------------------------------------------------
 :str_search_3
 	set push, 4
@@ -125,7 +125,7 @@
 	jsr postamble
 
 ;----------------------------------------------------------------
-:built_in__str_is_alpha
+:built_in__str_isalpha
 ;----------------------------------------------------------------
 	jsr built_in__object_method__init
 
@@ -133,24 +133,28 @@
 		jsr recover
 
 	set i, [a]
+
+	ife [i], 0
+		set pc, return_false
+
 	add i, [i]
 
-:built_in__str_is_alpha_loop
+:built_in__str_isalpha_loop
 	ife i, [a]
 		set pc, return_true
 
 	ifg [i], 'A'-1
 		ifl [i], 'Z'+1
-			std pc, built_in__str_is_alpha_loop
+			std pc, built_in__str_isalpha_loop
 
 	ifg [i], 'a'-1
 		ifl [i], 'z'+1
-			std pc, built_in__str_is_alpha_loop
+			std pc, built_in__str_isalpha_loop
 
 	set pc, return_false
 
 ;----------------------------------------------------------------
-:built_in__str_is_digit
+:built_in__str_isdigit
 ;----------------------------------------------------------------
 	jsr built_in__object_method__init
 
@@ -158,15 +162,19 @@
 		jsr recover
 
 	set i, [a]
+	
+	ife [i], 0
+		set pc, return_false
+	
 	add i, [i]
 
-:built_in__str_is_digit_loop
+:built_in__str_isdigit_loop
 	ife i, [a]
 		set pc, return_true
 		
 	ifg [i], '0'-1
 		ifl [i], '9'+1
-			std pc, built_in__str_is_digit_loop
+			std pc, built_in__str_isdigit_loop
 		
 	set pc, return_false
 
@@ -278,11 +286,196 @@
 	
 	set pc, postamble	
 
-:built_in__str_crypt
-:built_in__str_encrypt
-:built_in__str_replace
-:built_in__str_split
+
+;----------------------------------------------------------------
 :built_in__str_endswith
+;----------------------------------------------------------------
+	set y, built_in__str_endswith__cmp 
+	set pc, built_in__str_xwith
+
+;----------------------------------------------------------------
 :built_in__str_startswith
+;----------------------------------------------------------------
+	set y, built_in__str_startswith__cmp 
+
+:built_in__str_xwith
+	jsr built_in__object_method__init
+	
+	ifn i, 1
+		jsr recover
+	
+	set b, [z-1]
+	ifb [b + HANDLE_TYPE], TYPE_STRING
+		set pc, built_in__str_xwith__str
+
+	ifb [b + HANDLE_TYPE], TYPE_TUPLE + TYPE_LIST
+		set pc, built_in__str_xwith__array
+
 	jsr recover
+
+:built_in__str_xwith__array
+	set c, [b]
+	set i, c
+	add i, [i]
+
+:built_in__str_xwith__array_loop
+	ife i, c
+		set pc, return_false
+	
+	set b, [i]
+	ifn [b + HANDLE_TYPE], TYPE_STRING
+		jsr recover
+		
+	jsr y
+
+	std pc, built_in__str_xwith__array_loop
+	
+:built_in__str_xwith__str
+	jsr y
+
+	set pc, return_false
+	
+:built_in__str_startswith__cmp
+	set push, a
+	set push, b
+	set push, 0
+
+	set x, [b]
+	set push, [x]
+	jsr str_search_3
+	ife x, 0
+		set pc, return_true
+	
+	set x, FALSE
+	set pc, pop
+
+:built_in__str_endswith__cmp
+	set push, a
+	set push, b
+
+	set x, [b]
+	set push, [x]
+	xor [sp], 0xffff
+	add [sp], 1	
+	
+	set push, 0x7fff
+	jsr str_search_3
+	ifn x, -1
+		set pc, return_true
+	
+	set x, FALSE
+	set pc, pop
+;----------------------------------------------------------------
+:built_in__str_decrypt
+;----------------------------------------------------------------
+	set y, Decrypt
+	set pc, hummingbird
+;----------------------------------------------------------------
+:built_in__str_encrypt
+;----------------------------------------------------------------
+	set y, Encrypt
+
+:hummingbird
+	jsr built_in__object_method__init
+	
+	ifn i, 1
+		jsr recover
+	
+	set push, a
+	jsr array_clone
+	set [z-2], x
+
+	set c, [x]
+	set push, [c]
+	add c, 1
+	
+	set b, [z-1]
+	set b, [b]
+	
+	ifn [b], 8
+		jsr recover
+		
+	add b, 1
+	
+	set a, 0
+	
+	jsr y
+	
+	set pc, postamble	
+;----------------------------------------------------------------
+:built_in__str_replace
+;----------------------------------------------------------------
+	jsr built_in__object_method__init
+	ifn i, 2
+		jsr recover
+
+	set x, [z-1]			; search str
+	ifc [x + HANDLE_TYPE], TYPE_STRING
+		jsr recover
+
+	set c, [x]
+	set c, [c]
+
+	set x, [z-2]			; replace str
+	ifc [x + HANDLE_TYPE], TYPE_STRING
+		jsr recover
+		
+	set [z-3], a			; src str
+
+	set push, [a + HANDLE_SIZE]
+	set push, TYPE_STRING
+	jsr alloc
+	set [z-4], x			; dst str
+
+	; [z-1] old
+	; [z-2] new
+	; [z-3] src
+	; [z-4] dst
+
+	set i, 0				; cpos
+
+:built_in__str_replace__loop_restart
+	set push, [z-3]			; src
+	set push, [z-1]			; search
+	set push, i
+	set push, 0x7fff
+	jsr str_search_3
+	set j, x				; npos
+
+:built_in__str_replace__loop
+	ife i, j
+		set pc, built_in__str_replace__do_replace
+
+	; copy char from src to dst
+	set a, [z-3]
+	set b, i
+	jsr array__get
+	ife x, 0
+		set pc, built_in__str_replace__finish
+
+	set push, [z-4]
+	set push, x
+	jsr array__append
+	
+	add i, 1
+	set pc, built_in__str_replace__loop
+
+:built_in__str_replace__do_replace
+	set push, [z-4]
+	set push, [z-2]
+	jsr array__append_array
+
+	add i, c
+
+	set pc, built_in__str_replace__loop_restart
+
+:built_in__str_replace__finish	
+	set x, [z-4]
+	set pc, postamble	
+
+;----------------------------------------------------------------
+:built_in__str_split
+;----------------------------------------------------------------
+	jsr built_in__object_method__init
+	set pc, postamble	
 
