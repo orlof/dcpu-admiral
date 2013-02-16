@@ -1,10 +1,10 @@
 ;----------------------------------------------------------------
 ; MEMORY LAYOUT
 ;----------------------------------------------------------------
-#define MEM_CODE_SIZE			0x3000
+#define MEM_CODE_SIZE			0x3600
 #define MEM_FLOPPY_SIZE			0x200
 #define MEM_SCREEN_SIZE			0x480
-#define MEM_STACK_SIZE			0x3000
+#define MEM_STACK_SIZE			0x2000
 
 #define MEM_STACK_END			0x10000
 #define MEM_STACK_START			MEM_STACK_END - MEM_STACK_SIZE
