@@ -237,16 +237,23 @@
 
 	; start index
 	set j, [z+11]
-	ifb j, 0x8000
+	ifu j, 0
 		add j, [b]
+	ifu j, 0
+		sub j, j
 
 	; end index
 	set c, [z+10]
-	ifb c, 0x8000
+	ifu c, 0
 		add c, [b]
+	ifu c, 0
+		sub c, c
 
-	ifg c, [b]
+	ifa c, [b]
 		set c, [b]
+		
+	ifa j, c
+		set j, c
 
 	set y, c
 	sub y, j

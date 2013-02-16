@@ -63,12 +63,9 @@
 	jsr parser_stmt
     set [z-3], x
 
-	ife [lexer_token], token_eof
-		set pc, interpreter_loop
-
 	ife [x+1], TYPE_NONE
-		set pc, interpreter_loop_parse
-
+		set pc, interpreter_loop_parse_2
+	
 	set push, x
 	jsr eval
     set [z-3], x
@@ -78,8 +75,12 @@
 
 	set c, 10
 	jsr screen_add_char
+
+:interpreter_loop_parse_2
+	ifn [lexer_token], token_eof
+		set pc, interpreter_loop_parse
 	
-	set pc, interpreter_loop_parse
+	set pc, interpreter_loop
 
 ;----------------------------------------------------------------
 ; struct handle *scope_get(struct handle *dict, struct handle *key)
@@ -211,12 +212,12 @@
 	set c, 10
 	jsr screen_add_char
 
-	jsr lexer__get_token_marker
-	set push, x
-	jsr print
+;	jsr lexer__get_token_marker
+;	set push, x
+;	jsr print
 	
-	set c, 10
-	jsr screen_add_char
+;	set c, 10
+;	jsr screen_add_char
 
 	set pc, interpreter_loop
 
