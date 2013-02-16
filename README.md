@@ -97,11 +97,10 @@ b 2
  - Integrated code editor with gap buffer
  - Object serialization for floppy
  - Dict implementation with binary search
+ - Nice starting set of built-in functions
  
 <h6>Next in development</h6>
- - Improved error reporting
  - Example code
- - Misc built-in functions
  - BETA RELEASE (est. 2/2013)
 
 <h6>Later plans</h6>
@@ -131,9 +130,16 @@ Install toolchain from
     http://dcputoolcha.in/
 I recommend using the experimental build if stable build is far behind.
 
-Admiral can be compiled with the following command:
+The easy way to compile is the following command:
 
     dtasm --binary admiral.dasm16 -o admiral.bin
+    
+The preferred way is to give the following two commands:
+
+    dtasm -o admiral.dobj16 -s admiral.s -i admiral.dasm16
+    dtld -O 3 -o admiral.bin -s admiral.s admiral.dobj16 -k none
+
+The preferred way uses Toolchain linker to do short literal optimizing.
     
 You can run the compiled admiral.bin with the following command:
 
@@ -238,6 +244,22 @@ Dicts and prototype assignment operator provide "poor mans" objects :-)
 >shuttle.spd 8            # new objects field has changed...
 >ship.spd 0               # and prototype's fields are intact
 </pre>
+
+<h4>DATA TYPES</h4>
+
+Admiral provides some built-in data types i.e. dict, list, tuple, str, int, float and boolean.
+
+<h5>STR</h5>
+
+The str class can be used to handle 16-bit binary data and DCPU 7-bit text. Some str functions such as 
+replace or split will not work with binary data. (That will be addressed in later releases)
+
+<h5>DICT</h5>
+<h5>LIST</h5>
+<h5>TUPLE</h5>
+<h5>INT</h5>
+<h5>FLOAT</h5>
+<h5>BOOLEAN</h5>
 
 <h4>STATEMENTS</h4>
 
