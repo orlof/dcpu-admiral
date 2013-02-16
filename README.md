@@ -337,8 +337,6 @@ The interpreter prints the result of string operations in single quotes.
 
 String literals can not span multiple lines.
 
-
-
 The str class can be used to handle 16-bit binary data and DCPU 7-bit text. Some str functions such as 
 replace or split will not work with binary data. (That will be addressed in later releases)
 
@@ -354,7 +352,7 @@ Strings can be subscripted (indexed); like in C, the first character of a string
 There is no separate character type; a character is simply a string of size one. Like in Icon, substrings can 
 be specified with the slice notation: two indices separated by a colon.
 
-</pre>
+<pre>
 >word[4]
 'A'
 >word[0:2]
