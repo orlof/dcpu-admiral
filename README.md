@@ -344,8 +344,8 @@ Strings can be concatenated (glued together) with the + operator, and repeated w
 <pre>
 >word = 'Help' + 'A'
 'HelpA'
->'<' + word*5 + '>'
-'<HelpAHelpAHelpAHelpAHelpA>'
+>'*' + word*5 + '*'
+'*HelpAHelpAHelpAHelpAHelpA*'
 </pre>
 
 Strings can be subscripted (indexed); like in C, the first character of a string has subscript (index) 0. 
