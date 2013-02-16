@@ -1,0 +1,378 @@
+;Hummingbird-2 Encryption Algorithm
+;Implementation by HyperVerse Systems
+;V 1
+
+;A = Pointer to IV
+;B = Pointer to key
+;C = Pointer to message
+;PUSH = Length of message
+
+;Encryption function
+Encrypt:
+    SET PUSH, J
+    SET PUSH, X
+    SET PUSH, Y
+    SET PUSH, Z
+    SET PUSH, I
+    JSR Init
+    
+    SET I, PICK 6
+    Encrypt_loop:
+        SET J, State
+        
+        SET A, [J]
+        ADD A, [C]
+        JSR EWD16
+        ADD B, 4
+        SET X, A
+        
+        SET A, [J+1]
+        ADD A, X
+        XOR [B], [J+4]
+        XOR [B+1], [J+5]
+        XOR [B+2], [J+6]
+        XOR [B+3], [J+7]
+        JSR EWD16
+        XOR [B], [J+4]
+        XOR [B+1], [J+5]
+        XOR [B+2], [J+6]
+        XOR [B+3], [J+7]
+        SUB B, 4
+        SET Y, A
+        
+        SET A, [J+2]
+        ADD A, Y
+        XOR [B], [J+4]
+        XOR [B+1], [J+5]
+        XOR [B+2], [J+6]
+        XOR [B+3], [J+7]
+        JSR EWD16
+        XOR [B], [J+4]
+        XOR [B+1], [J+5]
+        XOR [B+2], [J+6]
+        XOR [B+3], [J+7]
+        ADD B, 4
+        SET Z, A
+
+        SET A, [J+3]
+        ADD A, Z
+        JSR EWD16
+        SUB B, 4
+        ADD A, [J]
+        SET [C], A
+        
+        ADD C, 1
+        SUB I, 1
+        IFE I, 0
+            SET PC, Return
+        
+        JSR Update_State
+        
+        SET PC, Encrypt_loop
+
+;Decryption function
+Decrypt:
+    SET PUSH, J
+    SET PUSH, X
+    SET PUSH, Y
+    SET PUSH, Z
+    SET PUSH, I
+    
+    JSR Init
+    
+    SET I, PICK 6
+    
+    Decrypt_loop:
+        SET J, State
+        
+        SET A, [C]
+        SUB A, [J]
+        ADD B, 4
+        JSR DWD16
+        SUB A, [J+3]
+        SET Z, A
+        
+        SUB B, 4
+        XOR [B], [J+4]
+        XOR [B+1], [J+5]
+        XOR [B+2], [J+6]
+        XOR [B+3], [J+7]
+        JSR DWD16
+        XOR [B], [J+4]
+        XOR [B+1], [J+5]
+        XOR [B+2], [J+6]
+        XOR [B+3], [J+7]
+        SUB A, [J+2]
+        SET Y, A
+        
+        ADD B, 4
+        XOR [B], [J+4]
+        XOR [B+1], [J+5]
+        XOR [B+2], [J+6]
+        XOR [B+3], [J+7]
+        JSR DWD16
+        XOR [B], [J+4]
+        XOR [B+1], [J+5]
+        XOR [B+2], [J+6]
+        XOR [B+3], [J+7]
+        SUB A, [J+1]
+        SET X, A
+        
+        SUB B, 4
+        JSR DWD16
+        SUB A, [J]
+        SET [C], A
+        
+        SUB I, 1
+        ADD C, 1
+        IFE I, 0
+            SET PC, Return
+        JSR Update_State
+        
+        SET PC, Decrypt_loop
+        
+Update_State:
+    ADD [J], Z
+    ADD [J+1], X
+    ADD [J+2], Y
+    ADD [J+3], [J]
+    ADD [J+3], X
+    XOR [J+4], [J]
+    XOR [J+5], [J+1]
+    XOR [J+6], [J+2]
+    XOR [J+7], [J+3]
+    
+    SET PC, POP
+
+;Initialization
+Init:
+    SET PUSH, C
+    SET C, State
+    
+    SET [C], [A]
+    SET [C+1], [A+1]
+    SET [C+2], [A+2]
+    SET [C+3], [A+3]
+    SET [C+4], [A]
+    SET [C+5], [A+1]
+    SET [C+6], [A+2]
+    SET [C+7], [A+3]
+    
+    SET I, 0
+    
+    Init_loop:
+    SET A, [C]
+    ADD A, I
+    JSR EWD16
+    SET J, A
+    
+    SET A, [C+1]
+    ADD A, J
+    JSR EWD16
+    SET X, A
+    
+    SET A, [C+2]
+    ADD A, X
+    JSR EWD16
+    SET Y, A
+    
+    SET A, [C+3]
+    ADD A, Y
+    JSR EWD16
+    SET Z, A
+    
+    SET A, [C]
+    ADD A, Z
+    SHL A, 3
+    BOR A, EX
+    SET [C], A
+    ADD C, 1
+    
+    SET A, [C]
+    ADD A, J
+    SHR A, 1
+    BOR A, EX
+    SET [C], A
+    ADD C, 1
+    
+    SET A, [C]
+    ADD A, X
+    SHL A, 8
+    BOR A, EX
+    SET [C], A
+    ADD C, 1
+    
+    SET A, [C]
+    ADD A, Y
+    SHL A, 1
+    BOR A, EX
+    SET [C], A
+    SUB C, 3
+    
+    XOR [C+4], [C]
+    XOR [C+5], [C+1]
+    XOR [C+6], [C+2]
+    XOR [C+7], [C+3]
+    
+    ADD I, 1
+    IFL I, 4
+        SET PC, Init_loop
+    
+    SET C, POP
+    SET PC, POP
+
+;Encrypt Permutation
+EWD16:
+    SET PUSH, I
+    SET PUSH, B
+    
+    SET I, 0
+    EWD16_loop:
+        XOR A, [B]
+        JSR EMix
+        ADD I, 1
+        ADD B, 1
+        IFN I, 4
+            SET PC, EWD16_loop
+    
+    SET B, POP
+    SET I, POP
+    SET PC, POP
+
+;Encrypt Mixing Function
+EMix:
+    SET PUSH, B
+    
+    SET B, SBoxE
+    JSR FuncS
+    SET B, A
+    SHL B, 6
+    BOR B, EX
+    XOR B, A
+    SHL A, 10
+    BOR A, EX
+    XOR A, B
+    
+    SET B, POP
+    SET PC, POP
+
+;Decrypt Permutation
+DWD16:
+    SET PUSH, I
+    
+    SET I, 0
+    ADD B, 4
+    DWD16_loop:
+        SUB B, 1
+        JSR DMix
+        XOR A, [B]
+        ADD I, 1
+        IFN I, 4
+            SET PC, DWD16_loop
+    
+    SET I, POP
+    SET PC, POP
+
+;Decrypt Mixing Function
+DMix:
+    SET PUSH, B
+    SET PUSH, C
+    
+    SET B, A
+    SET C, A
+    SHL B, 2
+    BOR B, EX
+    XOR B, A
+    SHL C, 4
+    BOR C, EX
+    XOR B, C
+    SET C, A
+    SHL C, 12
+    BOR C, EX
+    XOR B, C
+    SHL A, 14
+    BOR A, EX
+    XOR A, B
+    
+    SET B, SBoxD
+    JSR FuncS
+    
+    SET C, POP
+    SET B, POP
+    SET PC, POP
+
+;A = Word to SBox
+;B = SBox to use
+FuncS:
+    SET PUSH, C
+    SET PUSH, I
+    SET PUSH, X
+    SET PUSH, Y
+    SET PUSH, Z
+    
+    SET C, A
+    SET A, 0
+    SET I, 0
+    
+    FuncS_loop:
+    ADD I, 1
+    SHL C, 4
+    SET X, EX
+    SHR X, 2
+    SET Y, EX
+    SHR Y, 14
+    ADD X, B
+    ADD Y, 1
+    MUL Y, 4
+    SET Z, [X]
+    SHL Z, Y
+    SET Z, EX
+    AND Z, 0xf
+    SHL A, 4
+    BOR A, Z
+    ADD B, 4
+    IFL I, 4
+        SET PC, FuncS_loop
+    
+    SET Z, POP
+    SET Y, POP
+    SET X, POP
+    SET I, POP
+    SET C, POP
+    SET PC, POP
+
+Return:
+    SET [J], 0
+    SET [J+1], 0
+    SET [J+2], 0
+    SET [J+3], 0
+    SET [J+4], 0
+    SET [J+5], 0
+    SET [J+6], 0
+    SET [J+7], 0
+    SET A, C
+    
+    SET I, POP
+    SET Z, POP
+    SET Y, POP
+    SET X, POP
+    SET J, POP
+    SET C, POP
+    SUB A, POP
+    SET PC, C
+
+State:
+dat 0x0, 0x0, 0x0, 0x0
+dat 0x0, 0x0, 0x0, 0x0
+
+SBoxE:
+dat 0x7ce9, 0x215f, 0xb6d0, 0x48a3
+dat 0x4a16, 0x8f7c, 0x30ed, 0x59b2
+dat 0x2fc1, 0x56ad, 0xe834, 0x0b97
+dat 0xf458, 0x9721, 0xa30e, 0x6cdb
+
+SBoxD:
+dat 0xb54f, 0xc690, 0xd3e8, 0x1a27
+dat 0x92f8, 0x0c36, 0x4d1e, 0x7ba5
+dat 0xc30a, 0xb45f, 0x9e6d, 0x2781
+dat 0xa769, 0x12c5, 0x348f, 0xdeb0

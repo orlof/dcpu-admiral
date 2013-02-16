@@ -14,3 +14,4 @@
 #include "screen.dasm16"
 #include "dict2.dasm16"
 #include "floppy.dasm16"
+#include "crypt.dasm16"

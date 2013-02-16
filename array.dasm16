@@ -179,6 +179,33 @@
 	set pc, postamble
 
 ;----------------------------------------------------------------
+; struct handle *array_append_array(struct handle *array, struct handle *array)
+;----------------------------------------------------------------
+:array__append_array
+	set push, 2
+	set push, 0
+	jsr preamble
+
+	set b, 0
+
+	set a, [z+10]
+	set c, [a]
+	set c, [c]
+
+:array__append_array__loop
+	ife b, c
+		set pc, postamble
+
+	jsr array__get
+	
+	set push, [z+11]
+	set push, x
+	jsr array__append
+	
+	add b, 1
+	set pc, array__append_array__loop
+
+;----------------------------------------------------------------
 :array__increment_length
 ; fastcall
 ; a: struct handle *array
