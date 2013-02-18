@@ -127,7 +127,7 @@ Thumbs.db
 Desktop.ini
 
 *.10cproj
-admiral*.bin
+admiral_*.bin
 floppy.bin
 *.dobj16
 *.s
