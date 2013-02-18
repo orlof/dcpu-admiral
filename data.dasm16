@@ -5,6 +5,7 @@
 :current_scope  dat 0
 
 :builtin		dat 0
+:history		dat 0
 
 :recovery_fp    dat 0
 :recovery_sp    dat 0

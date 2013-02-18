@@ -12,13 +12,19 @@
 	set x, 0
 	ife a, b
 		set pc, postamble
-	
+
+	set push, [a + HANDLE_TYPE]
+	bor [sp], [b + HANDLE_TYPE]
+	ife TYPE_INT + TYPE_BOOLEAN, pop
+		set pc, val_cmp__comparable_types
+
 	jsr cast_common_number_type
-	
+
 	; compare
 	ifn [a + HANDLE_TYPE], [b + HANDLE_TYPE]	; different types
 		set pc, valcmp_type
 
+:val_cmp__comparable_types
 	set c, 0						; compare function *
 		
 	; equal types
@@ -245,7 +251,7 @@
 
 	ife [a + HANDLE_TYPE], TYPE_STRING
 		set pc, boolean_str
-
+		
 :boolean_true
 	set x, BOOL_HANDLE_TRUE
 	set pc, postamble
@@ -803,6 +809,8 @@
 	ife c, KEY_NEWLINE
 		set pc, pop
 	ife c, KEY_BS
+		set pc, pop
+	ife c, KEY_DEL
 		set pc, pop
 	ifg c, KEY_UP-1
 		ifl c, KEY_RIGHT+1
