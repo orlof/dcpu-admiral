@@ -946,7 +946,7 @@
     set [z-1], x
 
 	set y, 0
-	ife [x + HANDLE_TYPE], TYPE_INT
+	ifb [x + HANDLE_TYPE], TYPE_INT + TYPE_BOOLEAN
 		set y, int_negate
 	ife [x + HANDLE_TYPE], TYPE_FLOAT
 		set y, float_negate
@@ -977,7 +977,7 @@
 	jsr eval
     set [z-1], x
 
-	ife [x + HANDLE_TYPE], TYPE_INT
+	ife [x + HANDLE_TYPE], TYPE_INT + TYPE_BOOLEAN
 		set pc, nud_tilde_int
 		
 	jsr recover
@@ -1359,7 +1359,7 @@
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
 	
-	ife c, TYPE_INT
+	ifc c, TYPE_GROUP_NON_NUMERIC
 		set y, int_add
 	ife c, TYPE_FLOAT
 		set y, float_add
@@ -1396,7 +1396,7 @@
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
 
-	ife c, TYPE_INT
+	ifc c, TYPE_GROUP_NON_NUMERIC
 		set y, int_sub
 	ife c, TYPE_FLOAT
 		set y, float_sub
@@ -1422,7 +1422,7 @@
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
 
-	ife c, TYPE_INT
+	ifc c, TYPE_GROUP_NON_NUMERIC
 		set y, int_mul
 	ife c, TYPE_FLOAT
 		set y, float_mul
@@ -1461,7 +1461,7 @@
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
 
-	ife c, TYPE_INT
+	ifc c, TYPE_GROUP_NON_NUMERIC
 		set y, int_pow
 		
 	ife [a + HANDLE_TYPE], TYPE_FLOAT
@@ -1488,7 +1488,7 @@
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
 
-	ife c, TYPE_INT
+	ifc c, TYPE_GROUP_NON_NUMERIC
 		set y, int_bitwise_or
 
 	set pc, led_operation_tailer
@@ -1512,7 +1512,7 @@
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
 
-	ife c, TYPE_INT
+	ifc c, TYPE_GROUP_NON_NUMERIC
 		set y, int_bitwise_xor
 
 	set pc, led_operation_tailer
@@ -1535,7 +1535,7 @@
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
 
-	ife c, TYPE_INT
+	ifc c, TYPE_GROUP_NON_NUMERIC
 		set y, int_bitwise_and
 
 	set pc, led_operation_tailer
@@ -1558,7 +1558,7 @@
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
 
-	ife c, TYPE_INT
+	ifc c, TYPE_GROUP_NON_NUMERIC
 		set y, int_lshift
 
 	set pc, led_operation_tailer
@@ -1581,7 +1581,7 @@
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
 
-	ife c, TYPE_INT
+	ifc c, TYPE_GROUP_NON_NUMERIC
 		set y, int_rshift
 
 	set pc, led_operation_tailer
@@ -1605,7 +1605,7 @@
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
 
-	ife c, TYPE_INT
+	ifc c, TYPE_GROUP_NON_NUMERIC
 		set y, int_div
 	ife c, TYPE_FLOAT
 		set y, float_div
@@ -1630,7 +1630,7 @@
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
 
-	ife c, TYPE_INT
+	ifc c, TYPE_GROUP_NON_NUMERIC
 		set y, int_mod
 
 	set pc, led_operation_tailer
@@ -2343,6 +2343,12 @@
 	ifg i, 3
 		jsr recover
 
+	set push, [z-1]
+	bor [sp], [z-2]
+	bor [sp], [z-3]
+	ifc TYPE_GROUP_NON_NUMERIC, pop
+		jsr recover
+
 	set push, [z-3]
 	jsr int_sgn
 	set y, x
@@ -2443,7 +2449,7 @@
 		jsr recover
 
 	set a, [z-1]
-	ifn [a + HANDLE_TYPE], TYPE_INT
+	ifc [a + HANDLE_TYPE], TYPE_GROUP_NUMERIC
 		jsr recover
 
 	set a, [a]
@@ -2519,7 +2525,7 @@
 	set b, [z-1]
 	set c, [b + HANDLE_TYPE]
 
-	ifc c, TYPE_INT + TYPE_FLOAT
+	ifc c, TYPE_INT + TYPE_FLOAT + TYPE_BOOLEAN
 		jsr recover
 
 	set a, INT_HANDLE_0
@@ -2532,9 +2538,9 @@
 	set a, [z-1]
 	set b, [z-2]
 
-	ifc [a + HANDLE_TYPE], TYPE_FLOAT + TYPE_INT
+	ifc [a + HANDLE_TYPE], TYPE_FLOAT + TYPE_INT + TYPE_BOOLEAN
 		jsr recover
-	ifc [b + HANDLE_TYPE], TYPE_FLOAT + TYPE_INT
+	ifc [b + HANDLE_TYPE], TYPE_FLOAT + TYPE_INT + TYPE_BOOLEAN
 		jsr recover
 
 :built_in_rnd_finish
@@ -2834,7 +2840,7 @@
 
 :built_in_key_1
 	set a, [z-1]
-	ife [a + HANDLE_TYPE], TYPE_INT
+	ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOLEAN
 		set pc, built_in_key_1_int
 		
 	ifn [a + HANDLE_TYPE], TYPE_STRING
@@ -2908,7 +2914,11 @@
 	set pc, postamble
 
 :screen__get_x
-	set push, [z-1]
+	set x, [z-1]
+	ifc [x + HANDLE_TYPE], TYPE_GROUP_NUMERIC
+		jsr recover
+		
+	set push, x
 	jsr int_to_int16
 
 	ifb x, 0x8000
@@ -2919,7 +2929,11 @@
 	set pc, pop
 
 :screen__get_y
-	set push, [z-2]
+	set x, [z-2]
+	ifc [x + HANDLE_TYPE], TYPE_GROUP_NUMERIC
+		jsr recover
+		
+	set push, x
 	jsr int_to_int16
 
 	ifb x, 0x8000
@@ -2983,11 +2997,19 @@
 	ifn i, 2
 		jsr recover
 
-	set push, [z-1]
+	set x, [z-1]
+	ifc [x + HANDLE_TYPE], TYPE_GROUP_NUMERIC
+		jsr recover
+		
+	set push, x
 	jsr int_to_int16
 	set push, x
 
-	set push, [z-2]
+	set x, [z-2]
+	ifc [x + HANDLE_TYPE], TYPE_GROUP_NUMERIC
+		jsr recover
+		
+	set push, x
 	jsr int_to_int16
 	set push, x
 
