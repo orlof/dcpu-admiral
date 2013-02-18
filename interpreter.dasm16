@@ -1,8 +1,3 @@
-	set a, TYPE_GROUP_CONTAINER
-	set a, TYPE_GROUP_NUMERIC
-	set a, TYPE_GROUP_NON_NUMERIC
-
-
 :interpreter_main
 	set push, 0
 	set push, 5
