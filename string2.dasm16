@@ -365,17 +365,10 @@
 	
 	set x, FALSE
 	set pc, pop
+
 ;----------------------------------------------------------------
 :built_in__str_decrypt
 ;----------------------------------------------------------------
-	set y, Decrypt
-	set pc, hummingbird
-;----------------------------------------------------------------
-:built_in__str_encrypt
-;----------------------------------------------------------------
-	set y, Encrypt
-
-:hummingbird
 	jsr built_in__object_method__init
 	
 	ifn i, 1
@@ -385,23 +378,74 @@
 	jsr array_clone
 	set [z-2], x
 
-	set c, [x]
-	set push, [c]
-	add c, 1
+	set y, Decrypt
 	
+	set pc, built_in__str_crypt
+
+;----------------------------------------------------------------
+:built_in__str_encrypt
+;----------------------------------------------------------------
+	jsr built_in__object_method__init
+	
+	ifn i, 1
+		jsr recover
+	
+	set push, a
+	jsr array_clone
+	set [z-2], x
+
+	set a, [heap_handle_start]
+	set b, a
+	add b, 16
+	
+	:built_in__str_encrypt__iv_loop	
+		sub b, 4
+	
+		set push, [z-2]
+		set push, [b]
+		jsr array__append	
+	
+		ifg b, a
+			set pc, built_in__str_encrypt__iv_loop
+
+	set y, Encrypt
+
+:built_in__str_crypt
+	; IV	
+	set a, [z-2]
+	set a, [a]
+
+	sub [a], 4			; cut IV [:-4]
+	set push, [a]		; msg.len	
+	
+	add a, [a]
+	add a, 1			; IV[0]
+
+	; msg
+	set c, [z-2]
+	set c, [c]
+	add c, 1			; msg[0]
+
+	; key
 	set b, [z-1]
 	set b, [b]
 	
 	ifn [b], 8
 		jsr recover
 		
-	add b, 1
-	
-	set a, 0
+	add b, 1			; key[0]
 	
 	jsr y
+
+	set x, [z-2]
+	ife y, Decrypt
+		set pc, postamble	
+
+	set a, [x]
+	add [a], 4
 	
 	set pc, postamble	
+
 ;----------------------------------------------------------------
 :built_in__str_replace
 ;----------------------------------------------------------------
