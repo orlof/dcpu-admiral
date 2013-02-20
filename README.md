@@ -93,11 +93,11 @@ b 2
      - Variable length integers (only limited by available heap space)
      - Floats with compile time precision selection (1+ words for mantissa)
      - Booleans, strings, lists, tuples and dicts
- - Interactive command prompt
  - Integrated code editor with gap buffer
  - Object serialization for floppy
  - Dict implementation with binary search
  - Nice starting set of built-in functions
+ - Interactive command prompt with line editing
  
 <h6>Next in development</h6>
  - Example code
@@ -107,7 +107,6 @@ b 2
  - 200-400% speed improvements
    - different concepts (code/algo optimization, number cache)
  - SPED-3 support
- - Command line editor
  - Screen library
  - More built-in functions
  - Exception handling
