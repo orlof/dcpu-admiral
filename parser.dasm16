@@ -1170,10 +1170,10 @@
 	jsr eval
     set [z-2], x
 
-	ife [x + HANDLE_TYPE], TYPE_STR
+	ifb [x + HANDLE_TYPE], TYPE_STR
 		set pc, led_in_string
 
-	ife [x + HANDLE_TYPE], TYPE_DICT
+	ifb [x + HANDLE_TYPE], TYPE_DICT
 		set pc, led_in_dict
 
 	ifb [x + HANDLE_TYPE], TYPE_TUPLE + TYPE_LIST
@@ -1203,7 +1203,6 @@
 	jsr array_find
 	ife x, -1
 		set pc, led_in_not_found
-	set pc, led_in_found
 
 :led_in_found
 	set x, BOOL_TRUE
@@ -2029,7 +2028,7 @@
 	jsr eval
 	set [z-2], x
 
-	ifc [x + HANDLE_TYPE], TYPE_STR + TYPE_TUPLE + TYPE_INT + TYPE_BOOL + TYPE_FLOAT
+	ifc [x + HANDLE_TYPE], TYPE_STR + TYPE_TUPLE + TYPE_INT + TYPE_BOOL + TYPE_FLOAT + TYPE_NONE
 		jsr recover
 
 :led_lbrack_finish
