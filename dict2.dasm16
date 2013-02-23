@@ -166,7 +166,7 @@
 	set y, [z+10]
 	
 	set push, 10
-	set push, TYPE_STRING
+	set push, TYPE_STR
 	jsr alloc
 	set [z-1], x
 

@@ -243,7 +243,7 @@
 		jsr recover
 
 	set x, [z-1]
-	ifn [x + HANDLE_TYPE], TYPE_STRING
+	ifn [x + HANDLE_TYPE], TYPE_STR
 		jsr recover
 
 	set push, x
@@ -305,7 +305,7 @@
 		jsr recover
 	
 	set b, [z-1]
-	ifb [b + HANDLE_TYPE], TYPE_STRING
+	ifb [b + HANDLE_TYPE], TYPE_STR
 		set pc, built_in__str_xwith__str
 
 	ifb [b + HANDLE_TYPE], TYPE_TUPLE + TYPE_LIST
@@ -323,7 +323,7 @@
 		set pc, return_false
 	
 	set b, [i]
-	ifn [b + HANDLE_TYPE], TYPE_STRING
+	ifn [b + HANDLE_TYPE], TYPE_STR
 		jsr recover
 		
 	jsr y
@@ -454,20 +454,20 @@
 		jsr recover
 
 	set x, [z-1]			; search str
-	ifc [x + HANDLE_TYPE], TYPE_STRING
+	ifc [x + HANDLE_TYPE], TYPE_STR
 		jsr recover
 
 	set c, [x]
 	set c, [c]
 
 	set x, [z-2]			; replace str
-	ifc [x + HANDLE_TYPE], TYPE_STRING
+	ifc [x + HANDLE_TYPE], TYPE_STR
 		jsr recover
 		
 	set [z-3], a			; src str
 
 	set push, [a + HANDLE_SIZE]
-	set push, TYPE_STRING
+	set push, TYPE_STR
 	jsr alloc
 	set [z-4], x			; dst str
 
@@ -538,7 +538,7 @@
 
 	; str split with defined separator
 	set x, [z-1]			; sep str
-	ifc [x + HANDLE_TYPE], TYPE_STRING
+	ifc [x + HANDLE_TYPE], TYPE_STR
 		jsr recover
 
 	set c, [x]
@@ -594,7 +594,7 @@
 		set pc, built_in__str_split__ws__add_char
 
 	set push, 6
-	set push, TYPE_STRING
+	set push, TYPE_STR
 	jsr alloc
 	set [z-1], x
 

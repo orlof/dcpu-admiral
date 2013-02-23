@@ -66,7 +66,7 @@
 	set push, 1			; sizeof(refs)
 	jsr preamble
 
-	set [z-1], INT_HANDLE_0
+	set [z-1], INT_0
 
 	set a, [z+10]		; struct handle *str
 	set b, 0			; index
@@ -86,14 +86,14 @@
 	ifn [c + lexer_table], lexer_char_digit
 		set pc, int_parse_finish
 
-	set push, INT_HANDLE_10
+	set push, INT_10
 	set push, [z-1]
 	jsr int_mul
 	set [z-1], x
 
 	sub c, '0'						; convert char to int
-	shl c, 1
-	add c, INT_HANDLE
+	shl c, 2
+	add c, INT_TABLE
 
 	set push, [z-1]
 	set push, c
@@ -122,7 +122,7 @@
 	set push, 1			; sizeof(refs)
 	jsr preamble
 
-	set [z-1], INT_HANDLE_0
+	set [z-1], INT_0
 
 	set a, [z+10]		; struct handle *str
 	set b, 0			; index
@@ -157,7 +157,7 @@
 	set pc, int_parse_finish
 
 :int_parse_hex_loop_continue
-	set push, INT_HANDLE_16
+	set push, INT_16
 	set push, [z-1]
 	jsr int_mul
 	set [z-1], x
@@ -175,8 +175,8 @@
 		ifl c, 'F'+1
 			sub x, 'A'-10
 	
-	shl x, 1
-	add x, INT_HANDLE
+	shl x, 2
+	add x, INT_TABLE
 
 	set push, [z-1]
 	set push, x
@@ -206,7 +206,7 @@
 
 :int_to_str_loop
 	set push, [z-1]
-	set push, INT_HANDLE_10
+	set push, INT_10
 	jsr int_division
 	set [z-1], x
 
@@ -237,7 +237,7 @@
 
 :allocate_chars
 	set push, i
-	set push, TYPE_STRING
+	set push, TYPE_STR
 	jsr array_create
 	set [z-1], x
 
@@ -522,7 +522,7 @@
 	ifl a, c
 		set pc, int_rshift_real
 
-	set x, INT_HANDLE_0
+	set x, INT_0
 	set pc, postamble
 
 :int_rshift_real
@@ -840,7 +840,7 @@
 	set c, x						; c = (uint16) exp
 
 	set [z-1], [z+11] 				; p
-	set [z-2], INT_HANDLE_1		; r
+	set [z-2], INT_1		; r
 	
 :int_pow_loop
 	ife c, 0
@@ -873,11 +873,11 @@
 
 :int_pow_0
 	; return 0
-	set x, INT_HANDLE_0
+	set x, INT_0
 	set pc, postamble
 :int_pow_1
 	; return 1
-	set x, INT_HANDLE_1
+	set x, INT_1
 	set pc, postamble
 
 ;----------------------------------------------------------------

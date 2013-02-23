@@ -73,8 +73,8 @@
 	jsr parser_stmt
     set [z-3], x
 
-	ife [x+1], TYPE_NONE
-		set pc, interpreter_loop_parse_2
+;	ife [x+1], TYPE_NONE
+;		set pc, interpreter_loop_parse_2
 	
 	set push, x
 	jsr eval
@@ -520,7 +520,7 @@
 	sub [sp], [line_editor__start_addr]
 	add [sp], 1
 
-	set push, TYPE_STRING
+	set push, TYPE_STR
 	jsr array_create
 	set [z-1], x
 

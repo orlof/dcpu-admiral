@@ -453,7 +453,7 @@
 	set j, [y]					; array size
 	add j, 1
 
-	ife c, TYPE_FLOAT			; if item is float
+	ifb c, TYPE_FLOAT			; if item is float
 	    set j, SIZEOF_FLOAT		; float size
 
 	set push, j
@@ -463,7 +463,7 @@
 	; write DATA
 	;---------------------------------------
     set i, y
-    ifn c, TYPE_FLOAT
+    ifc c, TYPE_FLOAT
     	add i, 1
     
     add y, j
@@ -579,7 +579,7 @@
 :floppy__item__deserialize__data
 	set i, [x]				; struct data *
 
-	ife b, TYPE_FLOAT
+	ifb b, TYPE_FLOAT
 		set pc, floppy__item__deserialize__skip_length
 
 	; set length

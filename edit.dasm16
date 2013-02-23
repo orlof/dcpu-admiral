@@ -22,7 +22,7 @@
 
 	; reserve space for editing text as string (not _really_ correct)
 	set push, EDIT_BUFFER_SIZE
-	set push, TYPE_STRING
+	set push, TYPE_STR
 	jsr alloc
 	set [z-1], x
 
@@ -106,7 +106,7 @@
 	sub c, [gap_end]
 	
 	set push, c
-	set push, TYPE_STRING
+	set push, TYPE_STR
 	jsr array_create
 
 	sti j, [x]	
