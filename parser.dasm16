@@ -42,7 +42,7 @@
 :std_eof
 ; return struct handle *none
 ;----------------------------------------------------------------
-	set x, NONE
+	set x, VOID
 	set pc, postamble
 
 ;----------------------------------------------------------------
@@ -61,7 +61,7 @@
 
 	jsr screen_clear
 
-	set x, NONE
+	set x, VOID
 	set pc, postamble
 
 ;----------------------------------------------------------------
@@ -133,7 +133,7 @@
 	set c, 10
 	jsr screen_add_char
 
-	set x, NONE
+	set x, VOID
 	set pc, postamble
 
 ;----------------------------------------------------------------
@@ -187,7 +187,7 @@
 
 	set a, [x]
 	set [a + CONTROL_SIGNAL], b 	; set control signal
-	set [a + CONTROL_VALUE], NONE	; default: no return value
+	set [a + CONTROL_VALUE], VOID	; default: no return value
 	set pc, postamble
 
 ;----------------------------------------------------------------
@@ -199,7 +199,7 @@
 	set push, token_newline
 	jsr lexer_advance
 
-	set x, NONE
+	set x, VOID
 	set pc, postamble
 
 ;----------------------------------------------------------------
@@ -300,7 +300,7 @@
 :std_for_finish	
 	jsr parser_skip_suite
 :std_for_eof
-	set x, NONE
+	set x, VOID
 
 :std_for_control_return
     set [current_scope], [z-1]
@@ -325,7 +325,7 @@
 	set pc, std_del_loop
 
 :std_del_break
-	set x, NONE
+	set x, VOID
 	set pc, postamble
 
 ;----------------------------------------------------------------
@@ -395,7 +395,7 @@
 		set pc, postamble
 
 :std_if_eof
-	set x, NONE
+	set x, VOID
 	set pc, postamble
 
 ;----------------------------------------------------------------
@@ -473,7 +473,7 @@
 :std_while_false
 	jsr parser_skip_suite
 :std_while_eof
-	set x, NONE
+	set x, VOID
 
 :std_while_control_return
     set [current_scope], [z-1]
@@ -2987,7 +2987,7 @@
 
 	jsr screen__set
 
-	set x, NONE
+	set x, VOID
 	set pc, postamble
 
 ;----------------------------------------------------------------
@@ -3015,7 +3015,7 @@
 
 	jsr screen__scroll
 	
-	set x, NONE
+	set x, VOID
 	set pc, postamble
 
 ;----------------------------------------------------------------

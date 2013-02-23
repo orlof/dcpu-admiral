@@ -196,7 +196,7 @@
 	bor [sp+1], FONT_COLOR
 	
 	set x, [sp+2]
-	set [x], [sp+1]
+	set [x], [sp+1]		; set new content
 
 	set [sp], pop
 	set [sp], pop
