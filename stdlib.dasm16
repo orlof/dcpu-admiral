@@ -713,6 +713,8 @@
 		set pc, postamble
 	ife [x + HANDLE_TYPE], TYPE_BOOL
 		set pc, repr_boolean
+	ife [x + HANDLE_TYPE], TYPE_NONE
+		set pc, repr_none
 
 	set y, recover
 	ife [x + HANDLE_TYPE], TYPE_INT
@@ -763,6 +765,10 @@
 	ife a, BOOL_FALSE
 		set x, STR_FALSE
 
+	set pc, postamble
+
+:repr_none
+	set x, STR_NONE
 	set pc, postamble
 
 ;----------------------------------------------------------------

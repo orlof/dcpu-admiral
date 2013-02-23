@@ -96,6 +96,7 @@
 ; CONSTANT DATA VALUES
 ;----------------------------------------------------------------
 :NONE       dat 0, TYPE_NONE
+:VOID       dat 0, TYPE_VOID
 
 :INT_N1 	dat INT_N1 + 2, TYPE_INT, 0x0001, 0xFFFF
 :INT_TABLE

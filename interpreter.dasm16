@@ -73,8 +73,8 @@
 	jsr parser_stmt
     set [z-3], x
 
-;	ife [x+1], TYPE_NONE
-;		set pc, interpreter_loop_parse_2
+	ife [x+1], TYPE_VOID
+		set pc, interpreter_loop_parse_2
 	
 	set push, x
 	jsr eval

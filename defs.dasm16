@@ -19,8 +19,45 @@
 #define MEM_HEAP_END			MEM_FLOPPY_START
 
 ;----------------------------------------------------------------
+; DATA TYPES
+;----------------------------------------------------------------
+; SYSTEM TYPES
+#define TYPE_MARKED			0x8000
+#define TYPE_VOID			0x4000
+#define TYPE_CONTROL		0x2000
+#define TYPE_EXTENSION		0x1000
+
+; INTERNAL SYSTEM TYPES
+#define TYPE_NAME           0x0800
+#define TYPE_REFERENCE      0x0400
+#define TYPE_SUBSCRIPTION   0x0200
+#define TYPE_TUPLE_COMMA    0x0100
+
+; USER TYPES
+#define TYPE_NONE			0x0080
+#define TYPE_FLOAT          0x0040
+#define TYPE_INT            0x0020
+#define TYPE_BOOL           0x0010
+
+#define TYPE_STR         	0x0008
+#define TYPE_TUPLE          0x0004
+#define TYPE_LIST           0x0002
+#define TYPE_DICT           0x0001
+
+; TYPE GROUPS
+#define TYPE_GROUP_CONTAINER		TYPE_CONTROL + TYPE_TUPLE + TYPE_LIST + TYPE_DICT + TYPE_TUPLE_COMMA + TYPE_REFERENCE + TYPE_SUBSCRIPTION
+#define TYPE_GROUP_CAN_REFERENCE	TYPE_LIST + TYPE_DICT + TYPE_STR
+#define TYPE_GROUP_INTEGER			TYPE_INT + TYPE_BOOL
+;define TYPE_GROUP_NON_INTEGER		0xffff - TYPE_GROUP_INTEGER
+#define TYPE_GROUP_NON_INTEGER		0xffcf
+#define TYPE_GROUP_NUMERIC			TYPE_GROUP_INTEGER + TYPE_FLOAT
+#define TYPE_GROUP_ALL				0x3fff
+
+;----------------------------------------------------------------
 ; PARAMETERS
 ;----------------------------------------------------------------
+#define FONT_COLOR      		0x7000
+
 #define HISTORY_SIZE			5
 
 #define EDIT_BUFFER_SIZE		0x0400
@@ -47,7 +84,6 @@
 #define FLOAT_MASK_POSITIVE 	0x0f00
 #define FLOAT_MASK_NEGATIVE 	0x000f
 
-#define FONT_COLOR      0x7000
 #define SCREEN_COLS     32
 #define SCREEN_ROWS     12
 
@@ -81,41 +117,6 @@
 #define FLOPPY__STATE__READY				0x01
 #define FLOPPY__STATE__READY_WP				0x02
 #define FLOPPY__STATE__BUSY					0x03
-
-;----------------------------------------------------------------
-; DATA TYPES
-;----------------------------------------------------------------
-; SYSTEM TYPES
-#define TYPE_MARKED			0x8000
-#define TYPE_HIDDEN			0x4000
-#define TYPE_CONTROL		0x2000
-#define TYPE_EXTENSION		0x1000
-
-; INTERNAL SYSTEM TYPES
-#define TYPE_NAME           0x0800
-#define TYPE_REFERENCE      0x0400
-#define TYPE_SUBSCRIPTION   0x0200
-#define TYPE_TUPLE_COMMA    0x0100
-
-; USER TYPES
-#define TYPE_NONE			0x0080
-#define TYPE_FLOAT          0x0040
-#define TYPE_INT            0x0020
-#define TYPE_BOOL           0x0010
-
-#define TYPE_STR         	0x0008
-#define TYPE_TUPLE          0x0004
-#define TYPE_LIST           0x0002
-#define TYPE_DICT           0x0001
-
-; TYPE GROUPS
-#define TYPE_GROUP_CONTAINER		TYPE_CONTROL + TYPE_TUPLE + TYPE_LIST + TYPE_DICT + TYPE_TUPLE_COMMA + TYPE_REFERENCE + TYPE_SUBSCRIPTION
-#define TYPE_GROUP_CAN_REFERENCE	TYPE_LIST + TYPE_DICT + TYPE_STR
-#define TYPE_GROUP_INTEGER			TYPE_INT + TYPE_BOOL
-;define TYPE_GROUP_NON_INTEGER		0xffff - TYPE_GROUP_INTEGER
-#define TYPE_GROUP_NON_INTEGER		0xffcf
-#define TYPE_GROUP_NUMERIC			TYPE_GROUP_INTEGER + TYPE_FLOAT
-#define TYPE_GROUP_ALL				0x3fff
 
 ;----------------------------------------------------------------
 ; DATA STRUCTURE DEFINITIONS
