@@ -78,7 +78,7 @@
 	sub c, b
 
 	set push, c
-	set push, TYPE_STRING
+	set push, TYPE_STR
 	jsr array_create
 
 	sti i, [x]

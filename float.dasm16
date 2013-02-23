@@ -964,7 +964,7 @@
 	ifb [y + FLOAT_CATEGORY], FLOAT_CATEGORY_NAN + FLOAT_CATEGORY_PINF + FLOAT_CATEGORY_NINF
 		jsr recover				; nan or inf cannot be converted into int
 
-	set x, INT_HANDLE_0
+	set x, INT_0
 	ifb [y + FLOAT_CATEGORY], FLOAT_CATEGORY_NZERO + FLOAT_CATEGORY_PZERO
 		set pc, postamble		; -0 is just 0
 
@@ -1310,7 +1310,7 @@
 		set pc, postamble
 
 	set push, 13
-	set push, TYPE_STRING
+	set push, TYPE_STR
 	jsr alloc
 	set [z-1], x
 

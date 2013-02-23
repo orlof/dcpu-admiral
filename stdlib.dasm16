@@ -15,7 +15,7 @@
 
 	set push, [a + HANDLE_TYPE]
 	bor [sp], [b + HANDLE_TYPE]
-	ife TYPE_INT + TYPE_BOOLEAN, pop
+	ife TYPE_INT + TYPE_BOOL, pop
 		set pc, val_cmp__comparable_types
 
 	jsr cast_common_number_type
@@ -28,13 +28,13 @@
 	set c, 0						; compare function *
 		
 	; equal types
-	ifb [a + HANDLE_TYPE], TYPE_BOOLEAN + TYPE_INT
+	ifb [a + HANDLE_TYPE], TYPE_BOOL + TYPE_INT
 		set c, int_cmp
 
 	ife [a + HANDLE_TYPE], TYPE_FLOAT
 		set c, float_cmp
 
-	ifb [a + HANDLE_TYPE], TYPE_STRING + TYPE_NAME
+	ifb [a + HANDLE_TYPE], TYPE_STR + TYPE_NAME
 		set c, str_cmp
 
 	ifb [a + HANDLE_TYPE], TYPE_LIST + TYPE_TUPLE + TYPE_DICT
@@ -147,7 +147,7 @@
 		set pc, eval_subscription_array
 	ife [b + HANDLE_TYPE], TYPE_TUPLE
 		set pc, eval_subscription_array
-	ife [b + HANDLE_TYPE], TYPE_STRING
+	ife [b + HANDLE_TYPE], TYPE_STR
 		set pc, eval_subscription_str
 
 	jsr recover
@@ -236,7 +236,7 @@
 	ife a, NONE
 		set pc, boolean_false
 
-	ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOLEAN
+	ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
 		ife [b], 1
 			ife [b+1], 0
 				set pc, boolean_false
@@ -245,19 +245,19 @@
 		ifb [b + FLOAT_CATEGORY], FLOAT_CATEGORY_PZERO + FLOAT_CATEGORY_NZERO
 			set pc, boolean_false
 
-	ifc [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOLEAN + TYPE_FLOAT
+	ifc [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOL + TYPE_FLOAT
 		ife [b], 0
 			set pc, boolean_false
 
-	ife [a + HANDLE_TYPE], TYPE_STRING
+	ife [a + HANDLE_TYPE], TYPE_STR
 		set pc, boolean_str
 		
 :boolean_true
-	set x, BOOL_HANDLE_TRUE
+	set x, BOOL_TRUE
 	set pc, postamble
 
 :boolean_false
-	set x, BOOL_HANDLE_FALSE
+	set x, BOOL_FALSE
 	set pc, postamble
 
 
@@ -280,7 +280,7 @@
 	set a, [z+11]
 	set b, [z+10]
 
-	ife [a + HANDLE_TYPE], TYPE_STRING
+	ife [a + HANDLE_TYPE], TYPE_STR
 		set pc, sort_string
 	ifb [a + HANDLE_TYPE], TYPE_TUPLE + TYPE_LIST
 		set pc, sort_array
@@ -293,9 +293,9 @@
 	set [z-1], x
 
 	set push, x
-	ife b, BOOL_HANDLE_TRUE
+	ife b, BOOL_TRUE
 		set push, char_reverse_comparator
-	ife b, BOOL_HANDLE_FALSE
+	ife b, BOOL_FALSE
 		set push, char_comparator
 		
 	jsr array_sort
@@ -322,9 +322,9 @@
 
 :sort_array
 	set push, a
-	ife b, BOOL_HANDLE_TRUE
+	ife b, BOOL_TRUE
 		set push, array_reverse_comparator
-	ife b, BOOL_HANDLE_FALSE
+	ife b, BOOL_FALSE
 		set push, array_comparator
 		
 	jsr array_sort
@@ -448,9 +448,9 @@
 	add x, i
 	set push, [x+1]
 
-	ife [b + HANDLE_TYPE], TYPE_STRING
+	ife [b + HANDLE_TYPE], TYPE_STR
 		jsr assign_from_string
-	ifn [b + HANDLE_TYPE], TYPE_STRING
+	ifn [b + HANDLE_TYPE], TYPE_STR
 		jsr assign
 
 	sti pc, assign_tuple_loop
@@ -471,7 +471,7 @@
 	set a, [z+11]
 
 	set push, 1
-	set push, TYPE_STRING
+	set push, TYPE_STR
 	jsr array_create
 	set [z-1], x
 	set b, x
@@ -542,11 +542,11 @@
 ;   b: struct handle *right_or_new_right
 ;----------------------------------------------------------------
 	; automatic type conversions
-	ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOLEAN
+	ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
 		ife [b + HANDLE_TYPE], TYPE_FLOAT
 			set pc, itof_left
 	
-	ifb [b + HANDLE_TYPE], TYPE_INT + TYPE_BOOLEAN
+	ifb [b + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
 		ife [a + HANDLE_TYPE], TYPE_FLOAT
 			set pc, itof_right
 
@@ -668,7 +668,7 @@
 	jsr preamble
 
 	set a, [z+10]
-	ife [a + HANDLE_TYPE], TYPE_STRING
+	ife [a + HANDLE_TYPE], TYPE_STR
 		set pc, print_skip_repr
 
 :print_with_repr
@@ -707,11 +707,11 @@
 
 	set x, [z+10]
 
-	ife [x + HANDLE_TYPE], TYPE_STRING
+	ife [x + HANDLE_TYPE], TYPE_STR
 		set pc, repr_string
 	ife [x + HANDLE_TYPE], TYPE_NAME
 		set pc, postamble
-	ife [x + HANDLE_TYPE], TYPE_BOOLEAN
+	ife [x + HANDLE_TYPE], TYPE_BOOL
 		set pc, repr_boolean
 
 	set y, recover
@@ -735,7 +735,7 @@
 	add a, 2
 
 	set push, a
-	set push, TYPE_STRING
+	set push, TYPE_STR
 	jsr alloc
 	set [z-1], x
 	
@@ -760,7 +760,7 @@
 	set a, x
 
 	set x, STR_TRUE
-	ife a, BOOL_HANDLE_FALSE
+	ife a, BOOL_FALSE
 		set x, STR_FALSE
 
 	set pc, postamble
@@ -940,7 +940,7 @@
 	add a, 1
 
 	set push, a
-	set push, TYPE_STRING
+	set push, TYPE_STR
 	jsr array_create
 
 	set j, [x]					; struct string *
@@ -998,12 +998,12 @@
 ;----------------------------------------------------------------
 :return_true
 ;----------------------------------------------------------------
-	set x, BOOL_HANDLE_TRUE
+	set x, BOOL_TRUE
 	set pc, postamble
 
 ;----------------------------------------------------------------
 :return_false
 ;----------------------------------------------------------------
-	set x, BOOL_HANDLE_FALSE
+	set x, BOOL_FALSE
 	set pc, postamble
 

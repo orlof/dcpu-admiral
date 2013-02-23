@@ -248,7 +248,7 @@
 		set pc, std_for_finish
 
 	add c, i		; c+1 = points to current item
-	ife [b + HANDLE_TYPE], TYPE_STRING
+	ife [b + HANDLE_TYPE], TYPE_STR
 		set pc, std_for_loop_string
 		
 	set push, a
@@ -345,7 +345,7 @@
 	set push, token_colon		; verify colon
 	jsr lexer_advance
 
-    ife [z-3], BOOL_HANDLE_FALSE   ; break if loop condition is false
+    ife [z-3], BOOL_FALSE   ; break if loop condition is false
 		set pc, std_if_false
 
 	jsr parser_suite
@@ -438,7 +438,7 @@
 	set push, token_colon		; verify colon
 	jsr lexer_advance
 
-    ife [z-3], BOOL_HANDLE_FALSE   ; break if loop condition is false
+    ife [z-3], BOOL_FALSE   ; break if loop condition is false
 		set pc, std_while_false
 
 	jsr parser_suite
@@ -754,7 +754,7 @@
 ;----------------------------------------------------------------
 :nud_true
 	jsr lexer_next
-	set x, BOOL_HANDLE_TRUE
+	set x, BOOL_TRUE
 	set pc, pop
 
 ;----------------------------------------------------------------
@@ -762,7 +762,7 @@
 ;----------------------------------------------------------------
 :nud_false
 	jsr lexer_next
-	set x, BOOL_HANDLE_FALSE
+	set x, BOOL_FALSE
 	set pc, pop
 
 ;----------------------------------------------------------------
@@ -946,7 +946,7 @@
     set [z-1], x
 
 	set y, 0
-	ifb [x + HANDLE_TYPE], TYPE_INT + TYPE_BOOLEAN
+	ifb [x + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
 		set y, int_negate
 	ife [x + HANDLE_TYPE], TYPE_FLOAT
 		set y, float_negate
@@ -977,7 +977,7 @@
 	jsr eval
     set [z-1], x
 
-	ife [x + HANDLE_TYPE], TYPE_INT + TYPE_BOOLEAN
+	ife [x + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
 		set pc, nud_tilde_int
 		
 	jsr recover
@@ -1010,9 +1010,9 @@
 	jsr boolean
 	set a, x
 
-	set x, BOOL_HANDLE_FALSE
-	ife a, BOOL_HANDLE_FALSE
-		set x, BOOL_HANDLE_TRUE
+	set x, BOOL_FALSE
+	ife a, BOOL_FALSE
+		set x, BOOL_TRUE
 
 	set pc, postamble
 
@@ -1026,11 +1026,11 @@
 
 	jsr boolean_operator
 
-	set x, BOOL_HANDLE_TRUE
-    ife [z-1], BOOL_HANDLE_FALSE   
-		set x, BOOL_HANDLE_FALSE
-    ife [z-2], BOOL_HANDLE_FALSE   
-		set x, BOOL_HANDLE_FALSE
+	set x, BOOL_TRUE
+    ife [z-1], BOOL_FALSE   
+		set x, BOOL_FALSE
+    ife [z-2], BOOL_FALSE   
+		set x, BOOL_FALSE
 			
 	set pc, postamble
 
@@ -1044,11 +1044,11 @@
 
 	jsr boolean_operator
 
-	set x, BOOL_HANDLE_FALSE
-    ife [z-1], BOOL_HANDLE_TRUE    
-		set x, BOOL_HANDLE_TRUE
-    ife [z-2], BOOL_HANDLE_TRUE    
-		set x, BOOL_HANDLE_TRUE
+	set x, BOOL_FALSE
+    ife [z-1], BOOL_TRUE    
+		set x, BOOL_TRUE
+    ife [z-2], BOOL_TRUE    
+		set x, BOOL_TRUE
 			
 	set pc, postamble
 
@@ -1115,16 +1115,16 @@
 	ife a, TRUE
 		set pc, led_is_not
 
-	set x, BOOL_HANDLE_FALSE
+	set x, BOOL_FALSE
     ife x, [z-1]
-		set x, BOOL_HANDLE_TRUE
+		set x, BOOL_TRUE
 
 	set pc, postamble
 
 :led_is_not
-	set x, BOOL_HANDLE_TRUE
+	set x, BOOL_TRUE
     ife x, [z-1]
-		set x, BOOL_HANDLE_FALSE
+		set x, BOOL_FALSE
 
 	set pc, postamble
 
@@ -1170,7 +1170,7 @@
 	jsr eval
     set [z-2], x
 
-	ife [x + HANDLE_TYPE], TYPE_STRING
+	ife [x + HANDLE_TYPE], TYPE_STR
 		set pc, led_in_string
 
 	ife [x + HANDLE_TYPE], TYPE_DICT
@@ -1206,16 +1206,16 @@
 	set pc, led_in_found
 
 :led_in_found
-	set x, BOOL_HANDLE_TRUE
+	set x, BOOL_TRUE
 	ife a, TRUE
-		set x, BOOL_HANDLE_FALSE
+		set x, BOOL_FALSE
 		
 	set pc, postamble
 
 :led_in_not_found
-	set x, BOOL_HANDLE_FALSE
+	set x, BOOL_FALSE
 	ife a, TRUE
-		set x, BOOL_HANDLE_TRUE
+		set x, BOOL_TRUE
 		
 	set pc, postamble
 
@@ -1229,9 +1229,9 @@
 
 	jsr compare_operator
 
-	set x, BOOL_HANDLE_TRUE
+	set x, BOOL_TRUE
 	ife a, 1
-		set x, BOOL_HANDLE_FALSE
+		set x, BOOL_FALSE
 
 	set pc, postamble
 
@@ -1245,9 +1245,9 @@
 
 	jsr compare_operator
 
-	set x, BOOL_HANDLE_FALSE
+	set x, BOOL_FALSE
 	ife a, -1
-		set x, BOOL_HANDLE_TRUE
+		set x, BOOL_TRUE
 
 	set pc, postamble
 
@@ -1261,9 +1261,9 @@
 
 	jsr compare_operator
 
-	set x, BOOL_HANDLE_TRUE
+	set x, BOOL_TRUE
 	ife a, -1
-		set x, BOOL_HANDLE_FALSE
+		set x, BOOL_FALSE
 
 	set pc, postamble
 
@@ -1277,9 +1277,9 @@
 
 	jsr compare_operator
 
-	set x, BOOL_HANDLE_FALSE
+	set x, BOOL_FALSE
 	ife a, 1
-		set x, BOOL_HANDLE_TRUE
+		set x, BOOL_TRUE
 
 	set pc, postamble
 
@@ -1293,9 +1293,9 @@
 
 	jsr compare_operator
 
-	set x, BOOL_HANDLE_FALSE
+	set x, BOOL_FALSE
 	ifn a, 0
-		set x, BOOL_HANDLE_TRUE
+		set x, BOOL_TRUE
 
 	set pc, postamble
 
@@ -1309,9 +1309,9 @@
 
 	jsr compare_operator
 
-	set x, BOOL_HANDLE_FALSE
+	set x, BOOL_FALSE
 	ife a, 0
-		set x, BOOL_HANDLE_TRUE
+		set x, BOOL_TRUE
 
 	set pc, postamble
 
@@ -1359,11 +1359,11 @@
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
 	
-	ifc c, TYPE_GROUP_NON_NUMERIC
+	ifc c, TYPE_GROUP_NON_INTEGER
 		set y, int_add
 	ife c, TYPE_FLOAT
 		set y, float_add
-	ife c, TYPE_STRING
+	ife c, TYPE_STR
 		set y, array_merge
 	ife c, TYPE_LIST
 		set y, array_merge
@@ -1396,7 +1396,7 @@
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
 
-	ifc c, TYPE_GROUP_NON_NUMERIC
+	ifc c, TYPE_GROUP_NON_INTEGER
 		set y, int_sub
 	ife c, TYPE_FLOAT
 		set y, float_sub
@@ -1422,11 +1422,11 @@
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
 
-	ifc c, TYPE_GROUP_NON_NUMERIC
+	ifc c, TYPE_GROUP_NON_INTEGER
 		set y, int_mul
 	ife c, TYPE_FLOAT
 		set y, float_mul
-	ife c, TYPE_STRING + TYPE_INT
+	ife c, TYPE_STR + TYPE_INT
 		set y, array_repeat
 	ife c, TYPE_TUPLE + TYPE_INT
 		set y, array_repeat
@@ -1461,7 +1461,7 @@
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
 
-	ifc c, TYPE_GROUP_NON_NUMERIC
+	ifc c, TYPE_GROUP_NON_INTEGER
 		set y, int_pow
 		
 	ife [a + HANDLE_TYPE], TYPE_FLOAT
@@ -1488,7 +1488,7 @@
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
 
-	ifc c, TYPE_GROUP_NON_NUMERIC
+	ifc c, TYPE_GROUP_NON_INTEGER
 		set y, int_bitwise_or
 
 	set pc, led_operation_tailer
@@ -1512,7 +1512,7 @@
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
 
-	ifc c, TYPE_GROUP_NON_NUMERIC
+	ifc c, TYPE_GROUP_NON_INTEGER
 		set y, int_bitwise_xor
 
 	set pc, led_operation_tailer
@@ -1535,7 +1535,7 @@
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
 
-	ifc c, TYPE_GROUP_NON_NUMERIC
+	ifc c, TYPE_GROUP_NON_INTEGER
 		set y, int_bitwise_and
 
 	set pc, led_operation_tailer
@@ -1558,7 +1558,7 @@
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
 
-	ifc c, TYPE_GROUP_NON_NUMERIC
+	ifc c, TYPE_GROUP_NON_INTEGER
 		set y, int_lshift
 
 	set pc, led_operation_tailer
@@ -1581,7 +1581,7 @@
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
 
-	ifc c, TYPE_GROUP_NON_NUMERIC
+	ifc c, TYPE_GROUP_NON_INTEGER
 		set y, int_rshift
 
 	set pc, led_operation_tailer
@@ -1605,7 +1605,7 @@
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
 
-	ifc c, TYPE_GROUP_NON_NUMERIC
+	ifc c, TYPE_GROUP_NON_INTEGER
 		set y, int_div
 	ife c, TYPE_FLOAT
 		set y, float_div
@@ -1630,7 +1630,7 @@
 	set c, [a + HANDLE_TYPE]
 	bor c, [b + HANDLE_TYPE]
 
-	ifc c, TYPE_GROUP_NON_NUMERIC
+	ifc c, TYPE_GROUP_NON_INTEGER
 		set y, int_mod
 
 	set pc, led_operation_tailer
@@ -1848,7 +1848,7 @@
 	jsr eval
     set [z-2], x
 	
-	ifn [x + HANDLE_TYPE], TYPE_STRING
+	ifn [x + HANDLE_TYPE], TYPE_STR
 		jsr recover	
 
 	set push, [current_scope]
@@ -1951,7 +1951,7 @@
 	ife [x + HANDLE_TYPE], TYPE_DICT	; branch dict
 		set pc, led_lbrack_dict
 
-	ifc [x + HANDLE_TYPE], TYPE_STRING + TYPE_TUPLE + TYPE_LIST
+	ifc [x + HANDLE_TYPE], TYPE_STR + TYPE_TUPLE + TYPE_LIST
 		jsr recover
 
 	; handle str, tuple, list
@@ -1959,7 +1959,7 @@
 		set pc, led_lbrack_parse_first
 
 	; no slice start, assume 0
-    set [z-2], INT_HANDLE_0
+    set [z-2], INT_0
 	set pc, led_lbrack_after_colon
 
 :led_lbrack_parse_first
@@ -2029,7 +2029,7 @@
 	jsr eval
 	set [z-2], x
 
-	ifc [x + HANDLE_TYPE], TYPE_STRING + TYPE_TUPLE + TYPE_INT + TYPE_BOOLEAN + TYPE_FLOAT
+	ifc [x + HANDLE_TYPE], TYPE_STR + TYPE_TUPLE + TYPE_INT + TYPE_BOOL + TYPE_FLOAT
 		jsr recover
 
 :led_lbrack_finish
@@ -2193,7 +2193,7 @@
 	set x, 0
 	ife [b + HANDLE_TYPE], TYPE_LIST
 		set x, built_in__list_methods
-	ife [b + HANDLE_TYPE], TYPE_STRING
+	ife [b + HANDLE_TYPE], TYPE_STR
 		set x, built_in__str_methods
 	ife [b + HANDLE_TYPE], TYPE_DICT
 		set x, built_in__dict_methods
@@ -2331,13 +2331,13 @@
 		set pc, built_in_range_2
 
 	set [z-2], [z-1]
-	set [z-1], INT_HANDLE_0
+	set [z-1], INT_0
 
 :built_in_range_2	
 	ifg i, 2
 		set pc, built_in_range_3
 
-	set [z-3], INT_HANDLE_1
+	set [z-3], INT_1
 
 :built_in_range_3
 	ifg i, 3
@@ -2346,7 +2346,7 @@
 	set push, [z-1]
 	bor [sp], [z-2]
 	bor [sp], [z-3]
-	ifc TYPE_GROUP_NON_NUMERIC, pop
+	ifc TYPE_GROUP_NON_INTEGER, pop
 		jsr recover
 
 	set push, [z-3]
@@ -2433,11 +2433,11 @@
 	jsr val_cmp
 	set a, x
 	
-	set x, INT_HANDLE_0
+	set x, INT_0
 	ife a, -1
-		set x, INT_HANDLE_N1
+		set x, INT_N1
 	ife a, 1
-		set x, INT_HANDLE_1
+		set x, INT_1
 	
 	set pc, postamble
 
@@ -2449,7 +2449,7 @@
 		jsr recover
 
 	set a, [z-1]
-	ifc [a + HANDLE_TYPE], TYPE_GROUP_NUMERIC
+	ifc [a + HANDLE_TYPE], TYPE_GROUP_INTEGER
 		jsr recover
 
 	set a, [a]
@@ -2459,7 +2459,7 @@
 	set a, [a+1]
 
 	set push, 1
-	set push, TYPE_STRING
+	set push, TYPE_STR
 	jsr array_create
 	
 	sti i, [x]
@@ -2475,7 +2475,7 @@
 		jsr recover
 
 	set a, [z-1]
-	ifn [a + HANDLE_TYPE], TYPE_STRING
+	ifn [a + HANDLE_TYPE], TYPE_STR
 		jsr recover
 
 	set a, [a]
@@ -2498,7 +2498,7 @@
 	ife i, 0
 		set a, STR_EMPTY
 
-	ifn [a + HANDLE_TYPE], TYPE_STRING
+	ifn [a + HANDLE_TYPE], TYPE_STR
 		jsr recover
 
 	set push, a
@@ -2525,10 +2525,10 @@
 	set b, [z-1]
 	set c, [b + HANDLE_TYPE]
 
-	ifc c, TYPE_INT + TYPE_FLOAT + TYPE_BOOLEAN
+	ifc c, TYPE_INT + TYPE_FLOAT + TYPE_BOOL
 		jsr recover
 
-	set a, INT_HANDLE_0
+	set a, INT_0
 	ife c, TYPE_FLOAT
 		set a, [FLOAT_0]
 
@@ -2538,9 +2538,9 @@
 	set a, [z-1]
 	set b, [z-2]
 
-	ifc [a + HANDLE_TYPE], TYPE_FLOAT + TYPE_INT + TYPE_BOOLEAN
+	ifc [a + HANDLE_TYPE], TYPE_FLOAT + TYPE_INT + TYPE_BOOL
 		jsr recover
-	ifc [b + HANDLE_TYPE], TYPE_FLOAT + TYPE_INT + TYPE_BOOLEAN
+	ifc [b + HANDLE_TYPE], TYPE_FLOAT + TYPE_INT + TYPE_BOOL
 		jsr recover
 
 :built_in_rnd_finish
@@ -2567,7 +2567,7 @@
 
 	set y, 0
 	
-	ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOLEAN
+	ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
 		set y, int_abs
 	ifb [a + HANDLE_TYPE], TYPE_FLOAT
 		set y, float_abs
@@ -2588,7 +2588,7 @@
 		jsr recover
 
 	set a, [z-1]
-	ifc [a + HANDLE_TYPE], TYPE_STRING + TYPE_TUPLE + TYPE_DICT + TYPE_LIST
+	ifc [a + HANDLE_TYPE], TYPE_STR + TYPE_TUPLE + TYPE_DICT + TYPE_LIST
 		jsr recover
 
 	set a, [a]
@@ -2628,7 +2628,7 @@
 		jsr recover
 
 	set a, [z-1]
-	ifc [a + HANDLE_TYPE], TYPE_STRING
+	ifc [a + HANDLE_TYPE], TYPE_STR
 		jsr recover
 
 	set push, a
@@ -2644,7 +2644,7 @@
 		jsr recover
 
 	set a, [z-1]
-	ifc [a + HANDLE_TYPE], TYPE_STRING
+	ifc [a + HANDLE_TYPE], TYPE_STR
 		jsr recover
 
 	set push, a
@@ -2661,7 +2661,7 @@
 		jsr recover
 
 	set a, [z-1]
-	ifc [a + HANDLE_TYPE], TYPE_STRING
+	ifc [a + HANDLE_TYPE], TYPE_STR
 		jsr recover
 
 	set push, a
@@ -2680,9 +2680,9 @@
 
 	ife [a + HANDLE_TYPE], TYPE_INT
 		set pc, built_in_int_int
-	ife [a + HANDLE_TYPE], TYPE_BOOLEAN
+	ife [a + HANDLE_TYPE], TYPE_BOOL
 		set pc, built_in_int_bool
-	ife [a + HANDLE_TYPE], TYPE_STRING
+	ife [a + HANDLE_TYPE], TYPE_STR
 		set pc, built_in_int_string
 	ife [a + HANDLE_TYPE], TYPE_FLOAT
 		set pc, built_in_int_float
@@ -2694,10 +2694,10 @@
 	set pc, postamble
 
 :built_in_int_bool
-	ife a, BOOL_HANDLE_FALSE
-		set x, INT_HANDLE_0
-	ife a, BOOL_HANDLE_TRUE
-		set x, INT_HANDLE_1
+	ife a, BOOL_FALSE
+		set x, INT_0
+	ife a, BOOL_TRUE
+		set x, INT_1
 	set pc, postamble
 
 :built_in_int_string
@@ -2721,9 +2721,9 @@
 
 	ife [a + HANDLE_TYPE], TYPE_INT
 		set pc, built_in_float_int
-	ife [a + HANDLE_TYPE], TYPE_BOOLEAN
+	ife [a + HANDLE_TYPE], TYPE_BOOL
 		set pc, built_in_float_bool
-	ife [a + HANDLE_TYPE], TYPE_STRING
+	ife [a + HANDLE_TYPE], TYPE_STR
 		set pc, built_in_float_string
 	ife [a + HANDLE_TYPE], TYPE_FLOAT
 		set pc, built_in_float_float
@@ -2736,9 +2736,9 @@
 	set pc, postamble
 
 :built_in_float_bool
-	ife a, BOOL_HANDLE_FALSE
+	ife a, BOOL_FALSE
 		set x, [FLOAT_0]
-	ife a, BOOL_HANDLE_TRUE
+	ife a, BOOL_TRUE
 		set x, [FLOAT_1]
 	set pc, postamble
 
@@ -2773,7 +2773,7 @@
 
 	set x, [z-1]
 
-	ife [x + HANDLE_TYPE], TYPE_STRING
+	ife [x + HANDLE_TYPE], TYPE_STR
 		set pc, postamble
 
 	set push, x
@@ -2808,7 +2808,7 @@
 		set pc, built_in_getchar_loop
 
 	set push, 1
-	set push, TYPE_STRING
+	set push, TYPE_STR
 	jsr array_create
 	
 	sti i, [x]
@@ -2829,7 +2829,7 @@
 	set a, 1              ; store next key mode
 	hwi [keyboard]
 	
-	set x, INT_HANDLE_0
+	set x, INT_0
 	ife c, 0
 		set pc, postamble 
 
@@ -2840,10 +2840,10 @@
 
 :built_in_key_1
 	set a, [z-1]
-	ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOLEAN
+	ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
 		set pc, built_in_key_1_int
 		
-	ifn [a + HANDLE_TYPE], TYPE_STRING
+	ifn [a + HANDLE_TYPE], TYPE_STR
 		jsr recover
 		
 	set a, [a]
@@ -2862,9 +2862,9 @@
 	set a, 2              ; store next key mode
 	hwi [keyboard]
 	
-	set x, BOOL_HANDLE_TRUE
+	set x, BOOL_TRUE
 	ife c, 0
-		set x, BOOL_HANDLE_FALSE
+		set x, BOOL_FALSE
 
 	set pc, postamble
 
@@ -2876,7 +2876,7 @@
 		jsr built_in_sort_2
 
 	set push, [z-1]
-	set push, BOOL_HANDLE_FALSE
+	set push, BOOL_FALSE
 	jsr sort
 	
 	set pc, postamble
@@ -2915,7 +2915,7 @@
 
 :screen__get_x
 	set x, [z-1]
-	ifc [x + HANDLE_TYPE], TYPE_GROUP_NUMERIC
+	ifc [x + HANDLE_TYPE], TYPE_GROUP_INTEGER
 		jsr recover
 		
 	set push, x
@@ -2930,7 +2930,7 @@
 
 :screen__get_y
 	set x, [z-2]
-	ifc [x + HANDLE_TYPE], TYPE_GROUP_NUMERIC
+	ifc [x + HANDLE_TYPE], TYPE_GROUP_INTEGER
 		jsr recover
 		
 	set push, x
@@ -2960,7 +2960,7 @@
 	set c, x
 
 	set push, 1
-	set push, TYPE_STRING
+	set push, TYPE_STR
 	jsr array_create
 	
 	sti i, [x]
@@ -2998,7 +2998,7 @@
 		jsr recover
 
 	set x, [z-1]
-	ifc [x + HANDLE_TYPE], TYPE_GROUP_NUMERIC
+	ifc [x + HANDLE_TYPE], TYPE_GROUP_INTEGER
 		jsr recover
 		
 	set push, x
@@ -3006,7 +3006,7 @@
 	set push, x
 
 	set x, [z-2]
-	ifc [x + HANDLE_TYPE], TYPE_GROUP_NUMERIC
+	ifc [x + HANDLE_TYPE], TYPE_GROUP_INTEGER
 		jsr recover
 		
 	set push, x
