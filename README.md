@@ -146,10 +146,11 @@ You can run the compiled admiral.bin with the following command:
 
 <h5>Organic + Lettuce</h5>
 
-Organic assembler must be used with --long-literals option, as Admiral's large codebase is too much for 
-Organic's optimizer. 
+Organic assembler can also compile Admiral:
 
-    organic.exe --long-literals admiral.dasm16 admiral.bin
+    organic.exe admiral.dasm16 admiral.bin
+
+Beware, Organic compilation without --long-literals option takes about 15 minutes.
 
 You run admiral.bin with Lettuce (SirCmpwn/Tomato), but international (non-US?) keyboard layouts don't work with
 Lettuce.
