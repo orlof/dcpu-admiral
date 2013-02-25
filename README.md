@@ -104,15 +104,13 @@ b 2
  - BETA RELEASE (est. 2/2013)
 
 <h6>Later plans</h6>
- - 200-400% speed improvements
-   - different concepts (code/algo optimization, number cache)
  - SPED-3 support
  - Screen library
  - More built-in functions
  - Exception handling
+ - Lambda functions
  - Library version of admiral to run on top of DCPU operating systems
  - Trigonometric functions
- - Embedded assembler (editor + assembler)
 
 --
 
