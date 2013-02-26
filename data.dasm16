@@ -151,6 +151,8 @@
 :STR_PROMPT     DAT STR_PROMPT + 2, TYPE_STR, 1, ">"
 :STR_ERROR      DAT STR_ERROR + 2, TYPE_STR, 6, "ERROR:"
 :STR_FS_ROOT    DAT STR_FS_ROOT + 2, TYPE_STR, 1, "/"
+:STR_AUTOEXEC	DAT STR_AUTOEXEC + 2, TYPE_STR, 8, "MAIN.BIN"
+:STR_MAIN		DAT STR_MAIN + 2, TYPE_NAME, 4, "main"
 
 :STR_UNDERSCORE DAT STR_UNDERSCORE + 2, TYPE_NAME, 1, "_"
 :STR_EX         DAT STR_EX + 2, TYPE_NAME, 2, "ex"
@@ -188,6 +190,7 @@
 :token_cls          dat std_cls, recover, recover, 0x0000
 :token_del          dat std_del, recover, recover, 0x0000
 :token_for          dat std_for, recover, recover, 0x0000
+:token_run          dat std_run, recover, recover, 0x0000
 :token_elif         dat recover, recover, recover, 0x0000
 :token_else         dat recover, recover, recover, 0x0000
 :token_pass         dat std_pass, recover, recover, 0x0000
@@ -285,6 +288,7 @@
 	dat 4, "key", built_in_key
 	dat 5, "bool", built_in_bool
 	dat 5, "edit", built_in_edit
+	dat 5, "exit", built_in_exit
 	dat 5, "getc", built_in_getchar
 	dat 5, "load", built_in_load
 	dat 5, "peek", built_in_win_get
@@ -342,6 +346,7 @@
 	dat 4, "for", token_for
 	dat 4, "inf", token_float
 	dat 4, "nan", token_float
+	dat 4, "run", token_run
 	dat 5, "true", token_true
 	dat 5, "none", token_none
 	dat 5, "elif", token_elif

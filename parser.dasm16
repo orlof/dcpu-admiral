@@ -48,7 +48,7 @@
 ;----------------------------------------------------------------
 :std_indent
 :std_dedent
-; return struct handle *none
+; These should never occur outside compund statements
 ;----------------------------------------------------------------
 	jsr recover
 
@@ -66,12 +66,152 @@
 
 ;----------------------------------------------------------------
 :std_reset
-; restart admiral
+; restart admiral "sys 64738"
 ;----------------------------------------------------------------
 	jsr screen_clear
 	set sp, 0
 	set z, 0
 	set pc, interpreter_main
+
+;----------------------------------------------------------------
+:std_run
+;----------------------------------------------------------------
+	jsr lexer_next		; skip 'run'
+
+	ife [lexer_token], token_newline
+		set pc, std_run_autoexec
+	ife [lexer_token], token_eof
+		set pc, std_run_autoexec
+
+	set push, 0
+	jsr expression
+    set [z-1], x
+    
+    set push, x
+    jsr eval
+    set [z-1], x
+    
+    ifc [x + HANDLE_TYPE], TYPE_STR
+    	jsr recover
+
+	set pc, std_run_load
+
+:std_run_autoexec
+	set [z-1], STR_AUTOEXEC
+
+:std_run_load
+	set push, [z-1]
+	jsr floppy__file__read
+	set [z-1], x
+	
+	ifn [x + HANDLE_TYPE], TYPE_DICT
+		ifn [x + HANDLE_TYPE], TYPE_STR
+			jsr recover
+
+	; prepare scope
+	set push, 10		; create scope for function call
+	set push, TYPE_DICT
+	jsr alloc
+    set [z-2], x
+
+	set push, [z-2]			; add global scope (ex)
+	set push, STR_EX
+	set push, [global_scope]
+	jsr dict__set
+
+    set push, [z-2]
+	set push, STR_ME
+	set push, [z-1]
+	jsr dict__set
+
+	set c, '0'
+
+:std_run_args
+	ife [lexer_token], token_newline
+		set pc, std_run_prepare
+	ife [lexer_token], token_eof
+		set pc, std_run_prepare
+
+	set push, 0
+	jsr expression
+    set [z-3], x
+    
+    set push, x
+    jsr eval
+    set [z-3], x
+
+	set push, 2
+	set push, TYPE_NAME
+	jsr array_create
+    set [z-4], x
+
+	sti i, [x]
+	sti [i], '$'
+	set [i], c
+	add c, 1
+
+    set push, [z-2]
+    set push, [z-4]
+    set push, [z-3]
+	jsr dict__set
+
+	jsr lexer_next	; skip '(' or ','
+
+	set pc, std_run_args
+
+:std_run_prepare
+	set push, [current_scope]
+    set [current_scope], [z-2]
+
+	jsr lexer_store
+
+	set x, [z-1]
+	ife [x + HANDLE_TYPE], TYPE_STR
+		set pc, std_run_init_lexer
+
+	set push, [z-1]
+	set push, STR_MAIN
+	jsr dict_get
+	set [z-1], x
+
+	ife x, 0
+		jsr recover
+
+	ifn [x + HANDLE_TYPE], TYPE_STR
+		jsr recover
+
+:std_run_init_lexer
+	jsr lexer_init
+
+:std_run_call
+	jsr parser_stmt
+	set [z-3], x
+
+	ife [x+HANDLE_TYPE], TYPE_CONTROL
+		set pc, std_run_control
+
+	ifn [lexer_token], token_eof
+		set pc, std_run_call
+
+	set a, VOID
+
+:std_run_finish
+	jsr lexer_restore
+	set [current_scope], [sp+6]
+	set x, a
+	set pc, postamble
+
+:std_run_control
+	set a, [x]
+	ifn [a + CONTROL_SIGNAL], token_return
+		jsr recover			; break and continue
+
+	set push, [a + CONTROL_VALUE]
+	jsr eval
+	set a, x
+	
+	set pc, std_run_finish
+
 
 ;----------------------------------------------------------------
 :std_print	
@@ -153,6 +293,8 @@
 
 	ife [lexer_token], token_newline
 		set pc, std_return_finish
+	ife [lexer_token], token_eof
+		set pc, std_return_finish
 	
 	set push, 0
 	jsr expression
@@ -174,14 +316,17 @@
 :std_continue
 ; return struct handle *control
 ;----------------------------------------------------------------
-	set b, [lexer_token]		; store token for control signal
+	set b, [lexer_token]			; store token for control signal
 
-	jsr lexer_next			; advance 'break'
+	jsr lexer_next					; advance 'break' or 'continue'
 
-	set push, token_newline		; verify newline
-	jsr lexer_advance
+	ifn [lexer_token], token_newline
+		ifn [lexer_token], token_eof
+			jsr recover
 
-	set push, SIZEOF_CONTROL			; create struct control
+	jsr lexer_next					; advance newline or eof
+
+	set push, SIZEOF_CONTROL		; create struct control
 	set push, TYPE_CONTROL
 	jsr array_create
 
@@ -196,23 +341,25 @@
 ;----------------------------------------------------------------
 	jsr lexer_next
 
-	set push, token_newline
-	jsr lexer_advance
+	ifn [lexer_token], token_newline
+		ifn [lexer_token], token_eof
+			jsr recover
 
 	set x, VOID
-	set pc, postamble
+		set pc, postamble
 
 ;----------------------------------------------------------------
 :std_for
 ; for x in list:
 ;  print x
-; return struct handle *none
-; todo implement else
-; problems: stupid python grammar has valid token (in) as for loop
+; return VOID
+; TODO 'else'
+; Comments:
+; Python grammar uses valid operator 'in' as for loop
 ; separator. there is no way for parser to detect between expression 
 ; operator and for separator.
 ;----------------------------------------------------------------
-	jsr lexer_next		; advance 'for'
+	jsr lexer_next				; advance 'for'
 	jsr parser_fork_scope
 
 	; get the testlist (left side)
@@ -313,6 +460,8 @@
 
 :std_del_loop
 	ife [lexer_token], token_newline
+		set pc, std_del_break
+	ife [lexer_token], token_eof
 		set pc, std_del_break
 
 	set push, 0
@@ -1860,6 +2009,7 @@
 
 :led_lparen_call
 	jsr parser_stmt
+	set [z-3], x
 
 	ife [x+HANDLE_TYPE], TYPE_CONTROL
 		set pc, led_lparen_control
@@ -1867,7 +2017,7 @@
 	ifn [lexer_token], token_eof
 		set pc, led_lparen_call
 
-	set a, NONE
+	set a, VOID
 
 :led_lparen_finish
 	jsr lexer_restore
@@ -2401,6 +2551,12 @@
 	set pc, postamble	
 
 ;----------------------------------------------------------------
+:built_in_exit
+;----------------------------------------------------------------
+; TODO
+	jsr recover
+
+;----------------------------------------------------------------
 :built_in_locals
 ;----------------------------------------------------------------
 	jsr built_in_params
@@ -2617,6 +2773,7 @@
 
 	jsr floppy__format
 
+	set x, VOID
 	set pc, postamble	
 
 ;----------------------------------------------------------------
@@ -2650,6 +2807,7 @@
 	set push, [z-2]
 	jsr floppy__file__write
 
+	set x, VOID
 	set pc, postamble	
 
 ;----------------------------------------------------------------

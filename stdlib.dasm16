@@ -799,8 +799,11 @@
 ; return
 ;   c: input character
 ;----------------------------------------------------------------
-	ifn c, 0
-		jsr win_getchar_release
+;	ifn c, 0
+;		jsr win_getchar_release
+	ifg c, KEY_UP-1
+		ifl c, KEY_RIGHT+1
+			jsr win_getchar_release
 
 	; Handle keyboard input  
 	set a, 1                      ; store next key mode

@@ -220,4 +220,19 @@
 #define INODE__SECTOR__TAIL				2
 #define INODE__SIZE						3
 
+; struct lexer {
+;   struct handle *string;
+;   uint16 target_indent;
+;   uint16 current_indent;
+;   uint16_token;
+;   uint16_start;
+;   uint16_end;
+; }
+#define SIZEOF_LEXER					6
+#define LEXER__STR						0
+#define LEXER__INDENT_TARGET			1
+#define LEXER__INDENT_CURRENT			2
+#define LEXER__TOKEN					3
+#define LEXER__START					4
+#define LEXER__END						5
 
