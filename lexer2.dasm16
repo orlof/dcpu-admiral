@@ -63,42 +63,6 @@
 	set pc, pop
 
 ;----------------------------------------------------------------
-; struct handle *lexer__get_token_marker()
-;----------------------------------------------------------------
-:lexer__get_token_marker
-	set push, 0
-	set push, 0
-	jsr preamble
-
-	set a, [lexer_string]	
-	set b, [lexer_start]	
-	jsr lexer__goto_sol
-
-	set c, [lexer_end]
-	sub c, b
-
-	set push, c
-	set push, TYPE_STR
-	jsr array_create
-
-	sti i, [x]
-	set j, b
-
-:lexer__get_token_marker__pre_mark
-	ife j, [lexer_start]
-		set pc, lexer__get_token_marker__mark
-		
-	set [i], ' '
-	sti pc, lexer__get_token_marker__pre_mark
-
-:lexer__get_token_marker__mark
-	ife j, [lexer_end]
-		set pc, postamble
-		
-	set [i], '^'
-	sti pc, lexer__get_token_marker__mark
-
-;----------------------------------------------------------------
 :lexer__goto_eol
 ;----------------------------------------------------------------
 	jsr array__get
@@ -201,7 +165,8 @@
 		set pc, lexer_char_newline_restart
 
 	ife x, 0
-		set pc, lexer_char_eof
+;		set pc, lexer_char_eof
+		set pc, lexer_finish
 
 	set [lexer_target_indent], c
 
