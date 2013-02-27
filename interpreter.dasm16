@@ -232,13 +232,6 @@
 	set pc, interpreter_loop
 
 ;----------------------------------------------------------------
-; current history line 0-4
-:line_editor__buf_index		dat			0
-:line_editor__start_addr	dat			0
-:line_editor__current_addr	dat			0
-:line_editor__end_addr		dat			0
-:line_editor__last_char		dat			0
-;----------------------------------------------------------------
 :interpreter__line_edit
 	set push, 0
 	set push, 1

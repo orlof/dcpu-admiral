@@ -21,4 +21,4 @@ $(TARGET).bin: $(TARGET).dasm16
 #    $(LD) -O 3 -o $@.bin -s $@.s $(TARGET).dobj16 -k none
 
 clean:
-	rm -fv $@.bin *.dodj16 *.s *~
+	rm -fv *.dodj16 *.s *~

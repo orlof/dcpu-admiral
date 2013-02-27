@@ -93,6 +93,46 @@
 :prev_char  dat 0
 
 ;----------------------------------------------------------------
+; INTERPRETER LINE EDITOR
+;----------------------------------------------------------------
+;----------------------------------------------------------------
+; current history line 0-4
+:line_editor__buf_index		dat			0
+:line_editor__start_addr	dat			0
+:line_editor__current_addr	dat			0
+:line_editor__end_addr		dat			0
+:line_editor__last_char		dat			0
+
+;----------------------------------------------------------------
+; DICT HELPERS
+;----------------------------------------------------------------
+:dict__get__finish
+	dat dict__get__match
+	dat dict__get__no_match
+
+:dict__set__finish
+	dat dict__set__match
+	dat dict__set__no_match
+
+;----------------------------------------------------------------
+; CRYPT LIB
+;----------------------------------------------------------------
+State:
+dat 0x0, 0x0, 0x0, 0x0
+dat 0x0, 0x0, 0x0, 0x0
+
+SBoxE:
+dat 0x7ce9, 0x215f, 0xb6d0, 0x48a3
+dat 0x4a16, 0x8f7c, 0x30ed, 0x59b2
+dat 0x2fc1, 0x56ad, 0xe834, 0x0b97
+dat 0xf458, 0x9721, 0xa30e, 0x6cdb
+
+SBoxD:
+dat 0xb54f, 0xc690, 0xd3e8, 0x1a27
+dat 0x92f8, 0x0c36, 0x4d1e, 0x7ba5
+dat 0xc30a, 0xb45f, 0x9e6d, 0x2781
+dat 0xa769, 0x12c5, 0x348f, 0xdeb0
+;----------------------------------------------------------------
 ; CONSTANT DATA VALUES
 ;----------------------------------------------------------------
 :NONE       dat 0, TYPE_NONE
