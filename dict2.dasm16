@@ -13,10 +13,6 @@
 	set b, dict__get__finish
 	set pc, dict__bin_search
 
-:dict__get__finish
-	dat dict__get__match
-	dat dict__get__no_match
-
 :dict__get__match
 	; translate memory address to value
 	set x, [c]		; struct handle *tuple
@@ -54,10 +50,6 @@
 
 	set b, dict__set__finish
 	set pc, dict__bin_search
-
-:dict__set__finish
-	dat dict__set__match
-	dat dict__set__no_match
 
 :dict__set__match
 	; translate memory address to array index
