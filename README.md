@@ -100,8 +100,8 @@ b 2
  - Interactive command prompt with line editing
  
 <h6>Next in development</h6>
- - Example code
- - BETA RELEASE (est. 2/2013)
+ - Feature freeze period
+ - Bug fixing
 
 <h6>Later plans</h6>
  - SPED-3 support
