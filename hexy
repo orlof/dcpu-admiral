@@ -1,8 +1,0 @@
-#!/bin/bash
-
-dtasm --binary -o debug.bin admiral.dasm16
-
-xxd -ps -c 16 debug.bin | sed -r 's/(....)/\1 /g' | sed -r 's/^([0-9a-f])(.*)/DAT \1\2/g' | sed -r 's/([0-9a-f]{4})/0x\1,/g' | sed -r 's/(.*), $/\1/g' >admiral_dat.dasm16
-
-dtdb -c "disasm 0" debug.bin 2> debug.dasm16
-
