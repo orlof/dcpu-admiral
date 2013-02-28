@@ -1,5 +1,6 @@
 #include "defs.dasm16"
 #include "interpreter.dasm16"
+#include "data.dasm16"
 #include "parser.dasm16"
 #include "float.dasm16"
 #include "lexer2.dasm16"
@@ -14,5 +15,4 @@
 #include "dict2.dasm16"
 #include "floppy.dasm16"
 #include "crypt.dasm16"
-#include "data.dasm16"
 
