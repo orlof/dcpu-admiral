@@ -13,6 +13,7 @@ Desktop.ini
 *.s
 *.10csln
 *.10csuo
+dist/admiral_devkit.bin
 
 # Vim and backup files #
 ########################
