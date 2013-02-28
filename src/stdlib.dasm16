@@ -776,8 +776,9 @@
 ;----------------------------------------------------------------
 	hwn i
 :detect_hardware__loop
-	ife i, 0xffff
+	ife i, 0
 	   set pc, pop
+	sub i, 1
 	hwq i
 	ife a, 0xf615
 	    ife b, 0x7349
@@ -791,7 +792,7 @@
 	ife a, 0x24c5
 	    ife b, 0x4fd5
 	        set [floppy], i
-	std pc, detect_hardware__loop
+	set pc, detect_hardware__loop
           
 ;----------------------------------------------------------------
 :win_getchar
