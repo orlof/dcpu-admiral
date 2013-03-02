@@ -74,7 +74,7 @@ Couple of more examples:
 # dictionary printing
 >d={'a':1,'b':2}
 {'a':1,'b':2}
-for k,v in a: print k, v
+for k,v in d: print k, v
 a 1
 b 2
 </pre>
@@ -241,6 +241,29 @@ Dicts and prototype assignment operator provide "poor mans" objects :-)
 >shuttle.accelerate()     # call new object's method (that is defined in prototype)
 >shuttle.spd 8            # new objects field has changed...
 >ship.spd 0               # and prototype's fields are intact
+</pre>
+
+Admiral has three different types of built-in functionalities:  statements, global functions 
+and class functions. E.g. print and run are stetements, len() and mem() are functions, and
+str.encrypt() is a class functions.
+
+Admiral programmer can write his own functions, but not statements. Global functions are simply
+variables that have string value and class functions can be defined for dicts by adding str
+value with key as function name.
+
+<pre>
+#global function
+>a="print $0"
+'print $0'
+>a("Hello")
+Hello
+#class fuction
+>a={}
+{}
+>a.x="print $0"
+print $0
+>a.x("Hello")
+Hello
 </pre>
 
 <h4>DATA TYPES</h4>
@@ -425,9 +448,24 @@ The built-in function len() returns the length of a string:
 Current strings do not support escape characters or output formatting. That will be fixed to future releases.
 
 <h5>DICT</h5>
+
+TODO
+
 <h5>LIST</h5>
+
+TODO
+
 <h5>TUPLE</h5>
+
+TODO
+
 <h5>BOOLEAN</h5>
+
+TODO
+
+<h5>NONE</h5>
+
+TODO
 
 <h4>STATEMENTS</h4>
 
