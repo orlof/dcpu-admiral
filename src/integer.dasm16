@@ -1028,6 +1028,7 @@
 	set push, 3
 	jsr preamble
 
+	; quotient = abs(divident)
 	set push, [z+11]
 	jsr int_abs
 	set [z-1], x
@@ -1060,13 +1061,16 @@
 	set push, c
 	set push, TYPE_INT
 	jsr array_create
-
 	set [z-3], x	; remainder
-	set c, [x]
 
 	set a, [a]
 	set b, [b]
+	set c, [x]
 
+	ife [a], 1
+		set pc, division_16
+
+	; here starts long division
 	set y, [a]	; y: bits left
 	shl y, 4	; words * 16 = bits
 
@@ -1139,6 +1143,12 @@
 	bor [x], 1
 	set pc, division_loop
 
+:division_16
+	set [c+1], [a+1]
+	div [a+1], [b+1]
+	mod [c+1], [b+1]
+	set pc, division_finish_signs
+
 :division_finish
 	set push, [z-1]
 	jsr int_normalize
@@ -1148,6 +1158,7 @@
 	jsr int_normalize
 	set [z-3], x
 
+:division_finish_signs
 	; figure out signs
 	set i, [z+11]
 	set i, [i]
