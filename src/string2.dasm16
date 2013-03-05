@@ -282,10 +282,12 @@
 	jsr str_search_3
 	
 	set push, x
-	jsr int16_to_int
+	set x, INT_N1
+
+	ifc peek, 0x8000
+		jsr uint16_to_int
 	
 	set pc, postamble	
-
 
 ;----------------------------------------------------------------
 :built_in__str_endswith

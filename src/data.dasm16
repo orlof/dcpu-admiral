@@ -203,6 +203,8 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
 :STR_FALSE      DAT STR_FALSE + 2, TYPE_STR, 5, "false"
 :STR_EMPTY      DAT STR_EMPTY + 2, TYPE_STR, 0
 
+:HEX			DAT "0123456789abcdef"
+
 ;----------------------------------------------------------------
 ; TOKENS
 ;----------------------------------------------------------------
@@ -316,6 +318,7 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
 	dat 3, "id", built_in_id
 	dat 3, "rm", built_in_rm
 	dat 4, "dir", built_in_dir
+	dat 4, "hex", built_in_hex
 	dat 4, "mem", built_in_mem
 	dat 4, "rnd", built_in_rnd
 	dat 4, "int", built_in_int
