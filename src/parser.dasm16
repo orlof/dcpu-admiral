@@ -2160,7 +2160,7 @@
 	set a, [a]
 
 	set push, [a]
-	jsr int16_to_int
+	jsr  uint16_to_int
 	set [z-3], x
 	
 	set a, [z-2]
@@ -2638,7 +2638,7 @@
 		jsr recover
 
 	set push, [a+1]
-	jsr int16_to_int
+	jsr uint16_to_int
 
 	set pc, postamble	
 
@@ -2749,7 +2749,7 @@
 	set a, [a]
 
 	set push, [a]
-	jsr int16_to_int
+	jsr uint16_to_int
 
 	set pc, postamble	
 
@@ -2922,6 +2922,23 @@
 	set pc, postamble
 
 ;----------------------------------------------------------------
+:built_in_hex
+;----------------------------------------------------------------
+	jsr built_in_params
+	ifn i, 1
+		jsr recover
+
+	set x, [z-1]
+
+	ifn [x + HANDLE_TYPE], TYPE_INT
+		jsr recover
+
+	set push, x
+	jsr int_to_hex
+
+	set pc, postamble
+
+;----------------------------------------------------------------
 :built_in_str
 ;----------------------------------------------------------------
 	jsr built_in_params
@@ -2991,7 +3008,7 @@
 		set pc, postamble 
 
 	set push, c
-	jsr int16_to_int
+	jsr uint16_to_int
 
 	set pc, postamble
 

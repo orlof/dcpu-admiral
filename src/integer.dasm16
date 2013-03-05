@@ -2,41 +2,46 @@
 ; struct handle *int16_to_int(int16 value)
 ; convert 16 bit register value to admiral's integer
 ;----------------------------------------------------------------
-:int16_to_int
-	set push, 1
-	set push, 0
-	jsr preamble
-
-	set c, 1
-	set pc, uint16_to_int_alloc
+;:int16_to_int
+;	set push, 1
+;	set push, 0
+;	jsr preamble
+;
+;	set c, 1
+;	set pc, uint16_to_int_alloc
 
 ;----------------------------------------------------------------
 ; struct handle *uint16_to_int(uint16 value)
 ; convert 16 bit register value to admiral's integer
 ;----------------------------------------------------------------
 :uint16_to_int
+	ifl [sp+1], 0x11
+		set pc, uint16_to_int__optimize
+
 	set push, 1
-	set push, 0
-	jsr preamble
 
 	; special case here. if msb is 1, we must not convert it to
 	; negative integer, but instead extend integer length to keep the
 	; value positive
-	set c, 1
-	ifb [z+10], 0x8000
-		set c, 2
+	ifb [sp+2], 0x8000
+		set [sp], 2
 
-:uint16_to_int_alloc
-	set push, c		; size
 	set push, TYPE_INT
 	jsr array_create
-	
-	set a, [x]		; struct integer *
-	add a, c		; a: integer.lsw
-	set [a], [z+10] ; integer.lsw = arg1
 
-	jsr postamble
+	set a, [x]
+	add a, [a]
+	set [a], [sp+1]	
 
+	set [sp], pop
+	set pc, pop
+
+:uint16_to_int__optimize
+	set x, [sp+1]
+	mul x, 4
+	add x, INT_TABLE
+	set [sp], pop
+	set pc ,pop
 ;----------------------------------------------------------------
 ; struct handle *int_to_int16(struct handle *integer)
 :int_to_int16
@@ -74,12 +79,26 @@
 
 	jsr array__get
 	ifn [x + lexer_table], lexer_char_minus
-		set pc, int_parse_loop
+		set pc, int_parse_hex_check
 
 	set y, TRUE
 	add b, 1
 	jsr array__get
-			
+	
+:int_parse_hex_check
+	ifn x, '0'
+		set pc, int_parse_loop
+
+	add b, 1
+	jsr array__get
+	ifn x, 'x'
+		set pc, int_parse_loop
+
+	add b, 1
+	jsr array__get
+
+	set pc, int_parse_hex_loop
+
 :int_parse_loop
 	set c, x
 
@@ -187,6 +206,12 @@
 	jsr array__get
 	set pc, int_parse_hex_loop	
 
+:int_to_hex
+	set push, 1
+	set push, 1
+	jsr preamble
+	set y, INT_16
+	set pc, int_to_str_start
 ;----------------------------------------------------------------
 ; extern struct handle *int_to_str(struct handle *integer)
 ; local variable space
@@ -196,7 +221,9 @@
 	set push, 1
 	set push, 1
 	jsr preamble
+	set y, INT_10
 
+:int_to_str_start
 	set push, [z+10]
 	jsr int_abs
 	set [z-1], x
@@ -206,7 +233,7 @@
 
 :int_to_str_loop
 	set push, [z-1]
-	set push, INT_10
+	set push, y
 	jsr int_division
 	set [z-1], x
 
@@ -215,7 +242,7 @@
 	set b, [b]	; struct int *remainder
 	add b, [b]	; remainder lsw *
 	set b, [b]	; remainder lsw
-	add b, '0'
+	set b, [b + HEX]
 	sti push, b
 
 	set [z-1], [a + INT_DIVISION_QUOTIENT]
@@ -226,6 +253,13 @@
 	ifn x, 0
 		set pc, int_to_str_loop
 
+	ife y, INT_10
+		set pc, int_to_str_negative
+		
+	sti push, 'x'
+	sti push, '0'
+
+:int_to_str_negative
 	; add minus sign
 	set push, [z+10]
 	jsr int_sgn

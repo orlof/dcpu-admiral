@@ -667,6 +667,8 @@
 	set push, 1
 	jsr preamble
 
+	set y, FALSE
+
 	set a, [z+10]
 	ife [a + HANDLE_TYPE], TYPE_STR
 		set pc, print_skip_repr
@@ -676,21 +678,50 @@
 	jsr repr
 	set [z-1], x
 	set a, x
+	
+	set y, TRUE
 
 :print_skip_repr
-	set b, 0			; index
+	set b, 0xffff		; index
 
 :print_loop
+	add b, 1
 	jsr array__get
+
+:print_loop__check
 	ife x, 0
 		set pc, postamble
-	
+
+	ife y, FALSE
+		ife x, 47
+			set pc, print_loop_escape
+
 	set c, x			; char
 	jsr screen_add_char
 
+	set pc, print_loop
+
+:print_loop_escape
 	add b, 1
+	jsr array__get
+	
+	ife x, 'n'
+		set pc, print_loop_newline
+		
+	set c, 47
+	jsr screen_add_char
+	
+	set pc, print_loop__check
+
+:print_loop_newline
+	set c, 10
+	jsr screen_add_char
 
 	set pc, print_loop
+
+:print_loop_not_newline
+
+:print_loop_not_backslash
 	
 ;----------------------------------------------------------------
 ; struct handle *repr(struct handle *value)
@@ -800,8 +831,8 @@
 ; return
 ;   c: input character
 ;----------------------------------------------------------------
-;	ifn c, 0
-;		jsr win_getchar_release
+	ifn c, 0
+		jsr win_getchar_release
 	ifg c, KEY_UP-1
 		ifl c, KEY_RIGHT+1
 			jsr win_getchar_release
