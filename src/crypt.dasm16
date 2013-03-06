@@ -8,21 +8,21 @@
 ;PUSH = Length of message
 
 ;Encryption function
-Encrypt:
+:crypt__Encrypt
     SET PUSH, J
     SET PUSH, X
     SET PUSH, Y
     SET PUSH, Z
     SET PUSH, I
-    JSR Init
+    JSR crypt__Init
     
-    SET I, PICK 6
-    Encrypt_loop:
-        SET J, State
+    SET I, [SP+6]
+    :crypt__Encrypt_loop
+        SET J, crypt__State
         
         SET A, [J]
         ADD A, [C]
-        JSR EWD16
+        JSR crypt__EWD16
         ADD B, 4
         SET X, A
         
@@ -32,7 +32,7 @@ Encrypt:
         XOR [B+1], [J+5]
         XOR [B+2], [J+6]
         XOR [B+3], [J+7]
-        JSR EWD16
+        JSR crypt__EWD16
         XOR [B], [J+4]
         XOR [B+1], [J+5]
         XOR [B+2], [J+6]
@@ -46,7 +46,7 @@ Encrypt:
         XOR [B+1], [J+5]
         XOR [B+2], [J+6]
         XOR [B+3], [J+7]
-        JSR EWD16
+        JSR crypt__EWD16
         XOR [B], [J+4]
         XOR [B+1], [J+5]
         XOR [B+2], [J+6]
@@ -56,7 +56,7 @@ Encrypt:
 
         SET A, [J+3]
         ADD A, Z
-        JSR EWD16
+        JSR crypt__EWD16
         SUB B, 4
         ADD A, [J]
         SET [C], A
@@ -64,31 +64,31 @@ Encrypt:
         ADD C, 1
         SUB I, 1
         IFE I, 0
-            SET PC, Return
+            SET PC, crypt__Return
         
-        JSR Update_State
+        JSR crypt__Update_State
         
-        SET PC, Encrypt_loop
+        SET PC, crypt__Encrypt_loop
 
 ;Decryption function
-Decrypt:
+:crypt__Decrypt
     SET PUSH, J
     SET PUSH, X
     SET PUSH, Y
     SET PUSH, Z
     SET PUSH, I
     
-    JSR Init
+    JSR crypt__Init
     
-    SET I, PICK 6
+    SET I, [SP+6]
     
-    Decrypt_loop:
-        SET J, State
+    :crypt__Decrypt_loop
+        SET J, crypt__State
         
         SET A, [C]
         SUB A, [J]
         ADD B, 4
-        JSR DWD16
+        JSR crypt__DWD16
         SUB A, [J+3]
         SET Z, A
         
@@ -97,7 +97,7 @@ Decrypt:
         XOR [B+1], [J+5]
         XOR [B+2], [J+6]
         XOR [B+3], [J+7]
-        JSR DWD16
+        JSR crypt__DWD16
         XOR [B], [J+4]
         XOR [B+1], [J+5]
         XOR [B+2], [J+6]
@@ -110,7 +110,7 @@ Decrypt:
         XOR [B+1], [J+5]
         XOR [B+2], [J+6]
         XOR [B+3], [J+7]
-        JSR DWD16
+        JSR crypt__DWD16
         XOR [B], [J+4]
         XOR [B+1], [J+5]
         XOR [B+2], [J+6]
@@ -119,19 +119,19 @@ Decrypt:
         SET X, A
         
         SUB B, 4
-        JSR DWD16
+        JSR crypt__DWD16
         SUB A, [J]
         SET [C], A
         
         SUB I, 1
         ADD C, 1
         IFE I, 0
-            SET PC, Return
-        JSR Update_State
+            SET PC, crypt__Return
+        JSR crypt__Update_State
         
-        SET PC, Decrypt_loop
+        SET PC, crypt__Decrypt_loop
         
-Update_State:
+:crypt__Update_State
     ADD [J], Z
     ADD [J+1], X
     ADD [J+2], Y
@@ -145,9 +145,9 @@ Update_State:
     SET PC, POP
 
 ;Initialization
-Init:
+:crypt__Init
     SET PUSH, C
-    SET C, State
+    SET C, crypt__State
     
     SET [C], [A]
     SET [C+1], [A+1]
@@ -160,25 +160,25 @@ Init:
     
     SET I, 0
     
-    Init_loop:
+    :crypt__Init_loop
     SET A, [C]
     ADD A, I
-    JSR EWD16
+    JSR crypt__EWD16
     SET J, A
     
     SET A, [C+1]
     ADD A, J
-    JSR EWD16
+    JSR crypt__EWD16
     SET X, A
     
     SET A, [C+2]
     ADD A, X
-    JSR EWD16
+    JSR crypt__EWD16
     SET Y, A
     
     SET A, [C+3]
     ADD A, Y
-    JSR EWD16
+    JSR crypt__EWD16
     SET Z, A
     
     SET A, [C]
@@ -216,35 +216,35 @@ Init:
     
     ADD I, 1
     IFL I, 4
-        SET PC, Init_loop
+        SET PC, crypt__Init_loop
     
     SET C, POP
     SET PC, POP
 
 ;Encrypt Permutation
-EWD16:
+:crypt__EWD16
     SET PUSH, I
     SET PUSH, B
     
     SET I, 0
-    EWD16_loop:
+    :crypt__EWD16_loop
         XOR A, [B]
-        JSR EMix
+        JSR crypt__EMix
         ADD I, 1
         ADD B, 1
         IFN I, 4
-            SET PC, EWD16_loop
+            SET PC, crypt__EWD16_loop
     
     SET B, POP
     SET I, POP
     SET PC, POP
 
 ;Encrypt Mixing Function
-EMix:
+:crypt__EMix
     SET PUSH, B
     
-    SET B, SBoxE
-    JSR FuncS
+    SET B, crypt__SBoxE
+    JSR crypt__FuncS
     SET B, A
     SHL B, 6
     BOR B, EX
@@ -257,24 +257,24 @@ EMix:
     SET PC, POP
 
 ;Decrypt Permutation
-DWD16:
+:crypt__DWD16
     SET PUSH, I
     
     SET I, 0
     ADD B, 4
-    DWD16_loop:
+    :crypt__DWD16_loop
         SUB B, 1
-        JSR DMix
+        JSR crypt__DMix
         XOR A, [B]
         ADD I, 1
         IFN I, 4
-            SET PC, DWD16_loop
+            SET PC, crypt__DWD16_loop
     
     SET I, POP
     SET PC, POP
 
 ;Decrypt Mixing Function
-DMix:
+:crypt__DMix
     SET PUSH, B
     SET PUSH, C
     
@@ -294,8 +294,8 @@ DMix:
     BOR A, EX
     XOR A, B
     
-    SET B, SBoxD
-    JSR FuncS
+    SET B, crypt__SBoxD
+    JSR crypt__FuncS
     
     SET C, POP
     SET B, POP
@@ -303,7 +303,7 @@ DMix:
 
 ;A = Word to SBox
 ;B = SBox to use
-FuncS:
+:crypt__FuncS
     SET PUSH, C
     SET PUSH, I
     SET PUSH, X
@@ -314,7 +314,7 @@ FuncS:
     SET A, 0
     SET I, 0
     
-    FuncS_loop:
+    :crypt__FuncS_loop
     ADD I, 1
     SHL C, 4
     SET X, EX
@@ -332,7 +332,7 @@ FuncS:
     BOR A, Z
     ADD B, 4
     IFL I, 4
-        SET PC, FuncS_loop
+        SET PC, crypt__FuncS_loop
     
     SET Z, POP
     SET Y, POP
@@ -341,7 +341,7 @@ FuncS:
     SET C, POP
     SET PC, POP
 
-Return:
+:crypt__Return
     SET [J], 0
     SET [J+1], 0
     SET [J+2], 0
