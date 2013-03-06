@@ -1,0 +1,330 @@
+; This file represent my first tests to utilize new style of assembler.
+; I try to minimize register usage here
+
+;----------------------------------------------------------------
+:screen_prev
+; fastcall
+;----------------------------------------------------------------
+	ife [current_screen], screen_first
+		set pc, pop
+	sub [current_screen], SIZEOF_SCREEN
+	set pc, screen_select
+;----------------------------------------------------------------
+:screen_next
+; fastcall
+;----------------------------------------------------------------
+	ife [current_screen], screen_last
+		set pc, pop
+	add [current_screen], SIZEOF_SCREEN
+
+;----------------------------------------------------------------
+:screen_select
+; fastcall
+;----------------------------------------------------------------
+	set push, a
+	set push, b
+	
+	set a, 0
+	set b, [current_screen]
+	set b, [b]
+	hwi [monitor]
+	
+	set b, pop
+	set a, pop
+	
+	set pc, pop
+	 
+;----------------------------------------------------------------
+:screen_toggle_cursor
+; fastcall
+;----------------------------------------------------------------
+	set x, [current_screen]				; struct screen *cur
+	set x, [x + SCREEN__CURSOR]	
+	xor [x], 0xff80						; change colors
+	set pc, pop
+
+;----------------------------------------------------------------
+:screen_move_cursor
+; fastcall
+;  x [sp+2]
+;  y [sp+1]
+;----------------------------------------------------------------
+	set x, [current_screen]
+	set [x+SCREEN__CURSOR], [x+SCREEN__START]
+	
+	mul [sp+1], SCREEN_COLS
+	add [x+SCREEN__CURSOR], [sp+1]
+	add [x+SCREEN__CURSOR], [sp+2]
+
+	set [sp], pop	; remove y
+	set [sp], pop	; remove x
+	set pc, pop
+
+;----------------------------------------------------------------
+; void screen__scroll(int16 dx, int16 dy)
+;----------------------------------------------------------------
+:screen__scroll
+	set push, 2
+	set push, 0
+	jsr preamble
+
+	; exit if no scroll
+	ife [z+10], 0
+		ife [z+11], 0
+			set pc, postamble
+
+	; limit scrolling amount
+	ifa [z+11], SCREEN_COLS
+		set [z+11], SCREEN_COLS
+	ifu [z+11], -SCREEN_COLS
+		set [z+11], -SCREEN_COLS
+
+	ifa [z+10], SCREEN_ROWS
+		set [z+10], SCREEN_ROWS
+	ifu [z+10], -SCREEN_ROWS
+		set [z+10], -SCREEN_ROWS
+
+	; deduct the memory move direction +1 or -1
+	set b, 1
+	ifa [z+10], 0
+		set b, -1
+	ife [z+10], 0
+		ifa [z+11], 0
+			set b, -1	
+
+	; x = -dx
+	sub x, x
+	sub x, [z+11]
+
+	; y = -dy
+	sub y, y
+	sub y, [z+10]	
+
+	; reset count
+	sub c, c
+
+	set a, [current_screen]
+
+	; destination memory addr
+	set i, [a + SCREEN__START]
+
+	; source memory addr
+	set j, y
+	mli j, SCREEN_COLS
+	add j, x
+	add j, i
+
+	ife b, 1
+		set pc, screen__scroll__loop
+
+	add i, 0x17f
+	add j, 0x17f
+	add x, SCREEN_COLS-1
+	add y, SCREEN_ROWS-1
+
+:screen__scroll__loop
+	; a: temp variable
+	; b: direction -1 or +1 (signed)
+	; c: number of processed memory locations (unsigned)
+	; x: current source column (signed)
+	; y: current source line (signed)
+	; i: current destination memory location (unsigned)
+	; j: current source memory location (unsigned)
+
+	; clear or copy
+	set a, 0
+	ifa x, -1
+		ifu x, SCREEN_COLS
+			ifa y, -1
+				ifu y, SCREEN_ROWS
+					set a, [j]
+
+	; set the current location
+	set [i], a
+	
+	; advance loop
+	add x, b
+	add i, b
+	add j, b
+	
+	add c, 1
+	ife c, 0x180
+		set pc, postamble
+
+	set a, c
+	mod a, SCREEN_COLS
+	ifn a, 0
+		set pc, screen__scroll__loop
+
+	add y, b
+
+	set a, b
+	mli a, SCREEN_COLS
+
+	sub x, a
+
+	set pc, screen__scroll__loop
+	
+;----------------------------------------------------------------
+; void screen__get(int16 x, int16 y)
+;----------------------------------------------------------------
+:screen__get
+	mul [sp+1], SCREEN_COLS
+	add [sp+1], [sp+2]
+	
+	set x, [current_screen]
+	add [sp+1], [x + SCREEN__START]
+
+	set x, [sp+1]
+	set x, [x]
+	and x, 0x007f
+
+	set [sp], pop
+	set [sp], pop
+	set pc, pop
+	
+;----------------------------------------------------------------
+; void screen__set(int16 x, int16 y, uint16 char)
+;----------------------------------------------------------------
+:screen__set
+	mul [sp+2], SCREEN_COLS
+	add [sp+2], [sp+3]
+	
+	set x, [current_screen]
+	add [sp+2], [x + SCREEN__START]
+	
+	bor [sp+1], FONT_COLOR
+	
+	set x, [sp+2]
+	set [x], [sp+1]		; set new content
+
+	set [sp], pop
+	set [sp], pop
+	set [sp], pop
+	set pc, pop
+	
+;----------------------------------------------------------------
+; struct handle *screen__get_cursor()
+;----------------------------------------------------------------
+:screen__get_cursor
+	set push, 0
+	set push, 1
+	jsr preamble
+
+	set b, [current_screen]
+	set a, [b + SCREEN__CURSOR]
+	sub a, [b + SCREEN__START]
+
+	set push, 2
+	set push, TYPE_TUPLE
+	jsr array_create
+	set [z-1], x
+	set b, [x]
+	
+	set c, a
+	mod c, SCREEN_COLS
+	
+	set push, c
+	jsr uint16_to_int
+	set [b+1], x
+
+	set c, a
+	div c, SCREEN_COLS
+	
+	set push, c
+	jsr uint16_to_int
+	set [b+2], x
+
+	set x, [z-1]
+	set pc, postamble
+
+;----------------------------------------------------------------
+; void cls(void)
+;----------------------------------------------------------------
+:screen_clear
+	set push, a
+	set push, i
+	set push, j
+
+	set a, [current_screen]
+	set [a + SCREEN__CURSOR], [a + SCREEN__START]
+
+	set i, [a + SCREEN__START]
+	set a, [a + SCREEN__END]
+	
+:screen_clear_loop
+	set [i], 0
+	ifl i, a
+		sti pc, screen_clear_loop
+
+:screen_clear_finish
+	set j, pop
+	set i, pop
+	set a, pop
+
+	set pc, pop
+
+;----------------------------------------------------------------
+:screen_add_char
+; fastcall
+; c: character
+;----------------------------------------------------------------
+	set push, a
+	set push, i
+	set push, j
+	
+	;set x, 0
+
+	set a, [current_screen]
+	set i, [a + SCREEN__CURSOR]
+
+	ife [c + lexer_table], lexer_char_newline
+		set pc, add_char_newline
+	
+	ife c, KEY_BS
+		set pc, add_char_backspace
+
+	set [i], c
+	bor [i], FONT_COLOR
+	sti pc, add_char_scroll
+	
+:add_char_newline
+	and i, 0xffe0
+	add i, SCREEN_COLS
+	
+:add_char_scroll
+	set [a + SCREEN__CURSOR], i
+
+	ifl i, [a + SCREEN__END]
+		set pc, add_char_finish
+
+	;set x, SCREEN_COLS
+	sub [a + SCREEN__CURSOR], SCREEN_COLS
+	
+	set i, [a + SCREEN__START]
+	set j, [a + SCREEN__START]
+	add j, SCREEN_COLS
+	
+:add_char_copy
+	sti [i], [j]
+	ifl j, [a + SCREEN__END]
+		set pc, add_char_copy
+	
+:add_char_clear
+	sti [i], 0
+	ifl i, [a + SCREEN__END]
+		set pc, add_char_clear
+	
+:add_char_finish
+	set j, pop
+	set i, pop
+	set a, pop
+	
+	set pc, pop
+
+:add_char_backspace
+	ifn i, [a + SCREEN__START]
+		std [i-1], 0
+
+	set [a + SCREEN__CURSOR], i
+	set pc, add_char_finish

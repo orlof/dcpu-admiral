@@ -16,7 +16,7 @@
 	sti [i], [z+11]
 
 	set a, i
-	add a, FLOAT_PRECISION - 1
+	add a, FLOAT_MANTISSA_WORDS - 1
 
 :float_create_loop
 	set [i], [z+10]
@@ -24,9 +24,8 @@
 		sti pc, float_create_loop	
 
 	set push, [builtin]
-	set push, -1
 	set push, x
-	jsr array_insert
+	jsr array__append
 
 	set x, [z-1]
 	set pc, postamble
@@ -79,9 +78,8 @@
 	set [j], x
 
 	set push, [builtin]
-	set push, -1
 	set push, x
-	jsr array_insert
+	jsr array__append
 
 	ifl i, 10
 		sti pc, float_init_loop
@@ -144,7 +142,7 @@
 	; compare positive or negative numbers
 	;---------------------------------------
 	sti c, i
-	add c, FLOAT_PRECISION + 1		; last word of mantissa
+	add c, FLOAT_MANTISSA_WORDS + 1		; last word of mantissa
 	
 :float_cmp_loop
 	ifg [i], [j]
@@ -300,18 +298,18 @@
 	;---------------------------------------
 	set x, i
 	add x, FLOAT_MANTISSA
-	add i, FLOAT_MANTISSA + FLOAT_PRECISION - 1
+	add i, FLOAT_MANTISSA + FLOAT_MANTISSA_WORDS - 1
 
 	set y, j
 	add y, FLOAT_MANTISSA
-	add j, FLOAT_MANTISSA + FLOAT_PRECISION - 1
+	add j, FLOAT_MANTISSA + FLOAT_MANTISSA_WORDS - 1
 
 	; calculate amount of word shifts
 	set b, a
 	div b, 16
 	
 	; quick exit if arg2 is too small
-	ifg b, FLOAT_PRECISION - 1
+	ifg b, FLOAT_MANTISSA_WORDS - 1
 		set pc, float_postamble
 
 	; skip b lsw
@@ -378,7 +376,7 @@
 	ife c, 0
 		set pc, float_postamble
 
-	add i, FLOAT_PRECISION - 1
+	add i, FLOAT_MANTISSA_WORDS - 1
 	set y, i
 
 :float_add_by_add_shift_loop
@@ -504,7 +502,7 @@
 
 	; reserve stack space for mantissa product
 	set c, sp
-	sub c, FLOAT_PRECISION + FLOAT_PRECISION
+	sub c, FLOAT_MANTISSA_WORDS + FLOAT_MANTISSA_WORDS
 
 	; init stack space with zero
 :float_mul_mantissa_init_loop
@@ -516,9 +514,9 @@
 	sti x, x				; advance i and j
 	set a, i				; a: f1.exp *
 	set b, j				; b: f2.exp *
-	add i, FLOAT_PRECISION	; i: f1.lsw *
-	add j, FLOAT_PRECISION	; j: f2.lsw *
-	add c, FLOAT_PRECISION + FLOAT_PRECISION -1	; c: product.lsw *
+	add i, FLOAT_MANTISSA_WORDS	; i: f1.lsw *
+	add j, FLOAT_MANTISSA_WORDS	; j: f2.lsw *
+	add c, FLOAT_MANTISSA_WORDS + FLOAT_MANTISSA_WORDS -1	; c: product.lsw *
 
 :float_mul_words_loop
 	set x, [j]
@@ -526,7 +524,7 @@
 
 	set y, ex		; store product high
 	add [c], x		; add product low
-	adx [c+-1], y	; add product high
+	adx [c-1], y	; add product high
 	set x, ex
 
 	set y, c		; y: product current word
@@ -546,8 +544,8 @@
 	ifn j, b		; if f2 cword not out of bounds
 		set pc, float_mul_words_loop
 
-	add j, FLOAT_PRECISION		; set f2 cword back to lsw
-	add c, FLOAT_PRECISION		; move product cword back the same amount
+	add j, FLOAT_MANTISSA_WORDS		; set f2 cword back to lsw
+	add c, FLOAT_MANTISSA_WORDS		; move product cword back the same amount
 	
 	sub i, 1		; move f1 cwords towards msw
 	sub c, 1		; move product cword towards msw
@@ -565,7 +563,7 @@
 	sub [y + FLOAT_EXPONENT], 1
 
 	set c, sp
-	add c, FLOAT_PRECISION + FLOAT_PRECISION - 1
+	add c, FLOAT_MANTISSA_WORDS + FLOAT_MANTISSA_WORDS - 1
 	set i, sp
 
 :float_mul_shift_loop
@@ -581,7 +579,7 @@
 	add i, FLOAT_MANTISSA
 
 	set c, i
-	add c, FLOAT_PRECISION - 1
+	add c, FLOAT_MANTISSA_WORDS - 1
 	
 :float_mul_copy_loop
 	set [i], pop
@@ -707,7 +705,7 @@
 	; y: quotient.mantissa.lsw
 	set c, y
 	add c, FLOAT_MANTISSA
-	add y, FLOAT_MANTISSA + FLOAT_PRECISION -1
+	add y, FLOAT_MANTISSA + FLOAT_MANTISSA_WORDS -1
 	
 	set x, 0						; current word number
 	set [c], 1						; set sentinel
@@ -717,7 +715,7 @@
 	add i, FLOAT_MANTISSA           ; i: divident.mantissa.msw *
 	
 	set a, i
-	add a, FLOAT_PRECISION - 1      ; a: divident.mantissa.lsw *
+	add a, FLOAT_MANTISSA_WORDS - 1      ; a: divident.mantissa.lsw *
 	
 	set j, [z+10]					; struct handle *divisor
 	set j, [j]						; struct float *divisor
@@ -757,11 +755,11 @@
 	set a, i
 	add a, FLOAT_MANTISSA           ; a: divident.mantissa.msw
 
-	add i, FLOAT_PRECISION + 1      ; i: divident.mantissa.lsw
+	add i, FLOAT_MANTISSA_WORDS + 1      ; i: divident.mantissa.lsw
 
 	set j, [z+10]					; j: struct handle *divisor
 	set j, [j]						; j: struct float *divisor
-	add j, FLOAT_PRECISION + 1      ; j: divisor.mantissa.lsw
+	add j, FLOAT_MANTISSA_WORDS + 1      ; j: divisor.mantissa.lsw
 
     set x, 0						; initialize carry
 :float_div_subtract_loop
@@ -784,7 +782,7 @@
 	set a, i
 	add a, FLOAT_MANTISSA           ; a: divident.mantissa.msw
 
-	add i, FLOAT_PRECISION + 1      ; i: divident.mantissa.lsw
+	add i, FLOAT_MANTISSA_WORDS + 1      ; i: divident.mantissa.lsw
 	set x, 0
 
 :float_div_shift_loop
@@ -817,7 +815,7 @@
 	ife [b + FLOAT_EXPONENT], 0
 		set pc, float_postamble_zero
 
-	add i, FLOAT_PRECISION - 1	; quotient.lsw
+	add i, FLOAT_MANTISSA_WORDS - 1	; quotient.lsw
 	set x, 0
 
 :float_div_normalize_shift_loop
@@ -928,7 +926,7 @@
 	add y, FLOAT_MANTISSA		; msw
 	set j, y					; msw
 	set b, y
-	add b, FLOAT_PRECISION - 1	; lsw
+	add b, FLOAT_MANTISSA_WORDS - 1	; lsw
 
 :float_from_int_loop
 	set [j], [i]				; copy word from int to float
@@ -966,9 +964,9 @@
 	ifb [y + FLOAT_CATEGORY], FLOAT_CATEGORY_NAN + FLOAT_CATEGORY_PINF + FLOAT_CATEGORY_NINF
 		jsr recover				; nan or inf cannot be converted into int
 
-	set x, INT_HANDLE_0
+	set x, INT_0
 	ifb [y + FLOAT_CATEGORY], FLOAT_CATEGORY_NZERO + FLOAT_CATEGORY_PZERO
-		set pc, postamble		; +-0 is just 0
+		set pc, postamble		; -0 is just 0
 
 	set a, [y + FLOAT_EXPONENT]	; a = float.exp
 	ifg 0x8000, a				; if float < 1
@@ -986,14 +984,14 @@
     ; allocate space for result int
 	set push, a
 	set push, TYPE_INT
-	jsr alloc
+	jsr array_create
 	set [z-1], x
 
 	set i, [z+10]               ; struct handle *float
 	set i, [i]                  ; struct float *
 	add i, FLOAT_MANTISSA       ; float.mantissa.msw
 	set c, i                    ; float.mantissa.msw
-	add c, FLOAT_PRECISION - 1  ; float.mantissa.lsw
+	add c, FLOAT_MANTISSA_WORDS - 1  ; float.mantissa.lsw
 
 	set j, [x]                  ; struct int *
 	set [j], a                  ; set sizeof this int
@@ -1010,7 +1008,15 @@
 	ifl i, c
         ifl j, a
         	sti pc, float_to_int_loop
-    		
+    
+	set y, [z+10]
+	set y, [y]
+	ifc FLOAT_MASK_NEGATIVE, [y + FLOAT_CATEGORY]
+		set pc, postamble
+		
+	set push, x
+	jsr int_negate
+	
 	set pc, postamble
 
 ;----------------------------------------------------------------
@@ -1116,7 +1122,7 @@
 	set b, 0					; index in str
 
 :ffs_loop
-	jsr array_get
+	jsr array__get
 	add b, 1
 	set c, x
 
@@ -1304,7 +1310,7 @@
 		set pc, postamble
 
 	set push, 13
-	set push, TYPE_STRING
+	set push, TYPE_STR
 	jsr alloc
 	set [z-1], x
 
@@ -1319,9 +1325,8 @@
 		set pc, fts_scale_down
 
 	set push, [z-1]
-	set push, -1
 	set push, '-'
-	jsr array_insert
+	jsr array__append
 	
 :fts_scale_down
 	set push, [z-2]
@@ -1346,9 +1351,8 @@
 	add x, '0'			; change number to character
 
 	set push, [z-1]		; add character to string
-	set push, -1
 	set push, x
-	jsr array_insert
+	jsr array__append
 
 	set push, [z-2]
 	set push, [FLOAT_0 + c]
@@ -1377,9 +1381,8 @@
 		set pc, fts_print
 
 	set push, [z-1]		; add character to string
-	set push, -1
 	set push, '.'
-	jsr array_insert
+	jsr array__append
 	
 	set pc, fts_print
 
@@ -1391,9 +1394,8 @@
 		set pc, fts_finish
 		
 	set push, [z-1]		; add character to string
-	set push, -1
 	set push, '0'
-	jsr array_insert
+	jsr array__append
 	
 	set pc, fts_fill_with_zero
 
@@ -1481,7 +1483,7 @@
 	add b, FLOAT_MANTISSA		; float.mantissa.msw
 
 	set c, b
-	add c, FLOAT_PRECISION - 1	; float.mantissa.lsw
+	add c, FLOAT_MANTISSA_WORDS - 1	; float.mantissa.lsw
 	
 	set i, b					; float.mantissa.msw
 
@@ -1588,7 +1590,7 @@
 	set [z-1], x
 
 	set c, [x]
-	add c, FLOAT_MANTISSA + FLOAT_PRECISION
+	add c, FLOAT_MANTISSA + FLOAT_MANTISSA_WORDS
 
 	set i, [x]
 	sti [i], FLOAT_CATEGORY_PNUM
@@ -1600,7 +1602,7 @@
 	ifl i, c
 		set pc, float_random_loop
 	
-	bor [c - FLOAT_PRECISION], 0x8000
+	bor [c - FLOAT_MANTISSA_WORDS], 0x8000
 	
 	; transpose 1.0-2.0 to 0.0-1.0	
 	set push, [z-1]
@@ -1635,24 +1637,26 @@
 	set push, 2
 	jsr preamble
 
-	set push, [z+10]
-	jsr int_sgn
-	set a, x
-	
-	set x, [FLOAT_1]
-	ife a, 0
-		set pc, postamble
-
-	set x, [FLOAT_0]
-	ife a, -1
-		set pc, postamble
+	set a, TRUE		; positive
 
 	set push, [z+10]
 	jsr int_to_int16
 	set c, x
 
-	set [z+-1], [z+11] 			; p
-	set [z+-2], [FLOAT_1]		; r
+	set x, [FLOAT_1]
+	ife c, 0
+		set pc, postamble
+
+	ifc c, 0x8000
+		set pc, float_pow_calc
+
+	xor c, 0xffff
+	add c, 1
+	set a, FALSE
+
+:float_pow_calc
+	set [z-1], [z+11] 			; p
+	set [z-2], [FLOAT_1]		; r
 	
 :float_pow_loop
 	ife c, 0
@@ -1661,20 +1665,28 @@
 	ifc c, 1
 		set pc, float_pow_skip
 		
-	set push, [z+-2]
-	set push, [z+-1]
+	set push, [z-2]
+	set push, [z-1]
 	jsr float_mul
-	set [z+-2], x
+	set [z-2], x
 	
 :float_pow_skip
-	set push, [z+-1]
-	set push, [z+-1]
+	set push, [z-1]
+	set push, [z-1]
 	jsr float_mul
-	set [z+-1], x
+	set [z-1], x
 
 	div c, 2
 	set pc, float_pow_loop
 
 :float_pow_break
-	set x, [z+-2]
+	set x, [z-2]
+
+	ife a, TRUE
+		set pc, postamble	
+
+	set push, [FLOAT_1]
+	set push, x
+	jsr float_div
+
 	set pc, postamble	
