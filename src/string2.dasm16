@@ -380,7 +380,7 @@
 	jsr array_clone
 	set [z-2], x
 
-	set y, Decrypt
+	set y, crypt__Decrypt
 	
 	set pc, built_in__str_crypt
 
@@ -410,7 +410,7 @@
 		ifg b, a
 			set pc, built_in__str_encrypt__iv_loop
 
-	set y, Encrypt
+	set y, crypt__Encrypt
 
 :built_in__str_crypt
 	; IV	
@@ -440,7 +440,7 @@
 	jsr y
 
 	set x, [z-2]
-	ife y, Decrypt
+	ife y, crypt__Decrypt
 		set pc, postamble	
 
 	set a, [x]
