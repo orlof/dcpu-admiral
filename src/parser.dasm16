@@ -816,79 +816,39 @@
 ;----------------------------------------------------------------
 ; struct handle *nud_int()
 ;----------------------------------------------------------------
-:nud_int
-	set push, 0
-	set push, 1
-	jsr preamble
-
-	jsr lexer_get_token_as_string
-    set [z-1], x
-
-	set push, [z-1]
-	jsr int_parse
-    set [z-1], x
-		
-	jsr lexer_next
-
-    set x, [z-1]
-	set pc, postamble
-
-;----------------------------------------------------------------
-; struct handle *nud_hex()
-;----------------------------------------------------------------
-:nud_hex
-	set push, 0
-	set push, 1
-	jsr preamble
-
-	jsr lexer_get_token_as_string
-    set [z-1], x
-
-	set push, [z-1]
-	jsr int_parse_hex
-    set [z-1], x
-		
-	jsr lexer_next
-
-    set x, [z-1]
-	set pc, postamble
-
-;----------------------------------------------------------------
-; struct handle *nud_float()
-;----------------------------------------------------------------
-:nud_float
-	set push, 0
-	set push, 1
-	jsr preamble
-
-	jsr lexer_get_token_as_string
-    set [z-1], x
-
-	set push, [z-1]
-	jsr float_from_str
-    set [z-1], x
-		
-	jsr lexer_next
-
-    set x, [z-1]
-	set pc, postamble
-
-;----------------------------------------------------------------
-; struct handle *nud_name()
-;----------------------------------------------------------------
 :nud_str
 :nud_name
-	set push, 0
-	set push, 1
-	jsr preamble
-
 	jsr lexer_get_token_as_string
     set [z-1], x
-	
+
 	jsr lexer_next
 
     set x, [z-1]
-	set pc, postamble
+	set pc, pop
+
+:nud_hex
+	set a, int_parse_hex
+	set pc, nud_generic
+
+:nud_float
+	set a, float_from_str
+	set pc, nud_generic
+
+:nud_int
+	set a, int_parse
+
+:nud_generic
+	jsr lexer_get_token_as_string
+    set [z-1], x
+
+	set push, x
+	jsr a
+    set [z-1], x
+		
+	jsr lexer_next
+
+    set x, [z-1]
+	set pc, pop
 
 ;----------------------------------------------------------------
 ; struct handle *nud_none()
