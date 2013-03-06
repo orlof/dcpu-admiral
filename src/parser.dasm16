@@ -15,7 +15,7 @@
 ;   if true: print "Hi"
 ;----------------------------------------------------------------
 	set push, 0
-	set push, 1
+	set push, 4
 	jsr preamble
 
 	; compound stmts are not allowed here
@@ -78,11 +78,13 @@
 ;----------------------------------------------------------------
 	jsr lexer_next		; skip 'run'
 
+	; run autoexec if there is no arguments
 	ife [lexer_token], token_newline
 		set pc, std_run_autoexec
 	ife [lexer_token], token_eof
 		set pc, std_run_autoexec
 
+	; filename is the 1st argument
 	set push, 0
 	jsr expression
     set [z-1], x
@@ -91,71 +93,82 @@
     jsr eval
     set [z-1], x
     
+    ; filename is required to be str
     ifc [x + HANDLE_TYPE], TYPE_STR
     	jsr recover
 
 	set pc, std_run_load
 
 :std_run_autoexec
+	; use default filename
 	set [z-1], STR_AUTOEXEC
 
 :std_run_load
+	; load file
 	set push, [z-1]
 	jsr floppy__file__read
 	set [z-1], x
-	
+
+	; if it was not str or dict -> error
 	ifn [x + HANDLE_TYPE], TYPE_DICT
 		ifn [x + HANDLE_TYPE], TYPE_STR
 			jsr recover
 
-	; prepare scope
-	set push, 10		; create scope for function call
+	; function scope
+	set push, 10
 	set push, TYPE_DICT
 	jsr alloc
     set [z-2], x
 
-	set push, [z-2]			; add global scope (ex)
+	; add global scope to function scope
+	set push, x
 	set push, STR_EX
 	set push, [global_scope]
 	jsr dict__set
 
-    set push, [z-2]
-	set push, STR_ME
-	set push, [z-1]
+	; create tuple for arguments
+	set push, 5
+	set push, TYPE_TUPLE
+	jsr alloc
+	set [z-4], x
+
+	; add argument tuple to function scope
+	set push, [z-2]
+	set push, STR_ARGV
+	set push, x
 	jsr dict__set
 
-	set c, '0'
+	; add 'me' if loaded object was dict
+	set x, [z-1]
+	ife [x + HANDLE_TYPE], TYPE_STR
+		set pc, std_run_args
+
+	; add 'me' to function scope
+    set push, [z-2]
+	set push, STR_ME
+	set push, x
+	jsr dict__set
 
 :std_run_args
+	; exit arg-loop if end of line
 	ife [lexer_token], token_newline
 		set pc, std_run_prepare
 	ife [lexer_token], token_eof
 		set pc, std_run_prepare
 
+	; parse next argument
 	set push, 0
 	jsr expression
     set [z-3], x
-    
+
+	; evaluate argument
     set push, x
     jsr eval
     set [z-3], x
 
-	set push, 2
-	set push, TYPE_NAME
-	jsr array_create
-    set [z-4], x
-
-	sti i, [x]
-	sti [i], '$'
-	set [i], c
-	add c, 1
-
-    set push, [z-2]
-    set push, [z-4]
-    set push, [z-3]
-	jsr dict__set
-
-	jsr lexer_next	; skip '(' or ','
+	set push, [z-4]
+	set push, [z-3]
+	jsr array__append
 
 	set pc, std_run_args
 
@@ -172,7 +185,6 @@
 	set push, [z-1]
 	set push, STR_MAIN
 	jsr dict_get
-	set [z-1], x
 
 	ife x, 0
 		jsr recover
@@ -1909,8 +1921,6 @@
 	set pc, built_in
 
 :led_lparen_user_defined
-	set c, '0'	; num unnamed_args
-
 	; prepare scope
 	set push, 10		; create scope for function call
 	set push, TYPE_DICT
@@ -1920,6 +1930,18 @@
 	set push, x			; add global scope (ex)
 	set push, STR_EX
 	set push, [global_scope]
+	jsr dict__set
+	
+	; create tuple for arguments
+	set push, 5
+	set push, TYPE_TUPLE
+	jsr alloc
+	set [z-4], x
+
+	; add argument tuple to function scope
+	set push, [z-1]
+	set push, STR_ARGV
+	set push, x
 	jsr dict__set
 	
 	set a, [z+10]		; if call is by reference, add path dict to scope (me)
@@ -1939,12 +1961,48 @@
 	ife [lexer_token], token_rparen
 		set pc, led_lparen_prepare_call
 
-	jsr parse_testlist_item
-    set push, [z-1]
+	; read value or name	
+	set push, 0x0030
+	jsr expression
+    set [z-2], x
+
+	ife [lexer_token], token_assign
+		; key=value
+		set pc, parse_testlist_item_assign
+
+	; argv[n]=value
+	set push, x
+	jsr eval
+	set [z-2], x
+	
+	set push, [z-4]
+	set push, x
+	jsr array__append
+
+	set pc, led_lparen_arg_loop_condition
+
+:parse_testlist_item_assign
+	; f(a=1)
+	ifn [x+1], TYPE_NAME
+		jsr recover	
+
+	jsr lexer_next	; skip '='
+
+	; read value
+	set push, 0x0030
+	jsr expression
+    set [z-3], x
+
+    set push, x
+	jsr eval
+    set [z-3], x
+
+	set push, [z-1]
     set push, [z-2]
     set push, [z-3]
 	jsr dict__set
-	
+
+:led_lparen_arg_loop_condition
 	ife [lexer_token], token_comma
 		set pc, led_lparen_args
 
@@ -1999,47 +2057,6 @@
 ;----------------------------------------------------------------
 :parse_testlist_item
 ;----------------------------------------------------------------
-	; read value or name	
-	set push, 0x0030
-	jsr expression
-    set [z-2], x
-
-	ife [lexer_token], token_assign
-		; parameter value
-		set pc, parse_testlist_item_assign
-
-	; f(1) -> $0=1
-    set [z-3], x
-
-	set push, 2
-	set push, TYPE_NAME
-	jsr array_create
-    set [z-2], x
-
-	sti i, [x]
-	sti [i], '$'
-	set [i], c
-	add c, 1
-
-	set pc, parse_testlist_item_set
-
-:parse_testlist_item_assign
-	; f(a=1)
-	ifn [x+1], TYPE_NAME
-		jsr recover	
-
-	jsr lexer_next	; skip '='
-
-	; read value
-	set push, 0x0030
-	jsr expression
-    set [z-3], x
-
-:parse_testlist_item_set
-    set push, [z-3]
-	jsr eval
-    set [z-3], x
-
 	set pc, pop
 
 ;----------------------------------------------------------------
