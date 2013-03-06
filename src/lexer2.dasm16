@@ -63,45 +63,9 @@
 	set pc, pop
 
 ;----------------------------------------------------------------
-; struct handle *lexer__get_token_marker()
-;----------------------------------------------------------------
-:lexer__get_token_marker
-	set push, 0
-	set push, 0
-	jsr preamble
-
-	set a, [lexer_string]	
-	set b, [lexer_start]	
-	jsr lexer__goto_sol
-
-	set c, [lexer_end]
-	sub c, b
-
-	set push, c
-	set push, TYPE_STRING
-	jsr array_create
-
-	sti i, [x]
-	set j, b
-
-:lexer__get_token_marker__pre_mark
-	ife j, [lexer_start]
-		set pc, lexer__get_token_marker__mark
-		
-	set [i], ' '
-	sti pc, lexer__get_token_marker__pre_mark
-
-:lexer__get_token_marker__mark
-	ife j, [lexer_end]
-		set pc, postamble
-		
-	set [i], '^'
-	sti pc, lexer__get_token_marker__mark
-
-;----------------------------------------------------------------
 :lexer__goto_eol
 ;----------------------------------------------------------------
-	jsr array_get
+	jsr array__get
 	
 	ife x, 0
 		set pc, pop
@@ -119,7 +83,7 @@
 		set pc, pop
 		
 	sub b, 1
-	jsr array_get
+	jsr array__get
 	
 	ifn [x + lexer_table], lexer_char_newline
 		set pc, lexer__goto_sol
@@ -133,7 +97,7 @@
 :lexer_advance
 	set x, pop
 	ifn [lexer_token], pop
-		set pc, recover
+		jsr recover
 	
 	set push, x
 	jsr lexer_next
@@ -164,7 +128,7 @@
 	set [lexer_start], b	; token start index
 
 	ifg x, 127
-		set pc, recover
+		jsr recover
 
 	set pc, [x + lexer_table]
 
@@ -185,7 +149,7 @@
 	set c, 0	; current indent
 	
 :lexer_char_newline_loop
-	jsr array_get
+	jsr array__get
 	ifn x, ' '
 		set pc, lexer_char_newline_break
 
@@ -195,10 +159,14 @@
 
 :lexer_char_newline_break
 	ife [lexer_table + x], lexer_char_comment
-		jsr lexer_skip_comment
+		jsr lexer__goto_eol
 
 	ife [lexer_table + x], lexer_char_newline
 		set pc, lexer_char_newline_restart
+
+	ife x, 0
+;		set pc, lexer_char_eof
+		set pc, lexer_finish
 
 	set [lexer_target_indent], c
 
@@ -221,7 +189,7 @@
 :lexer_char_dot
 ;----------------------------------------------------------------
 	add b, 1
-	jsr array_get
+	jsr array__get
 
 	ife [x + lexer_table], lexer_char_digit
 		set pc, lexer_float
@@ -239,8 +207,7 @@
 :lexer_char_colon
 ;----------------------------------------------------------------
 	set [lexer_token], token_colon
-	set c, token_prototype
-	set pc, check_augass
+	set pc, lexer_finish_advance
 
 ;----------------------------------------------------------------
 :lexer_char_questionmark
@@ -248,7 +215,7 @@
 	set [lexer_token], token_cond_assign
 
 	add b, 1
-	jsr array_get
+	jsr array__get
 	ifn x, '='
 		jsr recover
 
@@ -314,7 +281,7 @@
 :lexer_char_star
 ;----------------------------------------------------------------
 	add b, 1
-	jsr array_get
+	jsr array__get
 	ife x, '='
 		set pc, lexer_char_star_assign
 	ife x, '*'
@@ -381,7 +348,7 @@
 	set [lexer_token], token_less
 
 	add b, 1
-	jsr array_get
+	jsr array__get
 	ife x, '<'
 		set pc, lexer_char_less_less	
 	ifn x, '='
@@ -394,7 +361,7 @@
 	set [lexer_token], token_lshift
 	
 	add b, 1
-	jsr array_get
+	jsr array__get
 	ifn x, '='
 		set pc, lexer_finish
 	
@@ -411,7 +378,7 @@
 	set [lexer_token], token_greater
 
 	add b, 1
-	jsr array_get
+	jsr array__get
 	ife x, '>'
 		set pc, lexer_char_greater_greater	
 	ifn x, '='
@@ -424,7 +391,7 @@
 	set [lexer_token], token_rshift
 	
 	add b, 1
-	jsr array_get
+	jsr array__get
 	ifn x, '='
 		set pc, lexer_finish
 	
@@ -442,7 +409,7 @@
 :check_augass
 ;----------------------------------------------------------------
 	add b, 1
-	jsr array_get
+	jsr array__get
 	ifn x, '='
 		set pc, lexer_finish
 
@@ -459,16 +426,32 @@
 ;----------------------------------------------------------------
 :lexer_char_digit
 ;----------------------------------------------------------------
-	add b, 1
-	jsr array_get
+	ifn x, '0'
+		set pc, lexer_char_digit_start
 
+	add b, 1
+	jsr array__get
+	
+	ife x, 'x'
+		set pc, lexer_char_hex
+
+	ife x, 'X'
+		set pc, lexer_char_hex
+
+	set pc, lexer_char_digit_start
+
+:lexer_char_digit_loop
+	add b, 1
+	jsr array__get
+
+:lexer_char_digit_start
 	ife x, '.'		; discard int and go for float
 		set pc, lexer_float
 	ife x, 'e'		; discard int and go for float
 		set pc, lexer_float
 
 	ife [x + lexer_table], lexer_char_digit
-		set pc, lexer_char_digit
+		set pc, lexer_char_digit_loop
 
 	set [lexer_end], b			; lexer.data1
 
@@ -476,11 +459,33 @@
 	set pc, lexer_finish
 
 ;----------------------------------------------------------------
+:lexer_char_hex
+;----------------------------------------------------------------
+	add b, 1
+	jsr array__get
+
+	ife [x + lexer_table], lexer_char_digit
+		set pc, lexer_char_hex
+
+	ifg x, 'a'-1
+		ifl x, 'f'+1
+			set pc, lexer_char_hex
+
+	ifg x, 'A'-1
+		ifl x, 'F'+1
+			set pc, lexer_char_hex
+
+	set [lexer_end], b			; lexer.data1
+
+	set [lexer_token], token_hex
+	set pc, lexer_finish
+
+;----------------------------------------------------------------
 :lexer_char_letter
 ;----------------------------------------------------------------
 :lexer_name_loop
 	add b, 1
-	jsr array_get
+	jsr array__get
 
 	ife [x + lexer_table], lexer_char_letter
 		set pc, lexer_name_loop
@@ -508,7 +513,12 @@
 
 :lexer_literal_string_loop
 	add b, 1
-	jsr array_get
+	jsr array__get
+
+	ife x, 0
+		jsr recover
+	ife [x + lexer_table], lexer_char_newline
+		jsr recover
 
 	ifn x, y
 		set pc, lexer_literal_string_loop
@@ -526,7 +536,7 @@
 	set c, FP_STATE_START
 
 :lexer_float_loop
-	jsr array_get
+	jsr array__get
 	add b, 1
 
 	ife x, '+'
@@ -598,26 +608,19 @@
 ; a: struct handle *
 ; b: index
 ;----------------------------------------------------------------
-	jsr array_get
+	jsr array__get
 	ifn x, ' '
 		set pc, pop
 	add b, 1
 	set pc, lexer_skip_white
 
 ;----------------------------------------------------------------
-:lexer_skip_comment
-; a: struct handle *
-; b: index
+:lexer_char_comment
 ;----------------------------------------------------------------
-	jsr array_get
-	ife [lexer_table + x], lexer_char_newline
-		set pc, pop
-	ife [lexer_table + x], lexer_char_eof
-		set pc, pop
 	add b, 1
-	set pc, lexer_skip_comment
+	jsr lexer__goto_eol
+	set pc, lexer_char_newline
 
 :lexer_char_whitespace
-:lexer_char_comment
-	set pc, recover
+	jsr recover
 

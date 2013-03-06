@@ -1,0 +1,364 @@
+;Hummingbird-2 Encryption Algorithm
+;Implementation by HyperVerse Systems
+;V 1
+
+;A = Pointer to IV
+;B = Pointer to key
+;C = Pointer to message
+;PUSH = Length of message
+
+;Encryption function
+:crypt__Encrypt
+    SET PUSH, J
+    SET PUSH, X
+    SET PUSH, Y
+    SET PUSH, Z
+    SET PUSH, I
+    JSR crypt__Init
+    
+    SET I, [SP+6]
+    :crypt__Encrypt_loop
+        SET J, crypt__State
+        
+        SET A, [J]
+        ADD A, [C]
+        JSR crypt__EWD16
+        ADD B, 4
+        SET X, A
+        
+        SET A, [J+1]
+        ADD A, X
+        XOR [B], [J+4]
+        XOR [B+1], [J+5]
+        XOR [B+2], [J+6]
+        XOR [B+3], [J+7]
+        JSR crypt__EWD16
+        XOR [B], [J+4]
+        XOR [B+1], [J+5]
+        XOR [B+2], [J+6]
+        XOR [B+3], [J+7]
+        SUB B, 4
+        SET Y, A
+        
+        SET A, [J+2]
+        ADD A, Y
+        XOR [B], [J+4]
+        XOR [B+1], [J+5]
+        XOR [B+2], [J+6]
+        XOR [B+3], [J+7]
+        JSR crypt__EWD16
+        XOR [B], [J+4]
+        XOR [B+1], [J+5]
+        XOR [B+2], [J+6]
+        XOR [B+3], [J+7]
+        ADD B, 4
+        SET Z, A
+
+        SET A, [J+3]
+        ADD A, Z
+        JSR crypt__EWD16
+        SUB B, 4
+        ADD A, [J]
+        SET [C], A
+        
+        ADD C, 1
+        SUB I, 1
+        IFE I, 0
+            SET PC, crypt__Return
+        
+        JSR crypt__Update_State
+        
+        SET PC, crypt__Encrypt_loop
+
+;Decryption function
+:crypt__Decrypt
+    SET PUSH, J
+    SET PUSH, X
+    SET PUSH, Y
+    SET PUSH, Z
+    SET PUSH, I
+    
+    JSR crypt__Init
+    
+    SET I, [SP+6]
+    
+    :crypt__Decrypt_loop
+        SET J, crypt__State
+        
+        SET A, [C]
+        SUB A, [J]
+        ADD B, 4
+        JSR crypt__DWD16
+        SUB A, [J+3]
+        SET Z, A
+        
+        SUB B, 4
+        XOR [B], [J+4]
+        XOR [B+1], [J+5]
+        XOR [B+2], [J+6]
+        XOR [B+3], [J+7]
+        JSR crypt__DWD16
+        XOR [B], [J+4]
+        XOR [B+1], [J+5]
+        XOR [B+2], [J+6]
+        XOR [B+3], [J+7]
+        SUB A, [J+2]
+        SET Y, A
+        
+        ADD B, 4
+        XOR [B], [J+4]
+        XOR [B+1], [J+5]
+        XOR [B+2], [J+6]
+        XOR [B+3], [J+7]
+        JSR crypt__DWD16
+        XOR [B], [J+4]
+        XOR [B+1], [J+5]
+        XOR [B+2], [J+6]
+        XOR [B+3], [J+7]
+        SUB A, [J+1]
+        SET X, A
+        
+        SUB B, 4
+        JSR crypt__DWD16
+        SUB A, [J]
+        SET [C], A
+        
+        SUB I, 1
+        ADD C, 1
+        IFE I, 0
+            SET PC, crypt__Return
+        JSR crypt__Update_State
+        
+        SET PC, crypt__Decrypt_loop
+        
+:crypt__Update_State
+    ADD [J], Z
+    ADD [J+1], X
+    ADD [J+2], Y
+    ADD [J+3], [J]
+    ADD [J+3], X
+    XOR [J+4], [J]
+    XOR [J+5], [J+1]
+    XOR [J+6], [J+2]
+    XOR [J+7], [J+3]
+    
+    SET PC, POP
+
+;Initialization
+:crypt__Init
+    SET PUSH, C
+    SET C, crypt__State
+    
+    SET [C], [A]
+    SET [C+1], [A+1]
+    SET [C+2], [A+2]
+    SET [C+3], [A+3]
+    SET [C+4], [A]
+    SET [C+5], [A+1]
+    SET [C+6], [A+2]
+    SET [C+7], [A+3]
+    
+    SET I, 0
+    
+    :crypt__Init_loop
+    SET A, [C]
+    ADD A, I
+    JSR crypt__EWD16
+    SET J, A
+    
+    SET A, [C+1]
+    ADD A, J
+    JSR crypt__EWD16
+    SET X, A
+    
+    SET A, [C+2]
+    ADD A, X
+    JSR crypt__EWD16
+    SET Y, A
+    
+    SET A, [C+3]
+    ADD A, Y
+    JSR crypt__EWD16
+    SET Z, A
+    
+    SET A, [C]
+    ADD A, Z
+    SHL A, 3
+    BOR A, EX
+    SET [C], A
+    ADD C, 1
+    
+    SET A, [C]
+    ADD A, J
+    SHR A, 1
+    BOR A, EX
+    SET [C], A
+    ADD C, 1
+    
+    SET A, [C]
+    ADD A, X
+    SHL A, 8
+    BOR A, EX
+    SET [C], A
+    ADD C, 1
+    
+    SET A, [C]
+    ADD A, Y
+    SHL A, 1
+    BOR A, EX
+    SET [C], A
+    SUB C, 3
+    
+    XOR [C+4], [C]
+    XOR [C+5], [C+1]
+    XOR [C+6], [C+2]
+    XOR [C+7], [C+3]
+    
+    ADD I, 1
+    IFL I, 4
+        SET PC, crypt__Init_loop
+    
+    SET C, POP
+    SET PC, POP
+
+;Encrypt Permutation
+:crypt__EWD16
+    SET PUSH, I
+    SET PUSH, B
+    
+    SET I, 0
+    :crypt__EWD16_loop
+        XOR A, [B]
+        JSR crypt__EMix
+        ADD I, 1
+        ADD B, 1
+        IFN I, 4
+            SET PC, crypt__EWD16_loop
+    
+    SET B, POP
+    SET I, POP
+    SET PC, POP
+
+;Encrypt Mixing Function
+:crypt__EMix
+    SET PUSH, B
+    
+    SET B, crypt__SBoxE
+    JSR crypt__FuncS
+    SET B, A
+    SHL B, 6
+    BOR B, EX
+    XOR B, A
+    SHL A, 10
+    BOR A, EX
+    XOR A, B
+    
+    SET B, POP
+    SET PC, POP
+
+;Decrypt Permutation
+:crypt__DWD16
+    SET PUSH, I
+    
+    SET I, 0
+    ADD B, 4
+    :crypt__DWD16_loop
+        SUB B, 1
+        JSR crypt__DMix
+        XOR A, [B]
+        ADD I, 1
+        IFN I, 4
+            SET PC, crypt__DWD16_loop
+    
+    SET I, POP
+    SET PC, POP
+
+;Decrypt Mixing Function
+:crypt__DMix
+    SET PUSH, B
+    SET PUSH, C
+    
+    SET B, A
+    SET C, A
+    SHL B, 2
+    BOR B, EX
+    XOR B, A
+    SHL C, 4
+    BOR C, EX
+    XOR B, C
+    SET C, A
+    SHL C, 12
+    BOR C, EX
+    XOR B, C
+    SHL A, 14
+    BOR A, EX
+    XOR A, B
+    
+    SET B, crypt__SBoxD
+    JSR crypt__FuncS
+    
+    SET C, POP
+    SET B, POP
+    SET PC, POP
+
+;A = Word to SBox
+;B = SBox to use
+:crypt__FuncS
+    SET PUSH, C
+    SET PUSH, I
+    SET PUSH, X
+    SET PUSH, Y
+    SET PUSH, Z
+    
+    SET C, A
+    SET A, 0
+    SET I, 0
+    
+    :crypt__FuncS_loop
+    ADD I, 1
+    SHL C, 4
+    SET X, EX
+    SHR X, 2
+    SET Y, EX
+    SHR Y, 14
+    ADD X, B
+    ADD Y, 1
+    MUL Y, 4
+    SET Z, [X]
+    SHL Z, Y
+    SET Z, EX
+    AND Z, 0xf
+    SHL A, 4
+    BOR A, Z
+    ADD B, 4
+    IFL I, 4
+        SET PC, crypt__FuncS_loop
+    
+    SET Z, POP
+    SET Y, POP
+    SET X, POP
+    SET I, POP
+    SET C, POP
+    SET PC, POP
+
+:crypt__Return
+    SET [J], 0
+    SET [J+1], 0
+    SET [J+2], 0
+    SET [J+3], 0
+    SET [J+4], 0
+    SET [J+5], 0
+    SET [J+6], 0
+    SET [J+7], 0
+    SET A, C
+    
+    SET I, POP
+    SET Z, POP
+    SET Y, POP
+    SET X, POP
+    SET J, POP
+    SET C, POP
+    SUB A, POP
+    SET PC, C
+
+

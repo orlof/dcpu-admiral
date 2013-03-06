@@ -12,26 +12,32 @@
 	set x, 0
 	ife a, b
 		set pc, postamble
-	
+
+	set push, [a + HANDLE_TYPE]
+	bor [sp], [b + HANDLE_TYPE]
+	ife TYPE_INT + TYPE_BOOL, pop
+		set pc, val_cmp__comparable_types
+
 	jsr cast_common_number_type
-	
+
 	; compare
 	ifn [a + HANDLE_TYPE], [b + HANDLE_TYPE]	; different types
 		set pc, valcmp_type
 
+:val_cmp__comparable_types
 	set c, 0						; compare function *
 		
 	; equal types
-	ifb [a + HANDLE_TYPE], TYPE_BOOLEAN + TYPE_INT
+	ifb [a + HANDLE_TYPE], TYPE_BOOL + TYPE_INT
 		set c, int_cmp
 
 	ife [a + HANDLE_TYPE], TYPE_FLOAT
 		set c, float_cmp
 
-	ifb [a + HANDLE_TYPE], TYPE_STRING + TYPE_NAME
+	ifb [a + HANDLE_TYPE], TYPE_STR + TYPE_NAME
 		set c, str_cmp
 
-	ifb [a + HANDLE_TYPE], TYPE_LIST + TYPE_TUPLE
+	ifb [a + HANDLE_TYPE], TYPE_LIST + TYPE_TUPLE + TYPE_DICT
 		set c, list_cmp
 
 	ife c, 0
@@ -94,7 +100,7 @@
 	jsr scope_get
 
 	ife x, 0
-		set pc, recover
+		jsr recover
 
 	set pc, postamble
 
@@ -124,8 +130,8 @@
 
 :eval_reference
 	set a, [x]
-	set push, [a + REFERENCE_DICT]		; struct handle *dict or *list
-	set push, [a + REFERENCE_NAME]		; struct handle *key or index
+	set push, [a + REFERENCE_LEFT]		; struct handle *dict or *list
+	set push, [a + REFERENCE_RIGHT]		; struct handle *key or index
 	jsr scope_get
 
 	set pc, postamble
@@ -141,15 +147,15 @@
 		set pc, eval_subscription_array
 	ife [b + HANDLE_TYPE], TYPE_TUPLE
 		set pc, eval_subscription_array
-	ife [b + HANDLE_TYPE], TYPE_STRING
+	ife [b + HANDLE_TYPE], TYPE_STR
 		set pc, eval_subscription_str
 
-	set pc, recover
+	jsr recover
 
 :eval_subscription_dict
 	set push, b
 	set push, c
-	jsr dict_get
+	jsr scope_get
 
 	set pc, postamble
 
@@ -158,7 +164,7 @@
 		set pc, eval_subscription_array_index
 	ife [c + HANDLE_TYPE], TYPE_TUPLE
 		set pc, eval_subscription_array_slice
-	set pc, recover
+	jsr recover
 
 :eval_subscription_array_index
 	set push, b
@@ -188,7 +194,7 @@
 		set pc, eval_subscription_str_index
 	ife [c + HANDLE_TYPE], TYPE_TUPLE
 		set pc, eval_subscription_str_slice
-	set pc, recover
+	jsr recover
 
 :eval_subscription_str_index
 	set push, b
@@ -200,6 +206,14 @@
 	set y, [b]
 	ifb x, 0x8000
 		add x, [y]
+		
+	ifa x, [y]
+		jsr recover
+	ife x, [y]
+		jsr recover
+	ifu x, 0
+		jsr recover
+		
 	set push, x		; start
 
 	add x, 1		; end
@@ -222,7 +236,7 @@
 	ife a, NONE
 		set pc, boolean_false
 
-	ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOLEAN
+	ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
 		ife [b], 1
 			ife [b+1], 0
 				set pc, boolean_false
@@ -231,19 +245,19 @@
 		ifb [b + FLOAT_CATEGORY], FLOAT_CATEGORY_PZERO + FLOAT_CATEGORY_NZERO
 			set pc, boolean_false
 
-	ifc [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOLEAN + TYPE_FLOAT
+	ifc [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOL + TYPE_FLOAT
 		ife [b], 0
 			set pc, boolean_false
 
-	ife [a + HANDLE_TYPE], TYPE_STRING
+	ife [a + HANDLE_TYPE], TYPE_STR
 		set pc, boolean_str
-
+		
 :boolean_true
-	set x, BOOL_HANDLE_TRUE
+	set x, BOOL_TRUE
 	set pc, postamble
 
 :boolean_false
-	set x, BOOL_HANDLE_FALSE
+	set x, BOOL_FALSE
 	set pc, postamble
 
 
@@ -266,26 +280,26 @@
 	set a, [z+11]
 	set b, [z+10]
 
-	ife [a + HANDLE_TYPE], TYPE_STRING
+	ife [a + HANDLE_TYPE], TYPE_STR
 		set pc, sort_string
-	ifb [a + HANDLE_TYPE], TYPE_TUPLE + TYPE_LIST + TYPE_DICT
+	ifb [a + HANDLE_TYPE], TYPE_TUPLE + TYPE_LIST
 		set pc, sort_array
 		
-	set pc, recover
+	jsr recover
 
 :sort_string
 	set push, a
 	jsr array_clone
-	set [z+-1], x
+	set [z-1], x
 
 	set push, x
-	ife b, BOOL_HANDLE_TRUE
+	ife b, BOOL_TRUE
 		set push, char_reverse_comparator
-	ife b, BOOL_HANDLE_FALSE
+	ife b, BOOL_FALSE
 		set push, char_comparator
 		
 	jsr array_sort
-	set x, [z+-1]
+	set x, [z-1]
 	set pc, postamble
 	
 :char_comparator
@@ -308,9 +322,9 @@
 
 :sort_array
 	set push, a
-	ife b, BOOL_HANDLE_TRUE
+	ife b, BOOL_TRUE
 		set push, array_reverse_comparator
-	ife b, BOOL_HANDLE_FALSE
+	ife b, BOOL_FALSE
 		set push, array_comparator
 		
 	jsr array_sort
@@ -363,7 +377,7 @@
 	ife [a + HANDLE_TYPE], TYPE_SUBSCRIPTION
 		set pc, assign_subscription
 
-	set pc, recover
+	jsr recover
 
 :assign_subscription
 	set a, [a]
@@ -377,7 +391,7 @@
 		ife [c + HANDLE_TYPE], TYPE_INT
 			set pc, assign_subscription_list_int
 
-	set pc, recover
+	jsr recover
 
 :assign_subscription_list_int
 	set push, y
@@ -395,11 +409,11 @@
 
 :assign_reference
 	set a, [a]
-	set push, [a + REFERENCE_DICT]
-	set push, [a + REFERENCE_NAME]
+	set push, [a + REFERENCE_LEFT]
+	set push, [a + REFERENCE_RIGHT]
 :assign_reference_or_subscription_dict
 	set push, b
-	jsr dict_set
+	jsr dict__set
 	set x, b
 	set pc, postamble
 	
@@ -420,7 +434,7 @@
 
 	set y, [b]
 	ifn [y], c			; if leftLen != rightLen
-		set pc, recover
+		jsr recover
 
 :assign_tuple_loop
 	ife i, c
@@ -434,9 +448,9 @@
 	add x, i
 	set push, [x+1]
 
-	ife [b + HANDLE_TYPE], TYPE_STRING
+	ife [b + HANDLE_TYPE], TYPE_STR
 		jsr assign_from_string
-	ifn [b + HANDLE_TYPE], TYPE_STRING
+	ifn [b + HANDLE_TYPE], TYPE_STR
 		jsr assign
 
 	sti pc, assign_tuple_loop
@@ -457,9 +471,9 @@
 	set a, [z+11]
 
 	set push, 1
-	set push, TYPE_STRING
+	set push, TYPE_STR
 	jsr array_create
-	set [z+-1], x
+	set [z-1], x
 	set b, x
 
 	set c, [x]
@@ -470,13 +484,13 @@
 
 	set y, recover
 	ife [a + HANDLE_TYPE], TYPE_REFERENCE
-		set y, dict_set
+		set y, dict__set
 	ife [a + HANDLE_TYPE], TYPE_SUBSCRIPTION
 		set y, list_set
 
 	set a, [a]
-	set push, [a + REFERENCE_DICT] ; = SUBSCRIPTION_LIST
-	set push, [a + REFERENCE_NAME] ; = SUBSCRIPTION_INDEX
+	set push, [a + REFERENCE_LEFT] ; = SUBSCRIPTION_LIST
+	set push, [a + REFERENCE_RIGHT] ; = SUBSCRIPTION_INDEX
 	set push, b
 	jsr y
 	
@@ -503,8 +517,8 @@
 		set y, list_del
 
 	set a, [a]
-	set push, [a + REFERENCE_DICT] ; = SUBSCRIPTION_LIST
-	set push, [a + REFERENCE_NAME] ; = SUBSCRIPTION_INDEX
+	set push, [a + REFERENCE_LEFT] ; = SUBSCRIPTION_LIST
+	set push, [a + REFERENCE_RIGHT] ; = SUBSCRIPTION_INDEX
 	jsr y
 	
 	set x, NONE
@@ -528,11 +542,11 @@
 ;   b: struct handle *right_or_new_right
 ;----------------------------------------------------------------
 	; automatic type conversions
-	ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOLEAN
+	ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
 		ife [b + HANDLE_TYPE], TYPE_FLOAT
 			set pc, itof_left
 	
-	ifb [b + HANDLE_TYPE], TYPE_INT + TYPE_BOOLEAN
+	ifb [b + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
 		ife [a + HANDLE_TYPE], TYPE_FLOAT
 			set pc, itof_right
 
@@ -541,14 +555,14 @@
 :itof_left
 	set push, a
 	jsr float_from_int
-	set [z+-1], x
+	set [z-1], x
 	set a, x
 	set pc, pop
 
 :itof_right
 	set push, b
 	jsr float_from_int
-	set [z+-2], x
+	set [z-2], x
 	set b, x
 	set pc, pop
 
@@ -557,8 +571,9 @@
 ; utility subroutines to handle function setup and cleanup
 ;----------------------------------------------------------------
 
-; postamble - function can call this subroutine to cleanup stack, restore 
-; registers and return from subroutine
+; postamble - subroutines must call postamble to return from
+; if subroutine was intitialized by preamble. postamble will
+; restore register and stack to original state and do rts.
 ; x:   return value
 :postamble
 	set sp, z				; free local vars and heap refs
@@ -586,8 +601,10 @@
 
 	set pc, pop				; rts
 
-; preamble - subroutine must push sizeof(args), sizeof(heap refs) and sizeof(locals) 
-; and then call preamble before doing ANYTHING else 
+; preamble - subroutines must 
+;  1. push number of subroutine arguments
+;  2. push number of required heap references 
+;  3. call preamble before doing ANYTHING else 
 ;
 ; Stack after preamble
 ;         [preamble]
@@ -650,30 +667,61 @@
 	set push, 1
 	jsr preamble
 
+	set y, FALSE
+
 	set a, [z+10]
-	ife [a + HANDLE_TYPE], TYPE_STRING
+	ife [a + HANDLE_TYPE], TYPE_STR
 		set pc, print_skip_repr
 
 :print_with_repr
 	set push, [z+10]
 	jsr repr
-	set [z+-1], x
+	set [z-1], x
 	set a, x
+	
+	set y, TRUE
 
 :print_skip_repr
-	set b, 0			; index
+	set b, 0xffff		; index
 
 :print_loop
-	jsr array_get
+	add b, 1
+	jsr array__get
+
+:print_loop__check
 	ife x, 0
 		set pc, postamble
-	
+
+	ife y, FALSE
+		ife x, 47
+			set pc, print_loop_escape
+
 	set c, x			; char
 	jsr screen_add_char
 
+	set pc, print_loop
+
+:print_loop_escape
 	add b, 1
+	jsr array__get
+	
+	ife x, 'n'
+		set pc, print_loop_newline
+		
+	set c, 47
+	jsr screen_add_char
+	
+	set pc, print_loop__check
+
+:print_loop_newline
+	set c, 10
+	jsr screen_add_char
 
 	set pc, print_loop
+
+:print_loop_not_newline
+
+:print_loop_not_backslash
 	
 ;----------------------------------------------------------------
 ; struct handle *repr(struct handle *value)
@@ -685,17 +733,19 @@
 
 ;	set push, [z+10]
 ;	jsr eval
-;	set [z+-1], x
+;	set [z-1], x
 ;	set a, x
 
 	set x, [z+10]
 
-	ife [x + HANDLE_TYPE], TYPE_STRING
+	ife [x + HANDLE_TYPE], TYPE_STR
 		set pc, repr_string
 	ife [x + HANDLE_TYPE], TYPE_NAME
 		set pc, postamble
-	ife [x + HANDLE_TYPE], TYPE_BOOLEAN
+	ife [x + HANDLE_TYPE], TYPE_BOOL
 		set pc, repr_boolean
+	ife [x + HANDLE_TYPE], TYPE_NONE
+		set pc, repr_none
 
 	set y, recover
 	ife [x + HANDLE_TYPE], TYPE_INT
@@ -718,24 +768,22 @@
 	add a, 2
 
 	set push, a
-	set push, TYPE_STRING
+	set push, TYPE_STR
 	jsr alloc
-	set [z+-1], x
+	set [z-1], x
 	
-	set push, [z+-1]
-	set push, -1
+	set push, [z-1]
 	set push, 39
-	jsr array_insert
+	jsr array__append
 	
-	set push, [z+-1]
+	set push, [z-1]
 	set push, [z+10]
 	jsr array_merge
-	set [z+-1], x
+	set [z-1], x
 
-	set push, [z+-1]
-	set push, -1
+	set push, [z-1]
 	set push, 39
-	jsr array_insert
+	jsr array__append
 
 	set x, [z-1]
 	set pc, postamble
@@ -745,38 +793,38 @@
 	set a, x
 
 	set x, STR_TRUE
-	ife a, BOOL_HANDLE_FALSE
+	ife a, BOOL_FALSE
 		set x, STR_FALSE
 
 	set pc, postamble
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-;   find the devices
-;
+:repr_none
+	set x, STR_NONE
+	set pc, postamble
+
+;----------------------------------------------------------------
 :detect_hardware
-set j, 0xFFFF
-hwn i
-:hwloop
-add j, 1
-hwq j
-ife j, i
-   set pc, pop
-ife a, 0xf615
-    ife b, 0x7349
-        set [monitor], j
-ife a, 0x7406
-    ife b, 0x30cf
-        set [keyboard], j
-ife a, 0xb402
-    ife b, 0x12d0
-        set [clock], j
-ife a, 0x24c5
-    ife b, 0x4fd5
-        set [floppy], j
-set pc, hwloop
-     
-     
+;----------------------------------------------------------------
+	hwn i
+:detect_hardware__loop
+	ife i, 0
+	   set pc, pop
+	sub i, 1
+	hwq i
+	ife a, 0xf615
+	    ife b, 0x7349
+	        set [monitor], i
+	ife a, 0x7406
+	    ife b, 0x30cf
+	        set [keyboard], i
+	ife a, 0xb402
+	    ife b, 0x12d0
+	        set [clock], i
+	ife a, 0x24c5
+	    ife b, 0x4fd5
+	        set [floppy], i
+	set pc, detect_hardware__loop
+          
 ;----------------------------------------------------------------
 :win_getchar
 ; c: delayed key
@@ -785,12 +833,29 @@ set pc, hwloop
 ;----------------------------------------------------------------
 	ifn c, 0
 		jsr win_getchar_release
+	ifg c, KEY_UP-1
+		ifl c, KEY_RIGHT+1
+			jsr win_getchar_release
 
 	; Handle keyboard input  
 	set a, 1                      ; store next key mode
 	hwi [keyboard]
-	ifn c, 0
+
+	; this keyboard handling is overly complicated as devkit and toolchain
+	; have different behaviour. toolchain returns control keys with a=1,
+	; while devkit requires button down queries with a=2
+	ifg c, 0x19
+		ifl c, 0x80
+			set pc, pop
+	ife c, KEY_NEWLINE
 		set pc, pop
+	ife c, KEY_BS
+		set pc, pop
+	ife c, KEY_DEL
+		set pc, pop
+	ifg c, KEY_UP-1
+		ifl c, KEY_RIGHT+1
+			set pc, pop
 
 	set b, KEY_UP
 	jsr win_getchar_test_key
@@ -845,6 +910,12 @@ set pc, hwloop
 	ifn c, FALSE
 		set pc, win_getchar_release_loop
 
+	set a, 1
+	hwi [keyboard]
+
+	set a, 0
+	hwi [keyboard]
+
 	set pc, pop
 
 ;----------------------------------------------------------------
@@ -861,9 +932,9 @@ set pc, hwloop
 	; print prompt
 	set push, [z+10]
 	jsr eval
-	set [z+-1], x
+	set [z-1], x
 	
-	set push, [z+-1]
+	set push, [z-1]
 	jsr print
 	
 :raw_input_no_prompt
@@ -892,7 +963,14 @@ set pc, hwloop
 	ife c, KEY_BS
 		ife [y + SCREEN__CURSOR], b
 			set pc, next_char_loop
-			
+
+	set a, [y + SCREEN__END]
+	sub a, 1
+	ifn c, KEY_BS
+		ifn c, KEY_NEWLINE
+			ife [y + SCREEN__CURSOR], a
+				sub b, SCREEN_COLS
+
 	jsr screen_add_char
 
 	set pc, next_char_loop
@@ -903,7 +981,7 @@ set pc, hwloop
 	add a, 1
 
 	set push, a
-	set push, TYPE_STRING
+	set push, TYPE_STR
 	jsr array_create
 
 	set j, [x]					; struct string *
@@ -958,13 +1036,15 @@ set pc, hwloop
 
     set pc, built_in_matcher_list_loop
 
-:list
-    dat 3, "if", 1
-    dat 3, "or", 2
-    dat 4, "cls", 3
-    dat 1, 0
+;----------------------------------------------------------------
+:return_true
+;----------------------------------------------------------------
+	set x, BOOL_TRUE
+	set pc, postamble
 
-:text
-    dat "xxx"
-
+;----------------------------------------------------------------
+:return_false
+;----------------------------------------------------------------
+	set x, BOOL_FALSE
+	set pc, postamble
 

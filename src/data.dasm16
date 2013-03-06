@@ -5,6 +5,7 @@
 :current_scope  dat 0
 
 :builtin		dat 0
+:history		dat 0
 
 :recovery_fp    dat 0
 :recovery_sp    dat 0
@@ -22,10 +23,16 @@
 ;----------------------------------------------------------------
 ; GLOBAL FD VARIABLES
 ;----------------------------------------------------------------
-; current file status
-:file_position			dat 0
-:file_buffer_position	dat 0
-:file_current_sector    dat 0
+:floppy__file__position					dat 0
+:floppy__buffer__position				dat 0
+
+:floppy__free
+:floppy__free__head						DAT 0
+:floppy__free__tail						DAT 0
+
+:floppy__dir
+:floppy__dir__head						DAT 0
+:floppy__dir__tail						DAT 0
 
 ;----------------------------------------------------------------
 ; RANDOM NUMBER GENERATORS
@@ -86,65 +93,73 @@
 :prev_char  dat 0
 
 ;----------------------------------------------------------------
+; INTERPRETER LINE EDITOR
+;----------------------------------------------------------------
+;----------------------------------------------------------------
+; current history line 0-4
+:line_editor__buf_index		dat			0
+:line_editor__start_addr	dat			0
+:line_editor__current_addr	dat			0
+:line_editor__end_addr		dat			0
+:line_editor__last_char		dat			0
+
+;----------------------------------------------------------------
+; DICT HELPERS
+;----------------------------------------------------------------
+:dict__get__finish
+	dat dict__get__match
+	dat dict__get__no_match
+
+:dict__set__finish
+	dat dict__set__match
+	dat dict__set__no_match
+
+;----------------------------------------------------------------
+; CRYPT LIB
+;----------------------------------------------------------------
+:crypt__State
+dat 0x0, 0x0, 0x0, 0x0
+dat 0x0, 0x0, 0x0, 0x0
+
+:crypt__SBoxE
+dat 0x7ce9, 0x215f, 0xb6d0, 0x48a3
+dat 0x4a16, 0x8f7c, 0x30ed, 0x59b2
+dat 0x2fc1, 0x56ad, 0xe834, 0x0b97
+dat 0xf458, 0x9721, 0xa30e, 0x6cdb
+
+:crypt__SBoxD
+dat 0xb54f, 0xc690, 0xd3e8, 0x1a27
+dat 0x92f8, 0x0c36, 0x4d1e, 0x7ba5
+dat 0xc30a, 0xb45f, 0x9e6d, 0x2781
+dat 0xa769, 0x12c5, 0x348f, 0xdeb0
+;----------------------------------------------------------------
 ; CONSTANT DATA VALUES
 ;----------------------------------------------------------------
-:STR_UNDERSCORE DAT STR_UNDERSCORE + 2, TYPE_NAME, 1, "_"
-:STR_EX         DAT STR_EX + 2, TYPE_NAME, 2, "ex"
-:STR_ME         DAT STR_ME + 2, TYPE_NAME, 2, "me"
+:NONE       dat 0, TYPE_NONE
+:VOID       dat 0, TYPE_VOID
 
-:STR_STARTUP	DAT STR_STARTUP + 2, TYPE_STRING, 32, " ** DCPU ADMIRAL INTERPRETER ** "
-:STR_STARTUP2	DAT STR_STARTUP2 + 2, TYPE_STRING, 16, "64K RAM SYSTEM  "
-:STR_STARTUP3	DAT STR_STARTUP3 + 2, TYPE_STRING, 11, " WORDS FREE"
-:STR_TRUE       DAT STR_TRUE + 2, TYPE_STRING, 4, "true"
-:STR_FALSE      DAT STR_FALSE + 2, TYPE_STRING, 5, "false"
-:STR_ERROR      DAT STR_ERROR + 2, TYPE_STRING, 5, "ERROR"
-:STR_PROMPT     DAT STR_PROMPT + 2, TYPE_STRING, 1, ">"
-:STR_FS_ROOT    DAT STR_FS_ROOT + 2, TYPE_STRING, 1, "/"
-:STR_EMPTY      DAT STR_EMPTY + 2, TYPE_STRING, 0
+:INT_N1 	dat INT_N1 + 2, TYPE_INT, 0x0001, 0xFFFF
+:INT_TABLE
+:INT_0      dat INT_0 + 2, TYPE_INT, 0x0001, 0x0000
+:INT_1      dat INT_1 + 2, TYPE_INT, 0x0001, 0x0001
+:INT_2      dat INT_2 + 2, TYPE_INT, 0x0001, 0x0002
+:INT_3      dat INT_3 + 2, TYPE_INT, 0x0001, 0x0003
+:INT_4      dat INT_4 + 2, TYPE_INT, 0x0001, 0x0004
+:INT_5      dat INT_5 + 2, TYPE_INT, 0x0001, 0x0005
+:INT_6      dat INT_6 + 2, TYPE_INT, 0x0001, 0x0006
+:INT_7      dat INT_7 + 2, TYPE_INT, 0x0001, 0x0007
+:INT_8      dat INT_8 + 2, TYPE_INT, 0x0001, 0x0008
+:INT_9      dat INT_9 + 2, TYPE_INT, 0x0001, 0x0009
+:INT_10     dat INT_10 + 2, TYPE_INT, 0x0001, 0x000a
+:INT_11     dat INT_11 + 2, TYPE_INT, 0x0001, 0x000b
+:INT_12     dat INT_12 + 2, TYPE_INT, 0x0001, 0x000c 
+:INT_13     dat INT_13 + 2, TYPE_INT, 0x0001, 0x000d 
+:INT_14     dat INT_14 + 2, TYPE_INT, 0x0001, 0x000e 
+:INT_15     dat INT_15 + 2, TYPE_INT, 0x0001, 0x000f 
+:INT_16     dat INT_16 + 2, TYPE_INT, 0x0001, 0x0010
 
-:NONE           DAT 0, TYPE_NONE
-
-:BOOL_HANDLE_FALSE  dat INT_VALUE_0, TYPE_BOOLEAN
-:BOOL_HANDLE_TRUE   dat INT_VALUE_1, TYPE_BOOLEAN
-
-:INT_HANDLE_N1      dat INT_VALUE_N1, TYPE_INT
-:INT_HANDLE
-:INT_HANDLE_0       dat INT_VALUE_0, TYPE_INT
-:INT_HANDLE_1       dat INT_VALUE_1, TYPE_INT
-:INT_HANDLE_2       dat INT_VALUE_2, TYPE_INT
-:INT_HANDLE_3       dat INT_VALUE_3, TYPE_INT
-:INT_HANDLE_4       dat INT_VALUE_4, TYPE_INT
-:INT_HANDLE_5       dat INT_VALUE_5, TYPE_INT
-:INT_HANDLE_6       dat INT_VALUE_6, TYPE_INT
-:INT_HANDLE_7       dat INT_VALUE_7, TYPE_INT
-:INT_HANDLE_8       dat INT_VALUE_8, TYPE_INT
-:INT_HANDLE_9       dat INT_VALUE_9, TYPE_INT
-:INT_HANDLE_10      dat INT_VALUE_10, TYPE_INT 
-:INT_HANDLE_11      dat INT_VALUE_11, TYPE_INT 
-:INT_HANDLE_12      dat INT_VALUE_12, TYPE_INT 
-:INT_HANDLE_13      dat INT_VALUE_13, TYPE_INT 
-:INT_HANDLE_14      dat INT_VALUE_14, TYPE_INT 
-:INT_HANDLE_15      dat INT_VALUE_15, TYPE_INT 
-:INT_HANDLE_16      dat INT_VALUE_16, TYPE_INT
-
-:INT_VALUE_N1   dat 0x0001, 0xFFFF
-:INT_VALUE_0    dat 0x0001, 0x0000
-:INT_VALUE_1    dat 0x0001, 0x0001
-:INT_VALUE_2    dat 0x0001, 0x0002
-:INT_VALUE_3    dat 0x0001, 0x0003
-:INT_VALUE_4    dat 0x0001, 0x0004
-:INT_VALUE_5    dat 0x0001, 0x0005
-:INT_VALUE_6    dat 0x0001, 0x0006
-:INT_VALUE_7    dat 0x0001, 0x0007
-:INT_VALUE_8    dat 0x0001, 0x0008
-:INT_VALUE_9    dat 0x0001, 0x0009
-:INT_VALUE_10   dat 0x0001, 0x000A
-:INT_VALUE_11   dat 0x0001, 0x000B
-:INT_VALUE_12   dat 0x0001, 0x000C
-:INT_VALUE_13   dat 0x0001, 0x000D
-:INT_VALUE_14   dat 0x0001, 0x000E
-:INT_VALUE_15   dat 0x0001, 0x000F
-:INT_VALUE_16   dat 0x0001, 0x0010
+:BOOL_FALSE  dat INT_0 + 2, TYPE_BOOL
+:BOOL_TRUE   dat INT_1 + 2, TYPE_BOOL
 
 :FLOAT_NAN		DAT 0
 :FLOAT_PINF		DAT 0
@@ -164,11 +179,31 @@
 :FLOAT_9		DAT 0
 :FLOAT_10		DAT 0
 
-:STR_PINF			DAT STR_PINF+2, TYPE_STRING, 3, "inf"
-:STR_NINF			DAT STR_NINF+2, TYPE_STRING, 4, "-inf"
-:STR_PZERO			DAT STR_PZERO+2, TYPE_STRING, 3, "0.0"
-:STR_NZERO			DAT STR_NZERO+2, TYPE_STRING, 4, "-0.0"
-:STR_NAN			DAT STR_NAN+2, TYPE_STRING, 3, "nan"
+:STR_PINF			DAT STR_PINF+2, TYPE_STR, 3, "inf"
+:STR_NINF			DAT STR_NINF+2, TYPE_STR, 4, "-inf"
+:STR_PZERO			DAT STR_PZERO+2, TYPE_STR, 3, "0.0"
+:STR_NZERO			DAT STR_NZERO+2, TYPE_STR, 4, "-0.0"
+:STR_NAN			DAT STR_NAN+2, TYPE_STR, 3, "nan"
+
+:STR_STARTUP	DAT STR_STARTUP + 2, TYPE_STR, 32, " ** DCPU ADMIRAL INTERPRETER ** "
+:STR_STARTUP2	DAT STR_STARTUP2 + 2, TYPE_STR, 16, "64K RAM SYSTEM  "
+:STR_STARTUP3	DAT STR_STARTUP3 + 2, TYPE_STR, 11, " WORDS FREE"
+:STR_PROMPT     DAT STR_PROMPT + 2, TYPE_STR, 1, ">"
+:STR_ERROR      DAT STR_ERROR + 2, TYPE_STR, 6, "ERROR:"
+:STR_FS_ROOT    DAT STR_FS_ROOT + 2, TYPE_STR, 1, "/"
+:STR_AUTOEXEC	DAT STR_AUTOEXEC + 2, TYPE_STR, 8, "MAIN.BIN"
+:STR_MAIN		DAT STR_MAIN + 2, TYPE_NAME, 4, "main"
+
+:STR_UNDERSCORE DAT STR_UNDERSCORE + 2, TYPE_NAME, 1, "_"
+:STR_EX         DAT STR_EX + 2, TYPE_NAME, 2, "ex"
+:STR_ME         DAT STR_ME + 2, TYPE_NAME, 2, "me"
+
+:STR_NONE       DAT STR_NONE + 2, TYPE_STR, 4, "none"
+:STR_TRUE       DAT STR_TRUE + 2, TYPE_STR, 4, "true"
+:STR_FALSE      DAT STR_FALSE + 2, TYPE_STR, 5, "false"
+:STR_EMPTY      DAT STR_EMPTY + 2, TYPE_STR, 0
+
+:HEX			DAT "0123456789abcdef"
 
 ;----------------------------------------------------------------
 ; TOKENS
@@ -181,6 +216,7 @@
 
 ; atoms
 :token_int          dat std_expression, nud_int, recover, 0x0000
+:token_hex          dat std_expression, nud_hex, recover, 0x0000
 :token_float        dat std_expression, nud_float, recover, 0x0000
 :token_name         dat std_expression, nud_name, recover, 0x0000
 :token_str          dat std_expression, nud_str, recover, 0x0000
@@ -196,6 +232,7 @@
 :token_cls          dat std_cls, recover, recover, 0x0000
 :token_del          dat std_del, recover, recover, 0x0000
 :token_for          dat std_for, recover, recover, 0x0000
+:token_run          dat std_run, recover, recover, 0x0000
 :token_elif         dat recover, recover, recover, 0x0000
 :token_else         dat recover, recover, recover, 0x0000
 :token_pass         dat std_pass, recover, recover, 0x0000
@@ -219,7 +256,6 @@
 :token_augass_lshift    dat recover, recover, led_augass_lshift, 0x0010
 :token_augass_rshift    dat recover, recover, led_augass_rshift, 0x0010
 :token_cond_assign      dat recover, recover, led_cond_assign, 0x0010
-:token_prototype        dat recover, recover, led_prototype, 0x0010
 
 ; tuple constructor
 :token_comma            dat recover, recover, led_comma, 0x0020
@@ -280,6 +316,9 @@
 ;----------------------------------------------------------------
 :built_in_functions
 	dat 3, "id", built_in_id
+	dat 3, "rm", built_in_rm
+	dat 4, "dir", built_in_dir
+	dat 4, "hex", built_in_hex
 	dat 4, "mem", built_in_mem
 	dat 4, "rnd", built_in_rnd
 	dat 4, "int", built_in_int
@@ -289,15 +328,48 @@
 	dat 4, "ord", built_in_ord
 	dat 4, "chr", built_in_chr
 	dat 4, "cmp", built_in_cmp
+	dat 4, "key", built_in_key
 	dat 5, "bool", built_in_bool
 	dat 5, "edit", built_in_edit
+	dat 5, "exit", built_in_exit
+	dat 5, "getc", built_in_getchar
+	dat 5, "load", built_in_load
+	dat 5, "peek", built_in_win_get
+	dat 5, "poke", built_in_win_set
 	dat 5, "repr", built_in_repr
+	dat 5, "save", built_in_save
 	dat 5, "sort", built_in_sort
 	dat 6, "range", built_in_range
 	dat 6, "float", built_in_float
 	dat 6, "input", built_in_input
+	dat 7, "cursor", built_in_cursor
+	dat 7, "format", built_in_format
 	dat 7, "locals", built_in_locals
+	dat 7, "scroll", built_in_scroll
 	dat 8, "globals", built_in_globals
+	dat 1, led_lparen_user_defined
+
+:built_in__list_methods
+	dat 7, "append", built_in__list_append
+	dat 7, "insert", built_in__list_insert
+	dat 1, led_lparen_user_defined
+
+:built_in__dict_methods
+	dat 7, "create", built_in__dict_create
+	dat 1, led_lparen_user_defined
+
+:built_in__str_methods
+	dat 8, "decrypt", built_in__str_decrypt
+	dat 8, "encrypt", built_in__str_encrypt
+	dat 6, "lower", built_in__str_lower
+	dat 6, "upper", built_in__str_upper
+	dat 5, "find", built_in__str_find
+	dat 8, "replace", built_in__str_replace
+	dat 6, "split", built_in__str_split
+	dat 9, "endswith", built_in__str_endswith
+	dat 11, "startswith", built_in__str_startswith
+	dat 8, "isalpha", built_in__str_isalpha
+	dat 8, "isdigit", built_in__str_isdigit
 	dat 1, led_lparen_user_defined
 
 ;----------------------------------------------------------------
@@ -317,6 +389,7 @@
 	dat 4, "for", token_for
 	dat 4, "inf", token_float
 	dat 4, "nan", token_float
+	dat 4, "run", token_run
 	dat 5, "true", token_true
 	dat 5, "none", token_none
 	dat 5, "elif", token_elif
