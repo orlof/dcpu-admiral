@@ -384,6 +384,9 @@
 	ife a, [buf_end]
 		set pc, pop
 
+	ife a, [gap_start]
+		set a, [gap_end]
+
 	ife [a], KEY_NEWLINE
 		set pc, pop		
 
