@@ -511,14 +511,16 @@
 		set pc, del_name
 
 	set y, recover
-	ife [a + HANDLE_TYPE], TYPE_REFERENCE
-		set y, dict_del
 	ife [a + HANDLE_TYPE], TYPE_SUBSCRIPTION
 		set y, list_del
 
 	set a, [a]
-	set push, [a + REFERENCE_LEFT] ; = SUBSCRIPTION_LIST
-	set push, [a + REFERENCE_RIGHT] ; = SUBSCRIPTION_INDEX
+	set b, [a + REFERENCE_LEFT]
+	ife [b + HANDLE_TYPE], TYPE_DICT
+		set y, dict_del
+	
+	set push, b 					; LEFT
+	set push, [a + REFERENCE_RIGHT] ; RIGHT
 	jsr y
 	
 	set x, NONE

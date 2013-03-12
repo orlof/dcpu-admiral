@@ -64,19 +64,20 @@
 	set push, i
 	set push, j
 
-	set i, [a]
-	set j, [i]
-
-	sub [i], 1
+	set i, x
+	set j, x
+	add j, 1
 	
-	add i, [i]
+	set x, [a]
+	sub [x], 1
+	add x, [x]
 
 :array__del__loop
-	ifl i, x
+	ifg i, x
 		set pc, array__del__finish
 		
 	set [i], [j]
-	std pc, array__del__loop
+	sti pc, array__del__loop
 	
 :array__del__finish
 	set j, pop
