@@ -133,6 +133,9 @@
 	set push, [a + REFERENCE_LEFT]		; struct handle *dict or *list
 	set push, [a + REFERENCE_RIGHT]		; struct handle *key or index
 	jsr scope_get
+	
+	ife x, 0
+		jsr recover
 
 	set pc, postamble
 
@@ -156,6 +159,9 @@
 	set push, b
 	set push, c
 	jsr scope_get
+
+	ife x, 0
+		jsr recover
 
 	set pc, postamble
 
@@ -855,9 +861,9 @@
 		set pc, pop
 	ife c, KEY_DEL
 		set pc, pop
-	ifg c, KEY_UP-1
-		ifl c, KEY_RIGHT+1
-			set pc, pop
+;	ifg c, KEY_UP-1
+;		ifl c, KEY_RIGHT+1
+;			set pc, pop
 
 	set b, KEY_UP
 	jsr win_getchar_test_key
