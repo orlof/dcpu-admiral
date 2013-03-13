@@ -589,6 +589,8 @@
 
 	ife x, ' '
 		set pc, built_in__str_split__ws__handle_ws
+	ife x, 0x11
+		set pc, built_in__str_split__ws__handle_ws
 		
 	; handle text
 	set c, x

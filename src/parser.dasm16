@@ -2204,6 +2204,7 @@
 		jsr recover
 
 	jsr lexer_get_token_as_string
+	set [x + HANDLE_TYPE], TYPE_STR
 
 	set a, [z-1]
 	set a, [a]
@@ -2720,12 +2721,25 @@
 		jsr recover
 
 	set a, [z-1]
-	ifc [a + HANDLE_TYPE], TYPE_STR + TYPE_TUPLE + TYPE_DICT + TYPE_LIST
+	ifc [a + HANDLE_TYPE], TYPE_NAME + TYPE_STR + TYPE_TUPLE + TYPE_DICT + TYPE_LIST
 		jsr recover
 
 	set a, [a]
 
 	set push, [a]
+	jsr uint16_to_int
+
+	set pc, postamble	
+
+;----------------------------------------------------------------
+:built_in_type
+;----------------------------------------------------------------
+	jsr built_in_params
+	ifn i, 1
+		jsr recover
+
+	set x, [z-1]
+	set push, [x + HANDLE_TYPE]
 	jsr uint16_to_int
 
 	set pc, postamble	
