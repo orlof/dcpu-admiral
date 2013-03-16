@@ -8,8 +8,18 @@
 	jsr preamble
 
 	set [z-1], [z+11]
-	set [z-2], [z+10]
+	set x, [z+10]
+	set [z-2], x
 
+	ifn [x + HANDLE_TYPE], TYPE_NAME
+		set pc, dict_get_skip
+
+	set push, x
+	jsr array_clone
+	set [x + HANDLE_TYPE], TYPE_STR
+	set [z-2], x
+
+:dict_get_skip
 	set b, dict__get__finish
 	set pc, dict__bin_search
 
@@ -35,8 +45,18 @@
 	jsr preamble
 
 	set [z-1], [z+12]
-	set [z-2], [z+11]
+	set x, [z+11]
+	set [z-2], x
 
+	ifn [x + HANDLE_TYPE], TYPE_NAME
+		set pc, dict_set_skip
+
+	set push, x
+	jsr array_clone
+	set [x + HANDLE_TYPE], TYPE_STR
+	set [z-2], x
+
+:dict_set_skip
 	; create item tuple
 	set push, 2
 	set push, TYPE_TUPLE
@@ -45,7 +65,7 @@
 
 	sti i, [x]
 
-	sti [i], [z+11]		; add key to tuple
+	sti [i], [z-2]		; add key to tuple
 	set [i], [z+10]		; add value to tuple
 
 	set b, dict__set__finish
@@ -81,8 +101,18 @@
 		jsr recover
 
 	set [z-1], [z+11]
-	set [z-2], [z+10]
+	set x, [z+10]
+	set [z-2], x
 
+	ifn [x + HANDLE_TYPE], TYPE_NAME
+		set pc, dict_del_skip
+
+	set push, x
+	jsr array_clone
+	set [x + HANDLE_TYPE], TYPE_STR
+	set [z-2], x
+
+:dict_del_skip
 	set b, dict__del__finish
 	set pc, dict__bin_search
 
@@ -94,7 +124,7 @@
 	sub c, a
 	sub c, 1
 
-	set a, [z+11]
+	set a, [z-2]
 	set b, c
 	jsr array__del
 

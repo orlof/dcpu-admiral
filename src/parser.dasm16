@@ -1781,38 +1781,6 @@
 	set pc, postamble
 
 ;----------------------------------------------------------------
-; struct handle *led_cond_assign(struct handle *left)
-;----------------------------------------------------------------
-:led_cond_assign
-	set push, 1
-	set push, 1
-	jsr preamble
-
-	jsr lexer_next					; skip '?='
-
-	; right side
-	set push, 0x0009 					; right binding power
-	jsr expression
-    set [z-1], x
-	
-	set push, [current_scope]
-	set push, [z+10]
-	jsr scope_get
-	
-	ifn x, 0
-		set pc, postamble
-
-    set push, [z-1]
-	jsr eval
-    set [z-1], x
-
-	set push, [z+10]
-	set push, x
-	jsr assign
-	
-	set pc, postamble
-
-;----------------------------------------------------------------
 :led_augass
 ;----------------------------------------------------------------
 	; we cheat here, as stack is wrongly organized
@@ -1983,7 +1951,7 @@
 
 :parse_testlist_item_assign
 	; f(a=1)
-	ifn [x+1], TYPE_NAME
+	ifn [x + HANDLE_TYPE], TYPE_NAME
 		jsr recover	
 
 	jsr lexer_next	; skip '='

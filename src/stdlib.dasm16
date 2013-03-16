@@ -129,9 +129,10 @@
 	set pc, postamble
 
 :eval_reference
-	set a, [x]
-	set push, [a + REFERENCE_LEFT]		; struct handle *dict or *list
-	set push, [a + REFERENCE_RIGHT]		; struct handle *key or index
+	set x, [x]
+
+	set push, [x + REFERENCE_LEFT]		; struct handle *dict or *list
+	set push, [x + REFERENCE_RIGHT]		; struct handle *key or index
 	jsr scope_get
 	
 	ife x, 0

@@ -210,18 +210,6 @@
 	set pc, lexer_finish_advance
 
 ;----------------------------------------------------------------
-:lexer_char_questionmark
-;----------------------------------------------------------------
-	set [lexer_token], token_cond_assign
-
-	add b, 1
-	jsr array__get
-	ifn x, '='
-		jsr recover
-
-	set pc, lexer_finish_advance
-
-;----------------------------------------------------------------
 :lexer_char_comma
 ;----------------------------------------------------------------
 	set [lexer_token], token_comma

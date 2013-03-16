@@ -255,7 +255,6 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
 :token_augass_and       dat recover, recover, led_augass_and, 0x0010
 :token_augass_lshift    dat recover, recover, led_augass_lshift, 0x0010
 :token_augass_rshift    dat recover, recover, led_augass_rshift, 0x0010
-:token_cond_assign      dat recover, recover, led_cond_assign, 0x0010
 
 ; tuple constructor
 :token_comma            dat recover, recover, led_comma, 0x0020
@@ -472,7 +471,7 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     DAT lexer_char_less          ; 60 < (less than sign)
     DAT lexer_char_equal         ; 61 = (equal sign)
     DAT lexer_char_greater       ; 62 > (greater than sign)
-    DAT lexer_char_questionmark  ; 63 ? (question mark)
+    DAT recover                  ; 63 ? (question mark)
     DAT recover                  ; 64 @ (AT symbol)
     DAT lexer_char_letter        ; 65 A 
     DAT lexer_char_letter        ; 66 B 
