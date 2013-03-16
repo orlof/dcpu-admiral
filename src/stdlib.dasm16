@@ -961,7 +961,7 @@
 	hwi [keyboard]
 	ife c, 0
 	    set pc, input_loop        ; no input
-    ife c, KEY_SHIFT
+    ifg c, 0x7f
         set pc, input_loop
 
 	jsr screen_toggle_cursor
