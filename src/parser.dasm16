@@ -2172,7 +2172,7 @@
 		jsr recover
 
 	jsr lexer_get_token_as_string
-	set [x + HANDLE_TYPE], TYPE_STR
+;	set [x + HANDLE_TYPE], TYPE_STR
 
 	set a, [z-1]
 	set a, [a]
