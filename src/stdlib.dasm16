@@ -728,10 +728,6 @@
 
 	set pc, print_loop
 
-:print_loop_not_newline
-
-:print_loop_not_backslash
-	
 ;----------------------------------------------------------------
 ; struct handle *repr(struct handle *value)
 ;----------------------------------------------------------------

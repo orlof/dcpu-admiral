@@ -227,7 +227,7 @@
     SET PUSH, C
     
     SET I, 0
-    :crypt__EWD16_loop:
+    :crypt__EWD16_loop
         XOR A, [B]
         
         SET C, crypt__SBoxE
