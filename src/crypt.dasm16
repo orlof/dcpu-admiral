@@ -224,95 +224,121 @@
 ;Encrypt Permutation
 :crypt__EWD16
     SET PUSH, I
-    SET PUSH, C
+    SET PUSH, B
     
     SET I, 0
     :crypt__EWD16_loop
         XOR A, [B]
-        
-        SET C, crypt__SBoxE
-        JSR crypt__FuncS
-        SET C, A
-        SHL C, 6
-		BOR C, EX
-        XOR C, A
-        SHL A, 10
-		BOR C, EX
-        XOR A, C
-        
+        JSR crypt__EMix
         ADD I, 1
         ADD B, 1
         IFN I, 4
             SET PC, crypt__EWD16_loop
     
-    SUB B, 4
-	SET C, POP
+    SET B, POP
     SET I, POP
+    SET PC, POP
+
+;Encrypt Mixing Function
+:crypt__EMix
+    SET PUSH, B
+    
+    SET B, crypt__SBoxE
+    JSR crypt__FuncS
+    SET B, A
+    SHL B, 6
+    BOR B, EX
+    XOR B, A
+    SHL A, 10
+    BOR A, EX
+    XOR A, B
+    
+    SET B, POP
     SET PC, POP
 
 ;Decrypt Permutation
 :crypt__DWD16
     SET PUSH, I
-	SET PUSH, C
     
     SET I, 0
     ADD B, 4
     :crypt__DWD16_loop
         SUB B, 1
-        
-        ;Mixing function
-        SET C, A
-        SHL C, 2
-		BOR C, EX
-        XOR A, C
-        SHL C, 2
-		BOR C, EX
-        XOR A, C
-        SHL C, 8
-		BOR C, EX
-        XOR A, C
-        SHL C, 2
-		BOR C, EX
-        XOR A, C
-    
-        SET C, crypt__SBoxD
-        JSR crypt__FuncS
-        
+        JSR crypt__DMix
         XOR A, [B]
         ADD I, 1
         IFN I, 4
             SET PC, crypt__DWD16_loop
     
-    SET C, POP
-	SET I, POP
+    SET I, POP
     SET PC, POP
 
+;Decrypt Mixing Function
+:crypt__DMix
+    SET PUSH, B
+    SET PUSH, C
+    
+    SET B, A
+    SET C, A
+    SHL B, 2
+    BOR B, EX
+    XOR B, A
+    SHL C, 4
+    BOR C, EX
+    XOR B, C
+    SET C, A
+    SHL C, 12
+    BOR C, EX
+    XOR B, C
+    SHL A, 14
+    BOR A, EX
+    XOR A, B
+    
+    SET B, crypt__SBoxD
+    JSR crypt__FuncS
+    
+    SET C, POP
+    SET B, POP
+    SET PC, POP
 
 ;A = Word to SBox
 ;B = SBox to use
 :crypt__FuncS
-    SET PUSH, B
+    SET PUSH, C
     SET PUSH, I
     SET PUSH, X
+    SET PUSH, Y
+    SET PUSH, Z
     
-    SET B, A
+    SET C, A
     SET A, 0
-    SET I, 0xF000
-
-    FuncS_loop:
-    SHL B, 4
-    SET X, EX
-    ADD X, C
-    SET X, [X]
-    AND X, I
-    BOR A, X
-    SHR I, 4
-    IFG I, 0
-        SET PC, FuncS_loop
+    SET I, 0
     
+    :crypt__FuncS_loop
+    ADD I, 1
+    SHL C, 4
+    SET X, EX
+    SHR X, 2
+    SET Y, EX
+    SHR Y, 14
+    ADD X, B
+    ADD Y, 1
+    MUL Y, 4
+    SET Z, [X]
+    SHL Z, Y
+    SET Z, EX
+    AND Z, 0xf
+    SHL A, 4
+    BOR A, Z
+    ADD B, 4
+    IFL I, 4
+        SET PC, crypt__FuncS_loop
+    
+    SET Z, POP
+    SET Y, POP
     SET X, POP
     SET I, POP
-    SET B, POP
+    SET C, POP
     SET PC, POP
 
 :crypt__Return
