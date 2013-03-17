@@ -124,7 +124,7 @@
 	sub c, a
 	sub c, 1
 
-	set a, [z-2]
+	set a, [z-1]
 	set b, c
 	jsr array__del
 
