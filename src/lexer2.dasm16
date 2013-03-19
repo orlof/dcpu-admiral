@@ -108,15 +108,15 @@
 ; void lexer_next()
 ;----------------------------------------------------------------
 :lexer_next
-	set push, 0
-	set push, 0
-	jsr preamble
+	set push, a
+	set push, b
+	set push, c
 
 	ifg [lexer_current_indent], [lexer_target_indent]
 		set pc, lexer_dedent
 	ifl [lexer_current_indent], [lexer_target_indent]
 		set pc, lexer_indent
-
+		
 	set a, [lexer_string]		; struct handle *
 	set b, [lexer_end]
 	
@@ -137,7 +137,13 @@
 
 :lexer_finish
 	set [lexer_end], b
-	set pc, postamble
+
+:lexer__exit
+	set c, pop
+	set b, pop
+	set a, pop
+	
+	set pc, pop
 
 ;----------------------------------------------------------------
 :lexer_char_newline
@@ -177,13 +183,13 @@
 ;----------------------------------------------------------------
 	set [lexer_token], token_indent
 	add [lexer_current_indent], 1
-	jsr postamble
+	set pc, lexer__exit
 ;----------------------------------------------------------------
 :lexer_dedent
 ;----------------------------------------------------------------
 	set [lexer_token], token_dedent
 	sub [lexer_current_indent], 1
-	jsr postamble
+	set pc, lexer__exit
 
 ;----------------------------------------------------------------
 :lexer_char_dot
@@ -487,11 +493,18 @@
 	sub b, [lexer_start]
 	add a, 1
 
+	set push, i
+	set push, j
+
 	set x, built_in_stmts
 	jsr built_in_matcher
 	
+	set j, pop
+	set i, pop
+	
 	set [lexer_token], c
-	set pc, postamble
+	
+	set pc, lexer__exit
 
 ;----------------------------------------------------------------
 :lexer_char_quotationmark
@@ -589,7 +602,8 @@
 	sub b, 1
 	set [lexer_end], b			; lexer.data1	
 	set [lexer_token], token_float
-	set pc, postamble
+
+	set pc, lexer__exit
 
 ;----------------------------------------------------------------
 :lexer_skip_white
