@@ -164,21 +164,27 @@
 ;----------------------------------------------------------------
 ; extern struct handle *array_insert(struct handle *array, void item)
 ;----------------------------------------------------------------
+; [sp + 3] array
+; [sp + 2] item
+; [sp + 1] RTS
+; [sp + 0] a
 :array__append
-	set push, 2
-	set push, 0
-	jsr preamble
+	set push, a
 
-	set a, [z+11]
+	set a, [sp + 3]
 	jsr array__increment_length
 
 	set a, [a]
 	add a, [a]
 
-	set [a], [z+10]
+	set [a], [sp + 2]
 
-	set x, [z+11]
-	set pc, postamble
+	set a, pop
+	set x, [sp + 2]
+	
+	set [sp], pop
+	set [sp], pop
+	set pc, pop
 
 ;----------------------------------------------------------------
 ; struct handle *array_append_array(struct handle *array, struct handle *array)
@@ -487,27 +493,38 @@
 ;----------------------------------------------------------------
 ; void array_map(struct handle *array, *function map)
 ;----------------------------------------------------------------
+; [sp + 4] array
+; [sp + 3] func
+; [sp + 2] RTS
+; [sp + 1] a
+; [sp + 0] b
 :array_map
-	set push, 2
-	set push, 0
-	jsr preamble
+	set push, a
+	set push, b
+
+	set a, [sp + 4]
+	set a, [a]
+
+	set b, a
+	add a, [a]
 	
-	set a, [z + 11]				; struct handle *array
-	set b, [z + 10]				; *map()
-
-	set c, [a]
-	sti i, c
-	add c, [c]
-
 :array_map__loop
-	ifg i, c
-		set pc, postamble
+	add b, 1
+	ifg b, a
+		set pc, array_map__finish
 
-	set push, [i]
-	jsr b
+	set push, [b]
+	jsr [sp + 4]
 	
-	sti pc, array_map__loop
-		
+	set pc, array_map__loop
+
+:array_map__finish
+	set b, pop
+	set a, pop
+	set [sp], pop
+	set [sp], pop
+	set pc, pop
+
 ;----------------------------------------------------------------
 ; void array_find(struct handle *array, void item)
 ;----------------------------------------------------------------
