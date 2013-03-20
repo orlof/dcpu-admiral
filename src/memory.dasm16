@@ -80,98 +80,114 @@
 ; struct handle *alloc(uint16 size, uint16 type)
 ; return pointer to allocated handle or zero if error
 ;----------------------------------------------------------------
+; [SP + 3] SIZE
+; [SP + 2] TYPE
+; [SP + 1] RTS
+; [SP + 0] a
 :alloc
-	set push, 2
-	set push, 0
-	jsr preamble
+	set push, a
 
+	;------------------------------
+	; ENSURE FREE CAPACITY
+	;------------------------------
 	; calculate required heap space
-	set a, [z+11]
+	set a, [sp + 3]
 	add a, SIZEOF_HANDLE
 
 	jsr ensure_memory
 
-	;---------------------------------------
-	; handle cleanup
-	;---------------------------------------
+	; periodic handle free routine
 	add [heap_counter], 1
 	ife [heap_counter], HEAP_GC_TRIGGER
 		jsr mark
 
-	; try to get recycled handle
-	set c, [heap_handle_free]
+	;------------------------------
+	; ALLOCATE DATA
+	;------------------------------
+	set a, [heap_free_start]			; i points to allocated memory region
 
-	; remove handle from free list
-	ifn c, 0
-		set [heap_handle_free], [c + HANDLE_NEXT]
-    ; ...and skip handle allocation
-	ifn c, 0							; recycled handle available?
-		set pc, alloc__reserve_data		; yes
+	set x, a
+	add x, [sp + 3]                       ; x points to first word after allocated memory
 
-	set c, [heap_handle_start]			; reserve new handle
-	sub c, SIZEOF_HANDLE
-
-	set [heap_handle_start], c
-
-:alloc__reserve_data
-	; c points now to new handle structure
-
-	; init allocated space
-	set i, [heap_free_start]			; i points to allocated memory region
-
-	set a, i
-	add a, [z+11]                       ; a points to first word after allocated memory
-
-:alloc__init_memory
+:alloc__data__clear
     ; initialize allocated space with all zeros
-	ife i, a
-		set pc, alloc__finish
+	ife a, x
+		set pc, alloc__handle
 
-	set [i], 0				            ; default init with zero
-	sti pc, alloc__init_memory
+	set [a], 0				            ; default init with zero
+	add a, 1
+	set pc, alloc__data__clear
 
+:alloc__handle
+	;------------------------------
+	; ALLOCATE HANDLE
+	;------------------------------
+	; try to get recycled handle
+	set x, [heap_handle_free]
+
+	ifn x, 0
+		set pc, alloc__handle__recycle
+
+	; reserve more space for handles
+	set x, [heap_handle_start]
+	sub x, SIZEOF_HANDLE
+
+	set [heap_handle_start], x
+
+	set pc, alloc__finish
+
+:alloc__handle__recycle
+	set [heap_handle_free], [x + HANDLE_NEXT]
+
+	;------------------------------
+	; FINALIZE ALLOCATION
+	;------------------------------
 :alloc__finish
     ; initialize handle structure
-	set [c + HANDLE_PTR], [heap_free_start]     ; pointer to allocated memory region
-	set [c + HANDLE_SIZE], [z+11]				; size of allocated memory region
-	set [c + HANDLE_TYPE], [z+10]				; type of data that is pointed by this handle
-	set [c + HANDLE_NEXT], 0					; next handle in reserved handles list
+	set [x + HANDLE_PTR], [heap_free_start]     ; pointer to allocated memory region
+	set [x + HANDLE_SIZE], [sp + 3]				; size of allocated memory region
+	set [x + HANDLE_TYPE], [sp + 2]				; type of data that is pointed by this handle
+	set [x + HANDLE_NEXT], 0					; next handle in reserved handles list
 
 	set [heap_free_start], a					; update unallocated heap space pointer
 
 	; append new handle to reserved handles list
-	set b, [heap_handle_tail]					; store pointer to last item in reserved handles list
-	set [heap_handle_tail], c					; set reserved handles tail pointer to point in new handle
-	set [b + HANDLE_NEXT], c					; set previous tail's next to point to new handle
+	set a, [heap_handle_tail]					; store pointer to last item in reserved handles list
+	set [heap_handle_tail], x					; set reserved handles tail pointer to point in new handle
+	set [a + HANDLE_NEXT], x					; set previous tail's next to point to new handle
+
+	set a, pop
 	
-	set x, c									; return pointer to new handle
-	set pc, postamble	
+	set [sp], pop
+	set [sp], pop
+
+	set pc, pop
 
 ;----------------------------------------------------------------
 :ensure_memory
 ; fastcall
 ;  a: required memory
 ; return
-;  b: available space
-;  x: polluted
+;  x: available space
 ;----------------------------------------------------------------
-	set x, ensure_memory__out_of_memory
+	set push, ensure_memory__out_of_memory
 
 :ensure_memory__check
 	; calculate space in heap gap
-	set b, [heap_handle_start]
-	sub b, [heap_free_start]
+	set x, [heap_handle_start]
+	sub x, [heap_free_start]
 
-	ifl b, a						; if available space < required space
-		set pc, x
+	ifl x, a						; if available space < required space
+		set pc, pop
 
+	add sp, 1
 	set pc, pop
 
 :ensure_memory__out_of_memory
 	jsr mark
 	jsr compact
 
-	set x, recover
+	set push, recover
 	set pc, ensure_memory__check
 	
 ;----------------------------------------------------------------
