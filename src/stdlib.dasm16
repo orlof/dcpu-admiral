@@ -243,21 +243,23 @@
 
 	ife a, NONE
 		set pc, boolean_false
+		
+	set x, [a + HANDLE_TYPE]
 
-	ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
+	ifb x, TYPE_INT + TYPE_BOOL
 		ife [b], 1
 			ife [b+1], 0
 				set pc, boolean_false
 
-	ifb [a + HANDLE_TYPE], TYPE_FLOAT
+	ifb x, TYPE_FLOAT
 		ifb [b + FLOAT_CATEGORY], FLOAT_CATEGORY_PZERO + FLOAT_CATEGORY_NZERO
 			set pc, boolean_false
 
-	ifc [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOL + TYPE_FLOAT
+	ifc x, TYPE_INT + TYPE_BOOL + TYPE_FLOAT
 		ife [b], 0
 			set pc, boolean_false
 
-	ife [a + HANDLE_TYPE], TYPE_STR
+	ife x, TYPE_STR
 		set pc, boolean_str
 		
 :boolean_true
