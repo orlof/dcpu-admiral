@@ -1,47 +1,44 @@
 ;----------------------------------------------------------------
-; uint str_cmp(struct handle *str, struct handle *str)
+; uint str_cmp(struct handle *left, struct handle *right)
 ;----------------------------------------------------------------
 :str_cmp
-	set push, peek
-	set [sp+1], str_comparator
+	set push, [sp]
+	set [sp + 1], str_comparator
 	set pc, array_cmp
 
 :str_comparator
-	set c, [i+1]
-	set y, [j+1]
-	
-:str_comparator_select
-	set x, 0
-	ifl c, y
-		set x, -1
-	ifg c, y
-		set x, 1
+    set x, 0
+    ifl [sp+2], [sp+1]
+        set x, -1
+    ifg [sp+2], [sp+1]
+        set x, 1
+
+    set [sp], pop
+    set [sp], pop
 
 	set pc, pop
 ;----------------------------------------------------------------
 ; uint str_cmp_ignore_case(struct handle *str, struct handle *str)
 ;----------------------------------------------------------------
 :str_cmp_ignore_case
-	set push, peek
-	set [sp + 1], str_comparator_ignore_case
+	set push, [sp]
+	set [sp + 1], str_comparator__ignore_case
 	set pc, array_cmp
 
-:str_comparator_ignore_case
+:str_comparator__ignore_case
 	; convert upper case letter to lower case
 
 	; x = toLower(x)
-	set c, [i+1]
-	ifg c, 'A'-1
-		ifl c, 'Z'+1
-			add c, 'a' - 'A'
+	ifg [sp+2], 'A'-1
+		ifl [sp+2], 'Z'+1
+			add [sp+2], 'a' - 'A'
 
 	; y = toLower(y)
-	set y, [j+1]
-	ifg y, 'A'-1
-		ifl y, 'Z'+1
-			add y, 'a' - 'A'
+	ifg [sp+1], 'A'-1
+		ifl [sp+1], 'Z'+1
+			add [sp+1], 'a' - 'A'
 
-	set pc, str_comparator_select
+	set pc, str_comparator
 
 ;----------------------------------------------------------------
 ; uint str_search_3(struct handle *haystack, struct handle *needle, uint16 start, uint16 end)

@@ -695,15 +695,19 @@
 ;    0 if left = right
 ;   +1 if left > right
 ;----------------------------------------------------------------
+; [sp + 4] left
+; [sp + 3] right
+; [sp + 2] RTS
+; [sp + 1] i
+; [sp + 0] j
 :int_cmp
-	set push, 2
-	set push, 0
-	jsr preamble
+    set push, i
+    set push, j
 
-	set i, [z+11]
+	set i, [sp + 4]
 	set i, [i]		; struct int *left
 
-	set j, [z+10]
+	set j, [sp + 3]
 	set j, [j]		; struct int *right
 
 	; sign comparison
@@ -735,28 +739,35 @@
 			set pc, int_cmp_lt
 
 	; compare each word
-	set a, i
-	add a, [a]
+	sti x, i
+	add x, [x]
 
 :int_cmp_loop			
-	sti x, x
 	ifg [i], [j]
 		set pc, int_cmp_gt
 	ifl [i], [j]
 		set pc, int_cmp_lt
-	ifn i, a
-		set pc, int_cmp_loop
+	ifn i, x
+		sti pc, int_cmp_loop
 
-	set x, 0
-	jsr postamble
+	sub x, x
+
+:int_cmp__finish
+    set j, pop
+    set i, pop
+
+    set [sp], pop
+    set [sp], pop
+
+    set pc, pop
 
 :int_cmp_lt
 	set x, -1
-	jsr postamble
+	set pc, int_cmp__finish
 	
 :int_cmp_gt
 	set x, 1
-	jsr postamble
+	set pc, int_cmp__finish
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_sub(struct handle *minuend, struct handle *subtrahend)

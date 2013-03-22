@@ -189,29 +189,43 @@
 ;----------------------------------------------------------------
 ; struct handle *array_append_array(struct handle *array, struct handle *array)
 ;----------------------------------------------------------------
+; [sp + 5] this_array
+; [sp + 4] arg_array
+; [sp + 3] RTS
+; [sp + 2] a
+; [sp + 1] b
+; [sp + 0] len(arg)
 :array__append_array
-	set push, 2
-	set push, 0
-	jsr preamble
+    set push, a
+    set push, b
 
-	set b, 0
+    set a, [sp + 3] ; struct handle *arg
+    set x, [a]      ; struct array *arg
+    set push, [x]   ; len(arg)
 
-	set a, [z+10]
-	set c, [a]
-	set c, [c]
+    sub b, b        ; index
 
 :array__append_array__loop
-	ife b, c
-		set pc, postamble
+    ife b, [sp]
+        set pc, array__append_array__finish
 
 	jsr array__get
 	
-	set push, [z+11]
+	set push, [sp + 5]
 	set push, x
 	jsr array__append
-	
+
 	add b, 1
 	set pc, array__append_array__loop
+
+:array__append_array__finish
+    set x, [sp + 5]
+    add sp, 1
+    set b, pop
+    set a, pop
+    set [sp], pop
+    set [sp], pop
+    set pc, pop
 
 ;----------------------------------------------------------------
 :array__increment_length
@@ -347,14 +361,14 @@
 	set j, [z+11]	; struct handle *list2
 	set j, [j]		; struct list *list2
 
-	set b, j		; i: *head1, j: *head2
+	sti b, j		; i: *head1, j: *head2
 	add b, [b]		; *tail2
 
 :array_cmp_loop
-	ife i, a
-	    set pc, array_cmp_loop_break
-	ife j, b
-	    set pc, array_cmp_loop_break
+	ifg i, a
+	    set pc, array_cmp_break__left
+	ifg j, b
+	    set pc, array_cmp_break__right
 
 	set push, [i]
 	set push, [j]
@@ -365,12 +379,15 @@
 
 	jsr postamble
 
-:array_cmp_loop_break
-	set x, 0
-	ifl i, a
-	    set x, 1
-	ifl j, b
-	    set x, -1
+:array_cmp_break__left
+    set x, -1
+    ifg j, b
+        set x, 0
+
+	jsr postamble
+
+:array_cmp_break__right
+    set x, 1
 
 	jsr postamble
 
