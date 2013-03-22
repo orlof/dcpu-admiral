@@ -87,7 +87,43 @@
 	set pc, postamble
 
 ;----------------------------------------------------------------
-; struct handle *float_cmp(struct handle *f1, struct handle *f2)
+; struct handle *float_cmp(struct handle *left, struct handle *right)
+;----------------------------------------------------------------
+:float_cmp__float_int
+    set push, 2
+    set push, 1
+    jsr preamble
+
+	set push, [z + 10]
+	jsr float_from_int
+	set [z-1], x
+
+    set push, [z + 11]
+    set push, [z - 1]
+    jsr float_cmp
+
+    set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *float_cmp(struct handle *left, struct handle *right)
+;----------------------------------------------------------------
+:float_cmp__int_float
+    set push, 2
+    set push, 1
+    jsr preamble
+
+	set push, [z + 11]
+	jsr float_from_int
+	set [z-1], x
+
+    set push, [z - 1]
+    set push, [z + 10]
+    jsr float_cmp
+
+    set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *float_cmp(struct handle *left, struct handle *right)
 ;----------------------------------------------------------------
 :float_cmp
 	set push, 2

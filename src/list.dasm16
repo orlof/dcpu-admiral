@@ -56,17 +56,12 @@
 	jsr postamble
 	
 ;----------------------------------------------------------------
-; uint list_cmp(struct handle *list, struct handle *list)
+; uint list_cmp(struct handle *left, struct handle *right)
 ;----------------------------------------------------------------
 :list_cmp
-	set push, [sp + 2]
-	set push, [sp + 2]
-	set push, val_cmp
-	jsr array_cmp
-	
-	set [sp], pop
-	set [sp], pop
-	set pc, pop
+	set push, [sp]
+	set [sp + 1], val_cmp
+	set pc, array_cmp
 
 ;----------------------------------------------------------------
 ; struct handle *list_repr(struct handle *list)

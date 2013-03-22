@@ -1,72 +1,73 @@
 ;----------------------------------------------------------------
 ; uint val_cmp(struct handle *left, struct handle *right)
 ;----------------------------------------------------------------
+; [sp + 4] struct handle *left
+; [sp + 3] struct handle *right
+; [sp + 2] RTS
+; [sp + 1] a
+; [sp + 0] b
 :val_cmp
-	set push, 2
-	set push, 2
-	jsr preamble
+    set push, a
+    set push, b
 
-	set a, [z+11]
-	set b, [z+10]
+	set a, [sp + 4]
+	set b, [sp + 3]
 
-	set x, 0
-	ife a, b
-		set pc, postamble
-
-	set push, [a + HANDLE_TYPE]
-	bor [sp], [b + HANDLE_TYPE]
-	ife TYPE_INT + TYPE_BOOL, pop
-		set pc, val_cmp__comparable_types
-
-	jsr cast_common_number_type
-
-	; compare
-	ifn [a + HANDLE_TYPE], [b + HANDLE_TYPE]	; different types
-		set pc, valcmp_type
-
-:val_cmp__comparable_types
-	set c, 0						; compare function *
-		
-	; equal types
-	ifb [a + HANDLE_TYPE], TYPE_BOOL + TYPE_INT
-		set c, int_cmp
-
-	ife [a + HANDLE_TYPE], TYPE_FLOAT
-		set c, float_cmp
-
-	ifb [a + HANDLE_TYPE], TYPE_STR + TYPE_NAME
-		set c, str_cmp
-
-	ifb [a + HANDLE_TYPE], TYPE_LIST + TYPE_TUPLE + TYPE_DICT
-		set c, list_cmp
-
-	ife c, 0
-		set pc, valcmp_address
+    ; same object?
+    sub x, x
+    ife a, b
+        set pc, cmp__finish
 
 	set push, a
 	set push, b
-	jsr c
-	
-	set pc, postamble
-		
-:valcmp_address		
+    set push, cmp__finish
+
+    add a, 1
+    add b, 1
+
+    ; (int,int),(int,bool),(bool,int),(bool,bool)
+	ifb [a], TYPE_BOOL + TYPE_INT
+    	ifb [b], TYPE_BOOL + TYPE_INT
+		    set pc, int_cmp
+
+    ; (float,float)
+	ifb [a], TYPE_FLOAT
+    	ifb [b], TYPE_FLOAT
+		    set pc, float_cmp
+    ; (int,float),(bool,float)
+	ifb [a], TYPE_BOOL + TYPE_INT
+    	ifb [b], TYPE_FLOAT
+		    set pc, float_cmp__int_float
+    ; (float,int),(float,bool),
+	ifb [a], TYPE_FLOAT
+    	ifb [b], TYPE_BOOL + TYPE_INT
+		    set pc, float_cmp__float_int
+
+    ; (str,str),(ident,ident)
+	ifb [a], TYPE_STR + TYPE_NAME
+    	ife [b], [a]
+    		set pc, str_cmp
+
+    ; (tuple,tuple),(list,list),(dict,dict)
+	ifb [a], TYPE_LIST + TYPE_TUPLE + TYPE_DICT
+    	ife [b], [a]
+    		set pc, list_cmp
+
+    ; compare types
 	set x, 0
-	ifl [z+11], [z+10]
-		set x, -1
-	
-	ifg [z+11], [z+10]
+	ifg [a], [b]
 		set x, 1
-
-	set pc, postamble
-
-:valcmp_type
-	set x, 0
-	ifg [a + HANDLE_TYPE], [b + HANDLE_TYPE]
-		set x, 1
-	ifl [a + HANDLE_TYPE], [b + HANDLE_TYPE]
+	ifl [a], [b]
 		set x, -1
 
-	set pc, postamble	
+:cmp__finish
+    set b, pop
+    set a, pop
+
+    set [sp], pop
+    set [sp], pop
+
+    set pc, pop
 
 ;----------------------------------------------------------------
 ; struct handle *eval(struct handle *orig)
