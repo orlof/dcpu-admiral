@@ -503,6 +503,10 @@
 	jsr eval
     set [z-3], x
 	
+	set push, x
+	jsr boolean
+	set [z-3], x
+	
 	set push, token_colon		; verify colon
 	jsr lexer_advance
 
@@ -595,6 +599,10 @@
 	set push, 0					; evaluate loop condition
 	jsr expression
     set [z-3], x
+	
+	set push, x
+	jsr boolean
+	set [z-3], x
 	
 	set push, token_colon		; verify colon
 	jsr lexer_advance
