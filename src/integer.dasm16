@@ -1079,12 +1079,18 @@
 	set [z-1], x
 	set a, x
 
+	; divisor = abs(divisor)
 	set push, [z+10]
 	jsr int_abs
 	set [z-2], x
+	set b, [x]
 
 	set a, [a]
-	set b, [x]
+
+    ife [b], 1
+        ifn [a], 1
+            ifc [b+1], 0xff00
+                set pc, division__nbit_8bit
 
 	; max len
 	set c, [a]
@@ -1193,6 +1199,61 @@
 	div [a+1], [b+1]
 	mod [c+1], [b+1]
 	set pc, division_finish_signs
+
+:division__nbit_8bit
+    ; divident / quotient
+    set i, [z-1]
+    set i, [i]
+    set x, i
+    add x, [x]		; x: quotient[-1] *
+    add i, 1		; j: quotient *
+
+    ; divisor
+    set y, [z - 2]
+    set y, [y]
+    set y, [y + 1]	; y: divisor value (8bit)
+
+	set b, 0
+
+:division__nbit_8bit__loop
+	shl b, 8
+
+	set a, [i]
+    shr a, 8
+    
+    bor a, b
+    set b, a
+
+    div a, y
+    mod b, y
+
+    shl a, 8
+    set c, a
+
+	shl b, 8
+	
+	set a, [i]
+	and a, 0x00ff
+	
+	bor a, b
+	set b, a
+	
+	div a, y
+	mod b, y
+
+	bor c, a
+	set [i], c
+	
+	ifn i, x
+		sti pc, division__nbit_8bit__loop
+
+	set push, 1
+	set push, TYPE_INT
+	jsr array_create
+	set [z-3], x	; remainder
+
+	set x, [x]
+	set [x+1], b
 
 :division_finish
 	set push, [z-1]
