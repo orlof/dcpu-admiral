@@ -175,6 +175,8 @@
 ;----------------------------------------------------------------
 :edit_key_right
 ;----------------------------------------------------------------
+	ife [cur_pos], [gap_start]
+		set [cur_pos], [gap_end]
 	ifl [cur_pos], [buf_end]
 		add [cur_pos], 1
 	ife [cur_pos], [gap_start]
@@ -381,11 +383,11 @@
 ; return
 ;   a: pointer to next newline or buf_end
 ;----------------------------------------------------------------
-	ife a, [buf_end]
-		set pc, pop
-
 	ife a, [gap_start]
 		set a, [gap_end]
+
+	ife a, [buf_end]
+		set pc, pop
 
 	ife [a], KEY_NEWLINE
 		set pc, pop		
