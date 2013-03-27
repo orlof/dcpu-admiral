@@ -104,19 +104,19 @@
 	;------------------------------
 	; ALLOCATE DATA
 	;------------------------------
-	set a, [heap_free_start]			; i points to allocated memory region
-
-	set x, a
-	add x, [sp + 3]                       ; x points to first word after allocated memory
-
-:alloc__data__clear
-    ; initialize allocated space with all zeros
-	ife a, x
-		set pc, alloc__handle
-
-	set [a], 0				            ; default init with zero
-	add a, 1
-	set pc, alloc__data__clear
+;	set a, [heap_free_start]			; i points to allocated memory region
+;
+;	set x, a
+;	add x, [sp + 3]                       ; x points to first word after allocated memory
+;
+;:alloc__data__clear
+;    ; initialize allocated space with all zeros
+;	ife a, x
+;		set pc, alloc__handle
+;
+;	set [a], 0				            ; default init with zero
+;	add a, 1
+;	set pc, alloc__data__clear
 
 :alloc__handle
 	;------------------------------
@@ -149,16 +149,17 @@
 	set [x + HANDLE_TYPE], [sp + 2]				; type of data that is pointed by this handle
 	set [x + HANDLE_NEXT], 0					; next handle in reserved handles list
 
-	set [heap_free_start], a					; update unallocated heap space pointer
+	; set [heap_free_start], a					; update unallocated heap space pointer
+	add [heap_free_start], [sp + 3]				; update unallocated heap space pointer
 
 	; append new handle to reserved handles list
 	set a, [heap_handle_tail]					; store pointer to last item in reserved handles list
 	set [heap_handle_tail], x					; set reserved handles tail pointer to point in new handle
 	set [a + HANDLE_NEXT], x					; set previous tail's next to point to new handle
 
-	set a, pop
+	set a, pop									; restore a
 	
-	set [sp], pop
+	set [sp], pop								; remove arguments from stack
 	set [sp], pop
 
 	set pc, pop
@@ -226,6 +227,7 @@
 
 :compact_finish
 	set [heap_free_start], i
+	jsr mem_clear
 	set pc, postamble
 
 ;----------------------------------------------------------------
@@ -352,3 +354,56 @@
 	jsr array_map
 
 	set pc, pop
+
+; mem_clear
+; fill a memory area with a value.
+; code by dzienny from 0x10cforum.com
+; (modified for admiral by orlof)
+;
+; input A,B: address, length
+;
+; clobbers A,B
+;
+; uses 5 words on stack
+;
+; 37 words / 29 + len*1.75 cycles
+:mem_clear
+        xor c, c
+        ; init
+        ; set i, [heap_free_start] 	; I=ptr1=ptr
+		set b, [heap_handle_start]
+		sub b, i
+        set j, i        			; J=ptr2=ptr
+        set a, b        			; A=len
+        shr b, 1        ; B=len/2
+        add j, b        ; ptr2=ptr+len/2
+        set b, j
+        ifb a, 1
+            add b, 1    ; B=limit=ptr2+(len&1)
+        and a, 15       ; A=len%16
+        sub a, 16
+        sub pc, a       ; PC=PC-(A-16)=PC+16-A
+:mem_clear__loop  
+		set [i], c
+        sti [j], c
+        set [i], c
+        sti [j], c
+        set [i], c
+        sti [j], c
+        set [i], c
+        sti [j], c
+        set [i], c
+        sti [j], c
+        set [i], c
+        sti [j], c
+        set [i], c
+        sti [j], c
+        set [i], c
+        sti [j], c
+:mem_clear__pool
+		ifl i, b
+            ; sub pc, 18
+			set pc, mem_clear__loop
+
+		set pc, pop
+
