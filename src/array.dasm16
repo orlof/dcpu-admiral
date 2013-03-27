@@ -418,22 +418,18 @@
 	set push, [a + HANDLE_TYPE]
 	jsr array_create
 
-	set c, [x]			; struct list *
-	set [c], y			; set size
+	set j, [x]
+	add j, [j]			; last item
 
-	set j, c
-	add j, [c]			; last item
-
-	set i, b
+	set i, [a]
 
 :array_repeat_loop
-	ife j, c
+	ife j, [x]
 		jsr postamble
-	ife i, b
-		add i, [b]
+	ife i, [a]
+		add i, [i]
 	std [j], [i]	
 	set pc, array_repeat_loop
-
 
 ;----------------------------------------------------------------
 ; void array_sort(struct handle *array, uint16 *comparator_func)
@@ -492,15 +488,17 @@
     jsr preamble	
 
     set a, [z+10]
-    set i, [a]
+    set x, [a]
 
-	set push, [i]
+	set push, [x]
 	set push, [a + HANDLE_TYPE]
 	jsr array_create
 
 	set j, [x]
-	set c, i
-	add c, [i]
+	
+	sti i, [a]
+	set c, [a]
+	add c, [c]
 	
 :array_clone_loop
 	ifg i, c
