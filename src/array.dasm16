@@ -262,14 +262,14 @@
 	ifu j, 0
 		add j, [b]
 	ifu j, 0
-		sub j, j
+		xor j, j
 
 	; end index
 	set c, [z+10]
 	ifu c, 0
 		add c, [b]
 	ifu c, 0
-		sub c, c
+		xor c, c
 
 	ifa c, [b]
 		set c, [b]
@@ -285,6 +285,7 @@
 	jsr array_create
 	set [z+-1], x
 
+	set b, [a]
 	add j, b
 	add c, b
 	
@@ -305,44 +306,45 @@
 	set push, 1
 	jsr preamble
 
-	set b, [z+11]		; struct handle *left
-	set j, [b]			; struct string *left
-
-	set a, [z+10]		; struct handle *right
-	set a, [a]			; struct string *right
-
-	set c, [j]
-	add c, [a]
+	set a, [z+11]
+	set b, [z+10]
+	
+	set c, [a]
+	set c, [c]
+	set x, [b]
+	add c, [x]
 	
 	set push, c
-	set push, [b + HANDLE_TYPE]
+	set push, [a + HANDLE_TYPE]
 	jsr array_create
-	set [z+-1], x		; struct handle *result
+	set [z-1], x		; struct handle *result
 
-	set i, [x]			; struct string *result
-	set [i], c			; set length
-
-	set c, j
-	add c, [j]
-
-:array_merge_left_loop
-	ife j, c
-		set pc, array_merge_right
-		
-	sti [i+1], [j+1]
-	set pc, array_merge_left_loop
+	set i, [a]
+	set c, [a]
+	add c, [c]
 	
-:array_merge_right
-	set j, a
-	set c, j
-	add c, [j]
+	sti j, [x]
 
-:array_merge_right_loop
-	ife j, c
+:array_merge__left_loop
+	ifg i, c
+		set pc, array_merge__right
+		
+	sti [j], [i]
+	set pc, array_merge__left_loop
+	
+:array_merge__right
+	set i, [b]
+	add i, 1
+
+	set c, [b]
+	add c, [c]
+
+:array_merge__right_loop
+	ifg i, c
 		jsr postamble
 		
-	sti [i+1], [j+1]
-	set pc, array_merge_right_loop
+	sti [j], [i]
+	set pc, array_merge__right_loop
 		
 ;----------------------------------------------------------------
 ; uint array_cmp(struct handle *array, struct handle *array, func *comparator)
