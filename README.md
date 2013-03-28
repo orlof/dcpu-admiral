@@ -228,7 +228,7 @@ get_danger_level(type='Monster', 'XXXL')
 Following recipe shows how function can define default values for keyword arguments:
 
 <pre>
-if not type in locals(): type='unknown'
+if "type" not in locals(): type='unknown'
 </pre>
 
 Dicts and prototype assignment operator provide "poor mans" objects :-)
@@ -240,7 +240,7 @@ Dicts and prototype assignment operator provide "poor mans" objects :-)
 >ship.accelerate=edit()   # define function in prototype
 'me.spd+=me.acceleration  # function modifies object field
 ' 
->shuttle:=ship            # create new object from prototype
+>shuttle=ship.create()    # create new object from prototype
 ...                       # new object "inherits" prototype's fields
 >shuttle.acceleration=8   # set value in new object
 8 
@@ -250,24 +250,25 @@ Dicts and prototype assignment operator provide "poor mans" objects :-)
 </pre>
 
 Admiral has three different types of built-in functionalities:  statements, global functions 
-and class functions. E.g. print and run are stetements, len() and mem() are functions, and
-str.encrypt() is a class functions.
+and class functions. E.g. print and run are stetements, len() and mem() are global functions, 
+and str.encrypt() is a class functions.
 
-Admiral programmer can write his own functions, but not statements. Global functions are simply
-variables that have string value and class functions can be defined for dicts by adding str
-value with key as function name.
+Admiral programmer can write global functions and dict class functions. New statements or
+functions to other class types cannot be added. Global functions are variables that have 
+string value and class functions can be defined for dicts by adding function with str key.
 
 <pre>
-#global function
->a="print $0"
-'print $0'
+# global function example
+>a="print argv[0]"
+'print argv[0]'
 >a("Hello")
 Hello
-#class fuction
+
+# class fuction example
 >a={}
 {}
->a.x="print $0"
-print $0
+>a.x="print argv[0]"
+print argv[0]
 >a.x("Hello")
 Hello
 </pre>
