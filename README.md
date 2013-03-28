@@ -118,6 +118,12 @@ b 2
 
 Clone git repository from github 
     https://github.com/orlof/dcpu-admiral
+    
+Latest stable release is in /beta_release -directory. If you just want to run the binary, 
+you should download admiral.bin and m35fd.bin if you want to use toolchain floppy. 
+
+Easiest way to run Admiral is with Toolchain dtemu
+    dtemu admiral.bin
 
 <h5>Toolchain</h5>
 
@@ -131,13 +137,6 @@ The easy way to compile is the following command:
 
     dtasm --binary admiral.dasm16 -o admiral.bin
     
-The preferred way is to give the following two commands:
-
-    dtasm -o admiral.dobj16 -s admiral.s -i admiral.dasm16
-    dtld -O 3 -o admiral.bin -s admiral.s admiral.dobj16 -k none
-
-The preferred way uses Toolchain linker to do short literal optimizing.
-    
 You can run the compiled admiral.bin with the following command:
 
     dtemu admiral.bin
@@ -150,7 +149,7 @@ Organic assembler can also compile Admiral:
 
 Beware, Organic compilation without --long-literals option takes about 15 minutes.
 
-You run admiral.bin with Lettuce (SirCmpwn/Tomato), but international (non-US?) keyboard layouts don't work with
+You can run admiral.bin with Lettuce (SirCmpwn/Tomato), but international (non-US?) keyboard layouts don't work with
 Lettuce.
 
 <h5>Devkit</h5>
@@ -161,11 +160,21 @@ Admiral can be compiled and run with Devkit:
  - Devkit 1.7.6 is badly broken and cannot run Admiral
  - Devkit version 1.7.5 can compile and run Admiral, but does not support floppy.
 
+<h5>F1DE</h5>
+
+F1DE (http://fasm.elasticbeanstalk.com/) is currently the only web emulator that has been tested with Admiral. 
+Admiral sources do not compile in F1DE without modifications, as F1DE requires non-Notchian label and define
+syntax.
+
+To use F1DE you should download admiral_dat.dasm16 and use it to run Admiral.
+
+NOTE: You may need to split admiral_dat.dasm16 file in two to get F1DE accept it.
+
 <h4>USAGE</h4>
 
 When Admiral starts, it will show an interactive prompt '>' and wait for input. It can evaluate one line statements.
 <pre>
->1+2**32 
+>1+2**32
 4294967297 
 >for a in range(5): print a 
 0 
@@ -181,7 +190,6 @@ To exit the editor type CTRL (press AND release) followed by x. If you want to d
 use CTRL followed by c, which will return the original string instead of the edited version.
 
     result=edit()
-    print edit()
 
 If you need to edit an existing text, you can give a string argument for edit():
 
@@ -196,34 +204,32 @@ Hello World
 Hello World again!
 </pre>
 
-Function scope can be seed by specifying variables in function call. Unnamed variables are automatically named 
-as $0, $1, $2 etc.
-
+Function calls can have positional and keyword arguments in any order:
 <pre>
-get_danger_level(type='Monster", 'XXXL', 'hungry')
-</pre>
- 
-Would produce variables
-<pre>
-type='Monster'
-$0='XXXL'
-$1='hungry'
+# keyword
+get_danger_level(type='Monster", size='XXXL')
+# positional
+get_danger_level('Monster', 'XXXL')
+# mixed
+get_danger_level(type='Monster', 'XXXL')
 </pre>
 
-Function can also define default values by using conditional assignment operator '?=':
+Positional arguments are automatically assigned to argv[] array from left to right order.
 
 <pre>
->next_number=edit()
-'$0 ?= 0                      # set value for autonamed variable if value is not defined in function call
-return $0 + 1
-'
->next_number()
-1
->next_number(next_number())
-2
+get_danger_level('Monster', 'XXXL')
+# argv[0]='Monster'
+# argv[1]='XXXL'
+get_danger_level(type='Monster', 'XXXL')
+# type='Monster'
+# argv[0]='XXXL'
 </pre>
 
-Conditional assignment takes place only if left operand is without value in current scope.
+Following recipe shows how function can define default values for keyword arguments:
+
+<pre>
+if not type in locals(): type='unknown'
+</pre>
 
 Dicts and prototype assignment operator provide "poor mans" objects :-)
 <pre>
