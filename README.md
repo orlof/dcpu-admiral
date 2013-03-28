@@ -117,12 +117,14 @@ b 2
 <h4>INSTALLATION</h4>
 
 Clone git repository from github 
+
     https://github.com/orlof/dcpu-admiral
     
 Latest stable release is in /beta_release -directory. If you just want to run the binary, 
 you should download admiral.bin and m35fd.bin if you want to use toolchain floppy. 
 
 Easiest way to run Admiral is with Toolchain dtemu
+
     dtemu admiral.bin
 
 <h5>Toolchain</h5>
@@ -130,7 +132,9 @@ Easiest way to run Admiral is with Toolchain dtemu
 Currently toolchain is the preferred assembler-emulator package. It has no known issues.
 
 Install toolchain from 
+    
     http://dcputoolcha.in/
+
 I recommend using the experimental build if stable build is far behind.
 
 The easy way to compile is the following command:
