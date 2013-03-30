@@ -365,20 +365,20 @@
 ; http://6502.org/source/integers/random/random.html 
 ; Sets x to a 16-bit PRN.
 ;----------------------------------------------------------------
-:int_rnd_lcg
-	; 0x0019660D x seed + 1
-	set push, a
-	set a, [rnd_lcg_seed]
-	set x, [rnd_lcg_seed + 1]
-	mul x, 0x660D
-	mul a, 0x0019
-	mul [rnd_lcg_seed], 0x660D
-	adx x, a
-	add [rnd_lcg_seed], 1
-	add x, ex
-	set [rnd_lcg_seed + 1], x
-	set a, pop
-	set pc, pop
+;:int_rnd_lcg
+;	; 0x0019660D x seed + 1
+;	set push, a
+;	set a, [rnd_lcg_seed]
+;	set x, [rnd_lcg_seed + 1]
+;	mul x, 0x660D
+;	mul a, 0x0019
+;	mul [rnd_lcg_seed], 0x660D
+;	adx x, a
+;	add [rnd_lcg_seed], 1
+;	add x, ex
+;	set [rnd_lcg_seed + 1], x
+;	set a, pop
+;	set pc, pop
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_bitwise_or(struct handle *i1, struct handle *i2)
@@ -391,47 +391,46 @@
 	set y, int_bitwise_or
 
 :int_bitwise
+	; figure out max length
 	set a, [z+11]
 	set a, [a]
 	set b, [z+10]
 	set b, [b]
 
-	; max len
 	set c, [a]
 	ifg [b], c
 		set c, [b]
 
+	; extend both arguments to max length
 	set push, [z+10]
 	set push, c
 	jsr int_extend
 	set [z-2], x
-	set b, x
-	set b, [b]
-	set j, b
-	add j, [j]
 
 	set push, [z+11]
 	set push, c
 	jsr int_extend
 	set [z-1], x
-	set a, x
-	set a, [a]
+
+	; get pointers to extended values
+	set a, [x]
 	set i, a
-	add i, [i]
+	add a, [a]
+	
+	set j, [z-2]
+	sti j, [j]
 
 :int_bitwise_loop
-	ife i, a
-		set pc, int_bitwise_break
-
 	ife y, int_bitwise_or
 		bor [i], [j]
 	ife y, int_bitwise_xor
 		xor [i], [j]
 	ife y, int_bitwise_and
 		and [i], [j]
-	std pc, int_bitwise_loop
 
-:int_bitwise_break
+	ifl i, a
+		sti pc, int_bitwise_loop
+
 	set push, x
 	jsr int_normalize
 	
@@ -442,7 +441,7 @@
 ;----------------------------------------------------------------
 :int_bitwise_xor
 	set push, 2
-	set push, 0
+	set push, 2
 	jsr preamble
 
 	set y, int_bitwise_xor
@@ -453,7 +452,7 @@
 ;----------------------------------------------------------------
 :int_bitwise_and
 	set push, 2
-	set push, 0
+	set push, 2
 	jsr preamble
 	
 	set y, int_bitwise_and
@@ -1030,33 +1029,39 @@
 ; extern struct handle *int_div(struct handle *divident, struct handle *divisor)
 ;----------------------------------------------------------------
 :int_div
-	set push, 2
-	set push, 0
-	jsr preamble
-    
-	set push, [z+11]
-	set push, [z+10]
+	; [SP + 2] divident
+	; [SP + 1] divisor
+	; [SP + 0] RTS
+
+	set push, [sp + 2]
+	set push, [sp + 1]
 	jsr int_division
 
 	set x, [x]
 	set x, [x + INT_DIVISION_QUOTIENT]
-	jsr postamble
+	
+	set [sp], pop
+	set [sp], pop
+	set pc, pop
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_mod(struct handle *divident, struct handle *divisor)
 ;----------------------------------------------------------------
 :int_mod
-	set push, 2
-	set push, 0
-	jsr preamble
-    
-	set push, [z+11]
-	set push, [z+10]
+	; [SP + 2] divident
+	; [SP + 1] divisor
+	; [SP + 0] RTS
+
+	set push, [sp + 2]
+	set push, [sp + 1]
 	jsr int_division
 
 	set x, [x]
 	set x, [x + INT_DIVISION_REMAINDER]
-	jsr postamble
+
+	set [sp], pop
+	set [sp], pop
+	set pc, pop
 	
 ;----------------------------------------------------------------
 ; struct handle *int_division(struct handle *divident, struct handle *divisor)
@@ -1377,40 +1382,51 @@
 ; extend always return different object
 ;----------------------------------------------------------------
 :int_extend
-	set push, 2
-	set push, 1
-	jsr preamble
+; [SP + 5] struct handle *
+; [SP + 4] len
+; [SP + 3] RTS
+; [SP + 2] a
+; [SP + 1] i
+; [SP + 0] j
 
-	set push, [z+10]
+	set push, a
+	set push, i
+	set push, j
+
+	set push, [sp + 4]
 	set push, TYPE_INT
 	jsr array_create
 
-	set [z-1], x
+	set j, [x]		; j: new lsw
+	add j, [j]
 
-	set b, [x]		; b: struct int *new
-	set j, b		; j: new lsw
-	add j, [b]
+	set a, [sp + 5]	; struct handle *
 
-	set a, [z+11]	; struct handle *
-	set a, [a]		; struct int *
-
-	set i, a
-	add i, [a]		; i: orig lsw
+	set i, [a]
+	add i, [i]		; i: orig lsw
 
 :int_extend_copy_loop
 	std [j], [i]
-	ife j, b
-		jsr postamble
-	ifn i, a
+	ifg i, [a]
 		set pc, int_extend_copy_loop
+		
+	ife j, [x]
+		set pc, int_extend_finish
 
-	set c, [i+1]
-	asr c, 15
+	set a, [i+1]
+	asr a, 15
 	
 :int_extend_fill_loop
-	std [j], c
-	ifn j, b
+	std [j], a
+	ifg j, [x]
 		set pc, int_extend_fill_loop
 
-	jsr postamble
+:int_extend_finish
+	set j, pop
+	set i, pop
+	set a, pop
+	set [sp], pop
+	set [sp], pop	
+
+	set pc, pop
 

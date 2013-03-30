@@ -357,53 +357,36 @@
 
 ; mem_clear
 ; fill a memory area with a value.
-; code by dzienny from 0x10cforum.com
-; (modified for admiral by orlof)
 ;
-; input A,B: address, length
+; input I, [heap_handle_start]: address, end address
 ;
-; clobbers A,B
+; clobbers A, B, C, Y
 ;
-; uses 5 words on stack
-;
-; 37 words / 29 + len*1.75 cycles
+; 23 words / 16 + len*1.375 cycles
 :mem_clear
-        xor c, c
-        ; init
-        ; set i, [heap_free_start] 	; I=ptr1=ptr
-		set b, [heap_handle_start]
-		sub b, i
-        set j, i        			; J=ptr2=ptr
-        set a, b        			; A=len
-        shr b, 1        ; B=len/2
-        add j, b        ; ptr2=ptr+len/2
-        set b, j
-        ifb a, 1
-            add b, 1    ; B=limit=ptr2+(len&1)
-        and a, 15       ; A=len%16
-        sub a, 16
-        sub pc, a       ; PC=PC-(A-16)=PC+16-A
-:mem_clear__loop  
-		set [i], c
-        sti [j], c
-        set [i], c
-        sti [j], c
-        set [i], c
-        sti [j], c
-        set [i], c
-        sti [j], c
-        set [i], c
-        sti [j], c
-        set [i], c
-        sti [j], c
-        set [i], c
-        sti [j], c
-        set [i], c
-        sti [j], c
-:mem_clear__pool
-		ifl i, b
-            ; sub pc, 18
-			set pc, mem_clear__loop
+	; i heap free start
+	xor c, c		; fill char
+	set b, mem_clear__loop
+	set y, sp		; store sp
 
-		set pc, pop
+	set sp, [heap_handle_start]
+	set a, sp
+	sub a, i		; len
+	and a, 7
+	sub a, 8
+	sub pc, a
+:mem_clear__loop
+	set push, c
+	set push, c
+	set push, c
+	set push, c
+	set push, c
+	set push, c
+	set push, c
+	set push, c
 
+	ifg sp, i
+		set pc, b
+
+	set sp, y
+	set pc, pop
