@@ -483,11 +483,17 @@
 ; struct handle *array_clone(struct handle *original)
 ;----------------------------------------------------------------
 :array_clone
-	set push, 1
-    set push, 0
-    jsr preamble	
+	set push, a
+	set push, i
+	set push, j
 
-    set a, [z+10]
+; [SP + 4] ARG0
+; [SP + 3] RTS
+; [SP + 2] A
+; [SP + 1] I
+; [SP + 0] J
+
+    set a, [sp + 4]
     set x, [a]
 
 	set push, [x]
@@ -497,16 +503,22 @@
 	set j, [x]
 	
 	sti i, [a]
-	set c, [a]
-	add c, [c]
+	set a, [a]
+	add a, [a]
 	
 :array_clone_loop
-	ifg i, c
-		jsr postamble
+	ifg i, a
+		set pc, array_clone_finish
 		
 	set [j], [i]
 	sti pc, array_clone_loop
 
+:array_clone_finish
+	set j, pop
+	set i, pop
+	set a, pop
+	set [sp], pop
+	set pc, pop
 ;----------------------------------------------------------------
 ; void array_map(struct handle *array, *function map)
 ;----------------------------------------------------------------
