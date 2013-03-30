@@ -52,10 +52,10 @@ Square Root that supports both integers and floats:
 <pre>
 >sqrt=edit()                  # start integrated editor
 'p=0                          # define variable
-x=$0                          # assign first unnamed function argument to x
+x=argv[0]                     # assign first unnamed function argument to x
 while not x==p:               # loop to calculate sqrt
  p=x
- x=(x**2+$0)/(2*x)
+ x=(x**2+argv[0])/(2*x)
 return x                      # return value
 '
 >sqrt(81.0)                   # function call with float argument
@@ -204,7 +204,7 @@ Since Admiral is pure interpreter all strings are callable (i.e. can be used as 
 <pre>
 >'print "Hello World"'()
 Hello World
->'print arg1'(arg1='Hello World again!') 
+>'print msg'(msg='Hello World again!') 
 Hello World again!
 </pre>
 
@@ -212,9 +212,9 @@ Function calls can have positional and keyword arguments in any order:
 <pre>
 # keyword
 get_danger_level(type='Monster", size='XXXL')
-# positional
+# positional, argv[0]='XXXL'
 get_danger_level('Monster', 'XXXL')
-# mixed
+# mixed, argv[0]='XXXL'
 get_danger_level(type='Monster', 'XXXL')
 </pre>
 
