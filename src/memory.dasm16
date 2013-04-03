@@ -18,7 +18,11 @@
 	set pc, postamble
 		
 :realloc__grow
-	jsr ensure_memory
+	set x, [heap_handle_start]
+	sub x, [heap_free_start]
+
+	ifl x, a							; if available space < required space
+		jsr free_memory
 
 	; init allocated space
 	set i, [heap_free_start]			; first word of allocated memory region
@@ -91,65 +95,41 @@
 	; ENSURE FREE CAPACITY
 	;------------------------------
 	; calculate required heap space
-	set a, [sp + 3]
-	add a, SIZEOF_HANDLE
+	set a, [sp + 3]						; allocation size
+	add a, SIZEOF_HANDLE				; + handle size = max space required
 
-	jsr ensure_memory
+	set x, [heap_handle_start]			; end of free heap space
+	sub x, [heap_free_start]			; - start of free heap space = available heap space
 
-	; periodic handle free routine
-	add [heap_counter], 1
-	ife [heap_counter], HEAP_GC_TRIGGER
+	ifl x, a							; if available space < required space
+		jsr free_memory					; try to free more memory
+
+	; free handles periodically
+	sub [heap_counter], 1
+	ife ex, 0xffff
 		jsr mark
 
-	;------------------------------
-	; ALLOCATE DATA
-	;------------------------------
-;	set a, [heap_free_start]			; i points to allocated memory region
-;
-;	set x, a
-;	add x, [sp + 3]                       ; x points to first word after allocated memory
-;
-;:alloc__data__clear
-;    ; initialize allocated space with all zeros
-;	ife a, x
-;		set pc, alloc__handle
-;
-;	set [a], 0				            ; default init with zero
-;	add a, 1
-;	set pc, alloc__data__clear
-
-:alloc__handle
 	;------------------------------
 	; ALLOCATE HANDLE
 	;------------------------------
 	; try to get recycled handle
 	set x, [heap_handle_free]
 
-	ifn x, 0
-		set pc, alloc__handle__recycle
+	ife x, 0							; did we get free handle?
+		set pc, alloc__handle__new		; no, reserve new
 
-	; reserve more space for handles
-	set x, [heap_handle_start]
-	sub x, SIZEOF_HANDLE
-
-	set [heap_handle_start], x
-
-	set pc, alloc__finish
-
-:alloc__handle__recycle
 	set [heap_handle_free], [x + HANDLE_NEXT]
 
+:alloc__finish
 	;------------------------------
 	; FINALIZE ALLOCATION
 	;------------------------------
-:alloc__finish
     ; initialize handle structure
 	set [x + HANDLE_PTR], [heap_free_start]     ; pointer to allocated memory region
 	set [x + HANDLE_SIZE], [sp + 3]				; size of allocated memory region
 	set [x + HANDLE_TYPE], [sp + 2]				; type of data that is pointed by this handle
 	set [x + HANDLE_NEXT], 0					; next handle in reserved handles list
 
-	; set [heap_free_start], a					; update unallocated heap space pointer
 	add [heap_free_start], [sp + 3]				; update unallocated heap space pointer
 
 	; append new handle to reserved handles list
@@ -164,32 +144,30 @@
 
 	set pc, pop
 
+:alloc__handle__new
+	; reserve more space for handles
+	sub [heap_handle_start], SIZEOF_HANDLE
+	set x, [heap_handle_start]
+
+	set pc, alloc__finish
+
 ;----------------------------------------------------------------
-:ensure_memory
+:free_memory
 ; fastcall
 ;  a: required memory
-; return
 ;  x: available space
 ;----------------------------------------------------------------
-	set push, ensure_memory__out_of_memory
+	jsr mark
+	jsr compact
 
-:ensure_memory__check
-	; calculate space in heap gap
+	; recalculate space in heap gap
 	set x, [heap_handle_start]
 	sub x, [heap_free_start]
 
 	ifl x, a						; if available space < required space
-		set pc, pop
+		jsr recover
 
-	add sp, 1
 	set pc, pop
-
-:ensure_memory__out_of_memory
-	jsr mark
-	jsr compact
-
-	set push, recover
-	set pc, ensure_memory__check
 	
 ;----------------------------------------------------------------
 ; void compact()
@@ -201,8 +179,8 @@
 
 	set i, MEM_HEAP_START
 
-	set a, heap_handle_head			; struct handle *
-	sub a, HANDLE_NEXT
+	set a, heap_handle_head - HANDLE_NEXT			; struct handle *
+;	sub a, HANDLE_NEXT
 	
 :compact_loop
 	set a, [a + HANDLE_NEXT]
@@ -210,6 +188,9 @@
 		set pc, compact_finish
 
 	set j, [a + HANDLE_PTR]		; copy from
+	ifl j, i					; is it pointing to static data?
+;		set pc, compact_loop
+		jsr recover
 
 	set b, i			; calculate end pointer
 	add b, [a + HANDLE_SIZE]
@@ -239,7 +220,7 @@
 	jsr preamble
 
 	; reset handle reservation counter
-	set [heap_counter], 0
+	set [heap_counter], HEAP_GC_TRIGGER
 
 	set y, z				; y: temp fp
 
@@ -270,33 +251,21 @@
 	; reconstruct reserved and free lists
 	;---------------------------------------
 	; use j to iterate over reserved handles list
-	set i, heap_handle_head			; struct handle *
-	set j, [i]
-	sub i, HANDLE_NEXT
+	set i, heap_handle_head - HANDLE_NEXT	; struct handle *
+	set j, [heap_handle_head]
 	
 :mark__free_loop
 	; this loop 
 	; 1) removes marked-flag from marked handles
 	; 2) inserts each handle to reserved or free list
 
+; RED ZONE START
+
 	ife j, 0						; if end of list
 		set pc, mark__free_loop__break
 
-	ifb [j + HANDLE_TYPE], TYPE_MARKED
-		set pc, mark__free_loop__marked
-
-:mark__free_loop__unmarked
-	; store pointer to next handle
-	set x, [j + HANDLE_NEXT]
-
-	; add item to free list
-	set [j + HANDLE_NEXT], [heap_handle_free]	; add to free list
-	set [heap_handle_free], j
-
-	; set j to next handle in reserved list
-	set j, x
-
-	set pc, mark__free_loop
+	ifc [j + HANDLE_TYPE], TYPE_MARKED
+		set pc, mark__free_loop__unmarked
 
 :mark__free_loop__marked
 	; clear marked flag
@@ -313,6 +282,21 @@
 
 	set pc, mark__free_loop
 
+; RED ZONE END
+
+:mark__free_loop__unmarked
+	; store pointer to next handle
+	set x, [j + HANDLE_NEXT]
+
+	; add item to free list
+	set [j + HANDLE_NEXT], [heap_handle_free]	; add to free list
+	set [heap_handle_free], j
+
+	; set j to next handle in reserved list
+	set j, x
+
+	set pc, mark__free_loop
+
 :mark__free_loop__break
 	set [i + HANDLE_NEXT], 0
 	set [heap_handle_tail], i
@@ -323,6 +307,9 @@
 ; recursively sets the mark bit in item and contained items
 ;----------------------------------------------------------------
 :mark_handle
+
+; RED ZONE START
+
 	; this function uses standard call convention, but optimized implementation
 	set x, [sp + 1]						; struct handle *item
 
@@ -334,20 +321,23 @@
 	;---------------------------------------
 	ifl x, [heap_handle_start]
 		set pc, pop
-	
-	ifg x, MEM_HEAP_END - SIZEOF_HANDLE
-		set pc, pop
+
+;   according to memory layout this is not needed
+;	ifg x, MEM_HEAP_END - SIZEOF_HANDLE
+;		set pc, pop
 	;---------------------------------------
 
 	ifb [x + HANDLE_TYPE], TYPE_MARKED	; return if handle is already marked
 		set pc, pop
 
-	bor [x + HANDLE_TYPE], TYPE_MARKED	; mark handle
+	bor [x + HANDLE_TYPE], TYPE_MARKED	; set mark on handle
 
 	; return if handle is not container
 ;	ifc [x + HANDLE_TYPE], TYPE_CONTROL + TYPE_REFERENCE + TYPE_SUBSCRIPTION + TYPE_TUPLE + TYPE_LIST + TYPE_DICT
 	ifc [x + HANDLE_TYPE], TYPE_GROUP_CONTAINER
 		set pc, pop
+
+; RED ZONE END
 
 	set push, x
 	set push, mark_handle		; map() function for iterate

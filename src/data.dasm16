@@ -54,7 +54,7 @@
 ;----------------------------------------------------------------
 ; GLOBAL HEAP MANAGEMENT VARIABLES
 ;----------------------------------------------------------------
-:heap_counter 		DAT 0
+:heap_counter 		DAT HEAP_GC_TRIGGER
 :heap_free_start    DAT MEM_HEAP_START
 
 :heap_handle_start  DAT MEM_HEAP_END
