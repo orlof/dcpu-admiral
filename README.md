@@ -222,19 +222,10 @@ get_danger_level(type='Monster', 'XXXL')
 
 Positional arguments are automatically assigned to argv[] array from left to right order.
 
-<pre>
-get_danger_level('Monster', 'XXXL')
-# argv[0]='Monster'
-# argv[1]='XXXL'
-get_danger_level(type='Monster', 'XXXL')
-# type='Monster'
-# argv[0]='XXXL'
-</pre>
-
-Following recipe shows how function can define default values for keyword arguments:
+You can set default value for keyword argument with the following line:
 
 <pre>
-if "type" not in locals(): type='unknown'
+if "type" not in locals(): type='Gigalosaurus'
 </pre>
 
 Dicts and prototype assignment operator provide "poor mans" objects :-)
