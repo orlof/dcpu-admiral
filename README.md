@@ -210,11 +210,13 @@ Hello World again!
 
 Function calls can have positional and keyword arguments in any order:
 <pre>
-# keyword
+# keywords: type='Monster', size='XXXL'
 get_danger_level(type='Monster", size='XXXL')
-# positional, argv[0]='XXXL'
+
+# positional: argv[0]='Monster', argv[1]='XXXL'
 get_danger_level('Monster', 'XXXL')
-# mixed, argv[0]='XXXL'
+
+# mixed: type='Monster', argv[0]='XXXL'
 get_danger_level(type='Monster', 'XXXL')
 </pre>
 
