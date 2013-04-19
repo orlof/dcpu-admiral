@@ -114,6 +114,17 @@ b 2
 
 --
 
+<h4>Special Thanks</h4>
+
+Following sources were proven to be invaluable sources for information:
+ - Let's Build a Compiler, by Jack Crenshaw: http://compilers.iecc.com/crenshaw/
+ - Top Down Operator Precedence, by Douglas Crockford: http://javascript.crockford.com/tdop/tdop.html
+ - Simple Top-Down Parsing in Python, by Fredrik Lundh: http://effbot.org/zone/simple-top-down-parsing.html
+ - The Art of Assembly Language Programming, by Randall Hyde: http://cs.smith.edu/~thiebaut/ArtOfAssembly/artofasm.html
+ - Data Structures and Algorithms with Object-Oriented Design Patterns in Java, by Bruno R. Preiss: http://www.brpreiss.com/books/opus5/html/book.html
+
+--
+
 <h4>INSTALLATION</h4>
 
 Clone git repository from github 
