@@ -997,9 +997,19 @@ will yeld error, as unknown IDENT (foobar) cannot be evaluated for addition oper
 
 PYTHON FEATURES MISSING (INCOMPLETE LIST)
 
-No lambda, yield, try, exception, generators, classes or function definitions.
+ - 'def' function definitions
+ - 'class' class definitions
+ - 'lambda' functions
+ - generators
+ - list comprehension e.g.  [x**2 for x in range(10)]
+ - '*args' and '*kwargs'
+ - % string operator
+ - 'yield'
+ - 'try' - 'except' exception handling
+ - lot of built-in functions
 
-OTHER LANGUAGE PROJECT
+
+OTHER DCPU LANGUAGE PROJECTS
 
 rs5s77 : goforth
 CBM64 Basic
