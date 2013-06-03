@@ -59,7 +59,7 @@
 	jsr array__get_memory_addr
 	
 	ife x, 0
-		set pc, recover
+		jsr recover
 
 	set push, i
 	set push, j
