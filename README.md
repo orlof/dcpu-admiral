@@ -114,6 +114,17 @@ b 2
 
 --
 
+<h4>Special Thanks</h4>
+
+Following sources were proven to be invaluable sources for information:
+ - Let's Build a Compiler, by Jack Crenshaw: http://compilers.iecc.com/crenshaw/
+ - Top Down Operator Precedence, by Douglas Crockford: http://javascript.crockford.com/tdop/tdop.html
+ - Simple Top-Down Parsing in Python, by Fredrik Lundh: http://effbot.org/zone/simple-top-down-parsing.html
+ - The Art of Assembly Language Programming, by Randall Hyde: http://cs.smith.edu/~thiebaut/ArtOfAssembly/artofasm.html
+ - Data Structures and Algorithms with Object-Oriented Design Patterns in Java, by Bruno R. Preiss: http://www.brpreiss.com/books/opus5/html/book.html
+
+--
+
 <h4>INSTALLATION</h4>
 
 Clone git repository from github 
@@ -210,29 +221,22 @@ Hello World again!
 
 Function calls can have positional and keyword arguments in any order:
 <pre>
-# keyword
+# keywords: type='Monster', size='XXXL'
 get_danger_level(type='Monster", size='XXXL')
-# positional, argv[0]='XXXL'
+
+# positional: argv[0]='Monster', argv[1]='XXXL'
 get_danger_level('Monster', 'XXXL')
-# mixed, argv[0]='XXXL'
+
+# mixed: type='Monster', argv[0]='XXXL'
 get_danger_level(type='Monster', 'XXXL')
 </pre>
 
 Positional arguments are automatically assigned to argv[] array from left to right order.
 
-<pre>
-get_danger_level('Monster', 'XXXL')
-# argv[0]='Monster'
-# argv[1]='XXXL'
-get_danger_level(type='Monster', 'XXXL')
-# type='Monster'
-# argv[0]='XXXL'
-</pre>
-
-Following recipe shows how function can define default values for keyword arguments:
+You can set default value for keyword argument with the following line:
 
 <pre>
-if "type" not in locals(): type='unknown'
+if "type" not in locals(): type='Gigalosaurus'
 </pre>
 
 Dicts and prototype assignment operator provide "poor mans" objects :-)
@@ -993,9 +997,19 @@ will yeld error, as unknown IDENT (foobar) cannot be evaluated for addition oper
 
 PYTHON FEATURES MISSING (INCOMPLETE LIST)
 
-No lambda, yield, try, exception, generators, classes or function definitions.
+ - 'def' function definitions
+ - 'class' class definitions
+ - 'lambda' functions
+ - generators
+ - list comprehension e.g.  [x**2 for x in range(10)]
+ - '*args' and '*kwargs'
+ - % string operator
+ - 'yield'
+ - 'try' - 'except' exception handling
+ - lot of built-in functions
 
-OTHER LANGUAGE PROJECT
+
+OTHER DCPU LANGUAGE PROJECTS
 
 rs5s77 : goforth
 CBM64 Basic
