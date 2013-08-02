@@ -1034,7 +1034,7 @@
 	; [SP + 0] RTS
 
 	set push, [sp + 2]
-	set push, [sp + 1]
+	set push, [sp + 2]
 	jsr int_division
 
 	set x, [x]
@@ -1053,7 +1053,7 @@
 	; [SP + 0] RTS
 
 	set push, [sp + 2]
-	set push, [sp + 1]
+	set push, [sp + 2]
 	jsr int_division
 
 	set x, [x]
@@ -1066,9 +1066,8 @@
 ;----------------------------------------------------------------
 ; struct handle *int_division(struct handle *divident, struct handle *divisor)
 ; return x: (struct handle *quotient, struct handle *remainder)
-;  todo optimize shifts only to one word and aggregate 16 shifts
-;  as word copy
-; references
+;  three different algorithms (16-bit/16-bit, n-bit/8-bit, n-bit/n-bit)
+;  are used to optimize calculation speed
 ; [z-1] quotient
 ; [z-2] divisor
 ; [z-3] remainder
@@ -1082,20 +1081,13 @@
 	set push, [z+11]
 	jsr int_abs
 	set [z-1], x
-	set a, x
+	set a, [x]
 
 	; divisor = abs(divisor)
 	set push, [z+10]
 	jsr int_abs
 	set [z-2], x
 	set b, [x]
-
-	set a, [a]
-
-    ife [b], 1
-        ifn [a], 1
-            ifc [b+1], 0xff00
-                set pc, division__nbit_8bit
 
 	; max len
 	set c, [a]
@@ -1106,25 +1098,27 @@
 	set push, c
 	jsr int_extend
 	set [z-1], x	; quotient
-	set a, x
+	set a, [x]
 
 	set push, [z-2]
 	set push, c
 	jsr int_extend
 	set [z-2], x	; divisor
-	set b, x
+	set b, [x]
 
 	set push, c
 	set push, TYPE_INT
 	jsr array_create
 	set [z-3], x	; remainder
-
-	set a, [a]
-	set b, [b]
 	set c, [x]
 
 	ife [a], 1
-		set pc, division_16
+		ife [b], 1
+			set pc, division_16
+
+	ife [b], 1
+		ifc [b+1], 0xff00
+			set pc, division__nbit_8bit
 
 	; here starts long division
 	set y, [a]	; y: bits left
@@ -1206,17 +1200,17 @@
 	set pc, division_finish_signs
 
 :division__nbit_8bit
-    ; divident / quotient
-    set i, [z-1]
-    set i, [i]
-    set x, i
-    add x, [x]		; x: quotient[-1] *
-    add i, 1		; j: quotient *
+	; divident / quotient
+	set i, [z-1]
+	set i, [i]
+	set x, i
+	add x, [x]		; x: quotient[-1] *
+	add i, 1		; j: quotient *
 
-    ; divisor
-    set y, [z - 2]
-    set y, [y]
-    set y, [y + 1]	; y: divisor value (8bit)
+	; divisor
+	set y, [z - 2]
+	set y, [y]
+	set y, [y + 1]	; y: divisor value (8bit)
 
 	set b, 0
 
@@ -1224,16 +1218,16 @@
 	shl b, 8
 
 	set a, [i]
-    shr a, 8
-    
-    bor a, b
-    set b, a
+	shr a, 8
 
-    div a, y
-    mod b, y
+	bor a, b
+	set b, a
 
-    shl a, 8
-    set c, a
+	div a, y
+	mod b, y
+
+	shl a, 8
+	set c, a
 
 	shl b, 8
 	
@@ -1252,13 +1246,10 @@
 	ifn i, x
 		sti pc, division__nbit_8bit__loop
 
-	set push, 1
-	set push, TYPE_INT
-	jsr array_create
-	set [z-3], x	; remainder
-
+	set x, [z-3]
 	set x, [x]
-	set [x+1], b
+	add x, [x]
+	set [x], b
 
 :division_finish
 	set push, [z-1]
@@ -1299,8 +1290,8 @@
 		set pc, division_return_tuple
 
 	set push, [z-3]
-    jsr int_negate
-    set [z-3], x
+	jsr int_negate
+	set [z-3], x
 
 :division_return_tuple
 	; finally create result tuple
