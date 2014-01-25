@@ -940,6 +940,10 @@ Return true if all characters in the string are digits and there is at least one
 </table>
 
 NOTES
+ - Admiral provides optimized integer division algorithm. Based on the divident and divisor size it select one of the three different division strategies
+   - 16b / 16b -> DCPU hardware supported DIV operation
+   - n bit / 8 bit -> Optimized proprietary division algorithm that divides with DIV in 8 bit chunks
+   - n bit / n bit -> Standard long division is used
  - Assignment is an expression, not statement
    - yelds the assigned value
    - e.g. "a = (b += 1)" is a valid command 
