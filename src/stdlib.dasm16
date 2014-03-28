@@ -839,90 +839,13 @@
 ; return
 ;   c: input character
 ;----------------------------------------------------------------
-	ifn c, 0
-		jsr win_getchar_release
-	ifg c, KEY_UP-1
-		ifl c, KEY_RIGHT+1
-			jsr win_getchar_release
-
-	; Handle keyboard input  
+; after 0x10c cancellation this keyboard input subroutine was
+; simplified to support only megastage DCPU
 	set a, 1                      ; store next key mode
 	hwi [keyboard]
 
-	; this keyboard handling is overly complicated as devkit and toolchain
-	; have different behaviour. toolchain returns control keys with a=1,
-	; while devkit requires button down queries with a=2
-	ifg c, 0x19
-		ifl c, 0x80
-			set pc, pop
-	ife c, KEY_NEWLINE
-		set pc, pop
-	ife c, KEY_BS
-		set pc, pop
-	ife c, KEY_DEL
-		set pc, pop
-;	ifg c, KEY_UP-1
-;		ifl c, KEY_RIGHT+1
-;			set pc, pop
-
-	set b, KEY_UP
-	jsr win_getchar_test_key
-	set b, KEY_DOWN
-	jsr win_getchar_test_key
-	set b, KEY_LEFT
-	jsr win_getchar_test_key
-	set b, KEY_RIGHT
-	jsr win_getchar_test_key
-
-	set a, 2
-	set b, KEY_CTRL
-	hwi [keyboard]
-	ifn c, FALSE
-		set pc, win_getchar_ctrl
-
-	set pc, win_getchar
-
-:win_getchar_test_key
-	set a, 2
-	hwi [keyboard]
-	ife c, FALSE
-		set pc, pop
-
-	set c, b
-	add sp, 1
-	set pc, pop
-
-:win_getchar_ctrl
-;	jsr win_getchar_release_loop
-
-:win_getchar_ctrl_loop
-	set a, 1                      ; store next key mode
-	hwi [keyboard]
-	ife c, 0
-		set pc, win_getchar_ctrl_loop
-    ife c, KEY_CTRL
-        set pc, win_getchar_ctrl_loop
-
-	ife c, 'x'
-		set c, KEY_CTRL_X
-	ife c, 'c'
-		set c, KEY_CTRL_C
-		
-	set pc, pop
-
-:win_getchar_release
-	set b, c
-:win_getchar_release_loop
-	set a, 2
-	hwi [keyboard]
-	ifn c, FALSE
-		set pc, win_getchar_release_loop
-
-	set a, 1
-	hwi [keyboard]
-
-	set a, 0
-	hwi [keyboard]
+    ife c, 0
+        set pc, win_getchar
 
 	set pc, pop
 
