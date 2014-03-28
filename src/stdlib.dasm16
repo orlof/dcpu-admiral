@@ -59,6 +59,7 @@
 		set x, 1
 	ifl [a], [b]
 		set x, -1
+	add sp, 3
 
 :cmp__finish
     set b, pop
