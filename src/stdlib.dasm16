@@ -842,13 +842,31 @@
 ;----------------------------------------------------------------
 ; after 0x10c cancellation this keyboard input subroutine was
 ; simplified to support only megastage DCPU
-	set a, 1                      ; store next key mode
-	hwi [keyboard]
+    set a, 1                      ; store next key mode
+    hwi [keyboard]
 
     ife c, 0
         set pc, win_getchar
 
-	set pc, pop
+    ife c, KEY_CTRL
+        set pc, win_getchar
+
+    ife c, KEY_SHIFT
+        set pc, win_getchar
+
+    set push, c
+
+    set a, 2
+    set b, KEY_CTRL
+    shl c, 15
+    bor [sp], c
+
+    set a, 2
+    set b, KEY_SHIFT
+    shl c, 14
+    bor c, pop
+
+    set pc, pop
 
 ;----------------------------------------------------------------
 ; struct handle *raw_input(struct handle *prompt)

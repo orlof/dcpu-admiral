@@ -80,11 +80,11 @@
 	jsr eval
     set [z-3], x
 
-	set push, x
-	jsr print_repr
+;	set push, x
+;	jsr print_repr
 
-	set c, 10
-	jsr screen_add_char
+;	set c, 10
+;	jsr screen_add_char
 
 :interpreter_loop_parse_2
 	ifn [lexer_token], token_eof
