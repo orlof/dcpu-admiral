@@ -10,56 +10,56 @@
     set push, a
     set push, b
 
-	set a, [sp + 4]
-	set b, [sp + 3]
+    set a, [sp + 4]
+    set b, [sp + 3]
 
     ; same object?
     sub x, x
     ife a, b
         set pc, cmp__finish
 
-	set push, a
-	set push, b
+    set push, a
+    set push, b
     set push, cmp__finish
 
     add a, 1
     add b, 1
 
     ; (int,int),(int,bool),(bool,int),(bool,bool)
-	ifb [a], TYPE_BOOL + TYPE_INT
-    	ifb [b], TYPE_BOOL + TYPE_INT
-		    set pc, int_cmp
+    ifb [a], TYPE_BOOL + TYPE_INT
+        ifb [b], TYPE_BOOL + TYPE_INT
+            set pc, int_cmp
 
     ; (float,float)
-	ifb [a], TYPE_FLOAT
-    	ifb [b], TYPE_FLOAT
-		    set pc, float_cmp
+    ifb [a], TYPE_FLOAT
+        ifb [b], TYPE_FLOAT
+            set pc, float_cmp
     ; (int,float),(bool,float)
-	ifb [a], TYPE_BOOL + TYPE_INT
-    	ifb [b], TYPE_FLOAT
-		    set pc, float_cmp__int_float
+    ifb [a], TYPE_BOOL + TYPE_INT
+        ifb [b], TYPE_FLOAT
+            set pc, float_cmp__int_float
     ; (float,int),(float,bool),
-	ifb [a], TYPE_FLOAT
-    	ifb [b], TYPE_BOOL + TYPE_INT
-		    set pc, float_cmp__float_int
+    ifb [a], TYPE_FLOAT
+        ifb [b], TYPE_BOOL + TYPE_INT
+            set pc, float_cmp__float_int
 
     ; (str,str),(ident,ident)
-	ifb [a], TYPE_STR + TYPE_NAME
-    	ife [b], [a]
-    		set pc, str_cmp
+    ifb [a], TYPE_STR + TYPE_NAME
+        ife [b], [a]
+            set pc, str_cmp
 
     ; (tuple,tuple),(list,list),(dict,dict)
-	ifb [a], TYPE_LIST + TYPE_TUPLE + TYPE_DICT
-    	ife [b], [a]
-    		set pc, list_cmp
+    ifb [a], TYPE_LIST + TYPE_TUPLE + TYPE_DICT
+        ife [b], [a]
+            set pc, list_cmp
 
     ; compare types
-	set x, 0
-	ifg [a], [b]
-		set x, 1
-	ifl [a], [b]
-		set x, -1
-	add sp, 3
+    set x, 0
+    ifg [a], [b]
+        set x, 1
+    ifl [a], [b]
+        set x, -1
+    add sp, 3
 
 :cmp__finish
     set b, pop
@@ -74,477 +74,477 @@
 ; struct handle *eval(struct handle *orig)
 ;----------------------------------------------------------------
 :eval
-	set push, 1
-	set push, 1
-	jsr preamble
-	
-	set x, [z+10]
+    set push, 1
+    set push, 1
+    jsr preamble
+    
+    set x, [z+10]
 
-	ifb [x + HANDLE_TYPE], TYPE_TUPLE_COMMA
-		set [x + HANDLE_TYPE], TYPE_TUPLE
+    ifb [x + HANDLE_TYPE], TYPE_TUPLE_COMMA
+        set [x + HANDLE_TYPE], TYPE_TUPLE
 
-	set a, [x + HANDLE_TYPE]
+    set a, [x + HANDLE_TYPE]
 
-	ife a, TYPE_NAME
-		set pc, eval_name
-	ife a, TYPE_TUPLE
-		set pc, eval_tuple
-	ife a, TYPE_REFERENCE
-		set pc, eval_reference
-	ife a, TYPE_SUBSCRIPTION
-		set pc, eval_subscription
+    ife a, TYPE_NAME
+        set pc, eval_name
+    ife a, TYPE_TUPLE
+        set pc, eval_tuple
+    ife a, TYPE_REFERENCE
+        set pc, eval_reference
+    ife a, TYPE_SUBSCRIPTION
+        set pc, eval_subscription
 
-	set pc, postamble
+    set pc, postamble
 
 :eval_name
-	set push, [current_scope]		; struct handle *dict
-	set push, x						; struct handle *name
-	jsr scope_get
+    set push, [current_scope]		; struct handle *dict
+    set push, x						; struct handle *name
+    jsr scope_get
 
-	ife x, 0
-		jsr recover
+    ife x, 0
+        jsr recover
 
-	set pc, postamble
+    set pc, postamble
 
 :eval_tuple
-	set a, x
-	set i, 0
-	set c, [a]
-	set c, [c]
-	
+    set a, x
+    set i, 0
+    set c, [a]
+    set c, [c]
+    
 :eval_tuple_loop
-	ife i, c
-		set pc, eval_tuple_break
+    ife i, c
+        set pc, eval_tuple_break
 
-	set b, [a]
-	add b, i
-	
-	set push, [b+1]
-	jsr eval
+    set b, [a]
+    add b, i
+    
+    set push, [b+1]
+    jsr eval
 
-	set [b+1], x
+    set [b+1], x
 
-	sti pc, eval_tuple_loop
+    sti pc, eval_tuple_loop
 
 :eval_tuple_break
-	set x, [z+10]
-	set pc, postamble
+    set x, [z+10]
+    set pc, postamble
 
 :eval_reference
-	set x, [x]
+    set x, [x]
 
-	set push, [x + REFERENCE_LEFT]		; struct handle *dict or *list
-	set push, [x + REFERENCE_RIGHT]		; struct handle *key or index
-	jsr scope_get
-	
-	ife x, 0
-		jsr recover
+    set push, [x + REFERENCE_LEFT]		; struct handle *dict or *list
+    set push, [x + REFERENCE_RIGHT]		; struct handle *key or index
+    jsr scope_get
+    
+    ife x, 0
+        jsr recover
 
-	set pc, postamble
+    set pc, postamble
 
 :eval_subscription
-	set a, [x]				; struct subscription *
-	set b, [a + SUBSCRIPTION_LIST]
-	set c, [a + SUBSCRIPTION_INDEX]
+    set a, [x]				; struct subscription *
+    set b, [a + SUBSCRIPTION_LIST]
+    set c, [a + SUBSCRIPTION_INDEX]
 
-	ife [b + HANDLE_TYPE], TYPE_DICT
-		set pc, eval_subscription_dict
-	ife [b + HANDLE_TYPE], TYPE_LIST
-		set pc, eval_subscription_array
-	ife [b + HANDLE_TYPE], TYPE_TUPLE
-		set pc, eval_subscription_array
-	ife [b + HANDLE_TYPE], TYPE_STR
-		set pc, eval_subscription_str
+    ife [b + HANDLE_TYPE], TYPE_DICT
+        set pc, eval_subscription_dict
+    ife [b + HANDLE_TYPE], TYPE_LIST
+        set pc, eval_subscription_array
+    ife [b + HANDLE_TYPE], TYPE_TUPLE
+        set pc, eval_subscription_array
+    ife [b + HANDLE_TYPE], TYPE_STR
+        set pc, eval_subscription_str
 
-	jsr recover
+    jsr recover
 
 :eval_subscription_dict
-	set push, b
-	set push, c
-	jsr scope_get
+    set push, b
+    set push, c
+    jsr scope_get
 
-	ife x, 0
-		jsr recover
+    ife x, 0
+        jsr recover
 
-	set pc, postamble
+    set pc, postamble
 
 :eval_subscription_array
-	ife [c + HANDLE_TYPE], TYPE_INT
-		set pc, eval_subscription_array_index
-	ife [c + HANDLE_TYPE], TYPE_TUPLE
-		set pc, eval_subscription_array_slice
-	jsr recover
+    ife [c + HANDLE_TYPE], TYPE_INT
+        set pc, eval_subscription_array_index
+    ife [c + HANDLE_TYPE], TYPE_TUPLE
+        set pc, eval_subscription_array_slice
+    jsr recover
 
 :eval_subscription_array_index
-	set push, b
-	set push, c
-	jsr list_get
+    set push, b
+    set push, c
+    jsr list_get
 
-	set pc, postamble
+    set pc, postamble
 
 :eval_subscription_str_slice
 :eval_subscription_array_slice
-	set a, [c]			; struct slice *
-	set push, b
+    set a, [c]			; struct slice *
+    set push, b
 
-	set push, [a+1]		; start
-	jsr int_to_int16
-	set push, x
+    set push, [a+1]		; start
+    jsr int_to_int16
+    set push, x
 
-	set push, [a+2]
-	jsr int_to_int16
-	set push, x
+    set push, [a+2]
+    jsr int_to_int16
+    set push, x
 
-	jsr array_split	
-	set pc, postamble
+    jsr array_split	
+    set pc, postamble
 
 :eval_subscription_str
-	ife [c + HANDLE_TYPE], TYPE_INT
-		set pc, eval_subscription_str_index
-	ife [c + HANDLE_TYPE], TYPE_TUPLE
-		set pc, eval_subscription_str_slice
-	jsr recover
+    ife [c + HANDLE_TYPE], TYPE_INT
+        set pc, eval_subscription_str_index
+    ife [c + HANDLE_TYPE], TYPE_TUPLE
+        set pc, eval_subscription_str_slice
+    jsr recover
 
 :eval_subscription_str_index
-	set push, b
+    set push, b
 
-	set push, c		; struct handle *int
-	jsr int_to_int16
+    set push, c		; struct handle *int
+    jsr int_to_int16
 
-	; start index
-	set y, [b]
-	ifb x, 0x8000
-		add x, [y]
-		
-	ifa x, [y]
-		jsr recover
-	ife x, [y]
-		jsr recover
-	ifu x, 0
-		jsr recover
-		
-	set push, x		; start
+    ; start index
+    set y, [b]
+    ifb x, 0x8000
+        add x, [y]
+        
+    ifa x, [y]
+        jsr recover
+    ife x, [y]
+        jsr recover
+    ifu x, 0
+        jsr recover
+        
+    set push, x		; start
 
-	add x, 1		; end
-	set push, x
-	jsr array_split	
+    add x, 1		; end
+    set push, x
+    jsr array_split	
 
-	set pc, postamble
+    set pc, postamble
 
 ;----------------------------------------------------------------
 ; struct handle *boolean(struct handle *orig)
 ;----------------------------------------------------------------
 :boolean
-	set push, 1
-	set push, 0
-	jsr preamble
-	
-	set a, [z+10]
-	set b, [a]
+    set push, 1
+    set push, 0
+    jsr preamble
+    
+    set a, [z+10]
+    set b, [a]
 
-	ife a, NONE
-		set pc, boolean_false
-		
-	set x, [a + HANDLE_TYPE]
+    ife a, NONE
+        set pc, boolean_false
+        
+    set x, [a + HANDLE_TYPE]
 
-	ifb x, TYPE_INT + TYPE_BOOL
-		ife [b], 1
-			ife [b+1], 0
-				set pc, boolean_false
+    ifb x, TYPE_INT + TYPE_BOOL
+        ife [b], 1
+            ife [b+1], 0
+                set pc, boolean_false
 
-	ifb x, TYPE_FLOAT
-		ifb [b + FLOAT_CATEGORY], FLOAT_CATEGORY_PZERO + FLOAT_CATEGORY_NZERO
-			set pc, boolean_false
+    ifb x, TYPE_FLOAT
+        ifb [b + FLOAT_CATEGORY], FLOAT_CATEGORY_PZERO + FLOAT_CATEGORY_NZERO
+            set pc, boolean_false
 
-	ifc x, TYPE_INT + TYPE_BOOL + TYPE_FLOAT
-		ife [b], 0
-			set pc, boolean_false
+    ifc x, TYPE_INT + TYPE_BOOL + TYPE_FLOAT
+        ife [b], 0
+            set pc, boolean_false
 
-	ife x, TYPE_STR
-		set pc, boolean_str
-		
+    ife x, TYPE_STR
+        set pc, boolean_str
+        
 :boolean_true
-	set x, BOOL_TRUE
-	set pc, postamble
+    set x, BOOL_TRUE
+    set pc, postamble
 
 :boolean_false
-	set x, BOOL_FALSE
-	set pc, postamble
+    set x, BOOL_FALSE
+    set pc, postamble
 
 
 :boolean_str
-	set push, a
-	set push, STR_FALSE
-	jsr str_cmp_ignore_case
-	ife x, 0
-		set pc, boolean_false
-	set pc, boolean_true
+    set push, a
+    set push, STR_FALSE
+    jsr str_cmp_ignore_case
+    ife x, 0
+        set pc, boolean_false
+    set pc, boolean_true
 
 ;----------------------------------------------------------------
 ; struct handle *sort(struct handle *iterable, struct handle *reverse)
 ;----------------------------------------------------------------
 :sort
-	set push, 2
-	set push, 1
-	jsr preamble
-	
-	set a, [z+11]
-	set b, [z+10]
+    set push, 2
+    set push, 1
+    jsr preamble
+    
+    set a, [z+11]
+    set b, [z+10]
 
-	ife [a + HANDLE_TYPE], TYPE_STR
-		set pc, sort_string
-	ifb [a + HANDLE_TYPE], TYPE_TUPLE + TYPE_LIST
-		set pc, sort_array
-		
-	jsr recover
+    ife [a + HANDLE_TYPE], TYPE_STR
+        set pc, sort_string
+    ifb [a + HANDLE_TYPE], TYPE_TUPLE + TYPE_LIST
+        set pc, sort_array
+        
+    jsr recover
 
 :sort_string
-	set push, a
-	jsr array_clone
-	set [z-1], x
+    set push, a
+    jsr array_clone
+    set [z-1], x
 
-	set push, x
-	ife b, BOOL_TRUE
-		set push, char_reverse_comparator
-	ife b, BOOL_FALSE
-		set push, char_comparator
-		
-	jsr array_sort
-	set x, [z-1]
-	set pc, postamble
-	
+    set push, x
+    ife b, BOOL_TRUE
+        set push, char_reverse_comparator
+    ife b, BOOL_FALSE
+        set push, char_comparator
+        
+    jsr array_sort
+    set x, [z-1]
+    set pc, postamble
+    
 :char_comparator
-	set x, FALSE
-	ifl [sp+2], [sp+1]
-		set x, TRUE
+    set x, FALSE
+    ifl [sp+2], [sp+1]
+        set x, TRUE
 
-	set i, [sp]
-	add sp, 3
-	set pc, i
+    set i, [sp]
+    add sp, 3
+    set pc, i
 
 :char_reverse_comparator
-	set x, FALSE
-	ifg [sp+2], [sp+1]
-		set x, TRUE
+    set x, FALSE
+    ifg [sp+2], [sp+1]
+        set x, TRUE
 
-	set i, [sp]
-	add sp, 3
-	set pc, i
+    set i, [sp]
+    add sp, 3
+    set pc, i
 
 :sort_array
-	set push, a
-	ife b, BOOL_TRUE
-		set push, array_reverse_comparator
-	ife b, BOOL_FALSE
-		set push, array_comparator
-		
-	jsr array_sort
-	set x, [z+11]
-	set pc, postamble
+    set push, a
+    ife b, BOOL_TRUE
+        set push, array_reverse_comparator
+    ife b, BOOL_FALSE
+        set push, array_comparator
+        
+    jsr array_sort
+    set x, [z+11]
+    set pc, postamble
 
 :array_comparator
-	set i, pop
-	jsr val_cmp
-	set push, i
-	
-	ife x, -1
-		set pc, array_comparator_true
-	set x, FALSE
-	set pc, i
+    set i, pop
+    jsr val_cmp
+    set push, i
+    
+    ife x, -1
+        set pc, array_comparator_true
+    set x, FALSE
+    set pc, i
 :array_comparator_true
-	set x, TRUE
-	set pc, i
+    set x, TRUE
+    set pc, i
 
 :array_reverse_comparator
-	set i, pop
-	jsr val_cmp
-	set push, i
-	
-	ife x, 1
-		set pc, array_comparator_true
-	set x, FALSE
-	set pc, i
+    set i, pop
+    jsr val_cmp
+    set push, i
+    
+    ife x, 1
+        set pc, array_comparator_true
+    set x, FALSE
+    set pc, i
 
 ;----------------------------------------------------------------
 ; struct handle *assign(struct handle *left, struct handle *right)
 ;----------------------------------------------------------------
 :assign
-	set push, 2
-	set push, 2
-	jsr preamble
-	
-	set a, [z+11]
-	set b, [z+10]
+    set push, 2
+    set push, 2
+    jsr preamble
+    
+    set a, [z+11]
+    set b, [z+10]
 
-	ife [a + HANDLE_TYPE], TYPE_TUPLE_COMMA
-		set [a + HANDLE_TYPE], TYPE_TUPLE
+    ife [a + HANDLE_TYPE], TYPE_TUPLE_COMMA
+        set [a + HANDLE_TYPE], TYPE_TUPLE
 
-	ife [a + HANDLE_TYPE], TYPE_NAME
-		set pc, assign_name
-	ife [a + HANDLE_TYPE], TYPE_TUPLE
-		set pc, assign_tuple
-	ife [a + HANDLE_TYPE], TYPE_REFERENCE
-		set pc, assign_reference
-	ife [a + HANDLE_TYPE], TYPE_SUBSCRIPTION
-		set pc, assign_subscription
+    ife [a + HANDLE_TYPE], TYPE_NAME
+        set pc, assign_name
+    ife [a + HANDLE_TYPE], TYPE_TUPLE
+        set pc, assign_tuple
+    ife [a + HANDLE_TYPE], TYPE_REFERENCE
+        set pc, assign_reference
+    ife [a + HANDLE_TYPE], TYPE_SUBSCRIPTION
+        set pc, assign_subscription
 
-	jsr recover
+    jsr recover
 
 :assign_subscription
-	set a, [a]
-	set y, [a + SUBSCRIPTION_LIST]
-	set c, [a + SUBSCRIPTION_INDEX]
+    set a, [a]
+    set y, [a + SUBSCRIPTION_LIST]
+    set c, [a + SUBSCRIPTION_INDEX]
 
-	ife [y + HANDLE_TYPE], TYPE_DICT
-		set pc, assign_subscription_dict
-	
-	ife [y + HANDLE_TYPE], TYPE_LIST
-		ife [c + HANDLE_TYPE], TYPE_INT
-			set pc, assign_subscription_list_int
+    ife [y + HANDLE_TYPE], TYPE_DICT
+        set pc, assign_subscription_dict
+    
+    ife [y + HANDLE_TYPE], TYPE_LIST
+        ife [c + HANDLE_TYPE], TYPE_INT
+            set pc, assign_subscription_list_int
 
-	jsr recover
+    jsr recover
 
 :assign_subscription_list_int
-	set push, y
-	set push, c
-	set push, b
-	jsr list_set
+    set push, y
+    set push, c
+    set push, b
+    jsr list_set
 
-	set x, b
-	set pc, postamble
+    set x, b
+    set pc, postamble
 
 :assign_subscription_dict
-	set push, y
-	set push, c
-	set pc, assign_reference_or_subscription_dict
+    set push, y
+    set push, c
+    set pc, assign_reference_or_subscription_dict
 
 :assign_reference
-	set a, [a]
-	set push, [a + REFERENCE_LEFT]
-	set push, [a + REFERENCE_RIGHT]
+    set a, [a]
+    set push, [a + REFERENCE_LEFT]
+    set push, [a + REFERENCE_RIGHT]
 :assign_reference_or_subscription_dict
-	set push, b
-	jsr dict__set
-	set x, b
-	set pc, postamble
-	
+    set push, b
+    jsr dict__set
+    set x, b
+    set pc, postamble
+    
 :assign_name
-	set push, [current_scope]
-	set push, a
-	set push, b
-	set push, SCOPE_MODE_INSERT
-	jsr scope_set
+    set push, [current_scope]
+    set push, a
+    set push, b
+    set push, SCOPE_MODE_INSERT
+    jsr scope_set
 
-	set x, b
-	set pc, postamble
-	
+    set x, b
+    set pc, postamble
+    
 :assign_tuple
-	set i, 0
-	set c, [a]
-	set c, [c]			; left side size
+    set i, 0
+    set c, [a]
+    set c, [c]			; left side size
 
-	set y, [b]
-	ifn [y], c			; if leftLen != rightLen
-		jsr recover
+    set y, [b]
+    ifn [y], c			; if leftLen != rightLen
+        jsr recover
 
 :assign_tuple_loop
-	ife i, c
-		set pc, assign_tuple_break
+    ife i, c
+        set pc, assign_tuple_break
 
-	set x, [a]
-	add x, i
-	set push, [x+1]
-	
-	set x, [b]
-	add x, i
-	set push, [x+1]
+    set x, [a]
+    add x, i
+    set push, [x+1]
+    
+    set x, [b]
+    add x, i
+    set push, [x+1]
 
-	ife [b + HANDLE_TYPE], TYPE_STR
-		jsr assign_from_string
-	ifn [b + HANDLE_TYPE], TYPE_STR
-		jsr assign
+    ife [b + HANDLE_TYPE], TYPE_STR
+        jsr assign_from_string
+    ifn [b + HANDLE_TYPE], TYPE_STR
+        jsr assign
 
-	sti pc, assign_tuple_loop
+    sti pc, assign_tuple_loop
 
 :assign_tuple_break
-	set x, b
-	set pc, postamble
+    set x, b
+    set pc, postamble
 
 ;----------------------------------------------------------------
 ; struct handle *assign_from_string(struct handle *left, uint16 char)
 ;   e.g. a,b = "xy"
 ;----------------------------------------------------------------
 :assign_from_string
-	set push, 2
-	set push, 1
-	jsr preamble
-	
-	set a, [z+11]
+    set push, 2
+    set push, 1
+    jsr preamble
+    
+    set a, [z+11]
 
-	set push, 1
-	set push, TYPE_STR
-	jsr array_create
-	set [z-1], x
-	set b, x
+    set push, 1
+    set push, TYPE_STR
+    jsr array_create
+    set [z-1], x
+    set b, x
 
-	set c, [x]
-	set [c+1], [z+10]
+    set c, [x]
+    set [c+1], [z+10]
 
-	ife [a + HANDLE_TYPE], TYPE_NAME
-		set pc, assign_name
+    ife [a + HANDLE_TYPE], TYPE_NAME
+        set pc, assign_name
 
-	set y, recover
-	ife [a + HANDLE_TYPE], TYPE_REFERENCE
-		set y, dict__set
-	ife [a + HANDLE_TYPE], TYPE_SUBSCRIPTION
-		set y, list_set
+    set y, recover
+    ife [a + HANDLE_TYPE], TYPE_REFERENCE
+        set y, dict__set
+    ife [a + HANDLE_TYPE], TYPE_SUBSCRIPTION
+        set y, list_set
 
-	set a, [a]
-	set push, [a + REFERENCE_LEFT] ; = SUBSCRIPTION_LIST
-	set push, [a + REFERENCE_RIGHT] ; = SUBSCRIPTION_INDEX
-	set push, b
-	jsr y
-	
-	set x, b
-	set pc, postamble
-	
+    set a, [a]
+    set push, [a + REFERENCE_LEFT] ; = SUBSCRIPTION_LIST
+    set push, [a + REFERENCE_RIGHT] ; = SUBSCRIPTION_INDEX
+    set push, b
+    jsr y
+    
+    set x, b
+    set pc, postamble
+    
 ;----------------------------------------------------------------
 ; void del(struct handle *item)
 ;----------------------------------------------------------------
 :del
-	set push, 1
-	set push, 1
-	jsr preamble
-	
-	set a, [z+10]
+    set push, 1
+    set push, 1
+    jsr preamble
+    
+    set a, [z+10]
 
-	ife [a + HANDLE_TYPE], TYPE_NAME
-		set pc, del_name
+    ife [a + HANDLE_TYPE], TYPE_NAME
+        set pc, del_name
 
-	set y, recover
-	ife [a + HANDLE_TYPE], TYPE_SUBSCRIPTION
-		set y, list_del
+    set y, recover
+    ife [a + HANDLE_TYPE], TYPE_SUBSCRIPTION
+        set y, list_del
 
-	set a, [a]
-	set b, [a + REFERENCE_LEFT]
-	ife [b + HANDLE_TYPE], TYPE_DICT
-		set y, dict_del
-	
-	set push, b 					; LEFT
-	set push, [a + REFERENCE_RIGHT] ; RIGHT
-	jsr y
-	
-	set x, NONE
-	set pc, postamble
-	
+    set a, [a]
+    set b, [a + REFERENCE_LEFT]
+    ife [b + HANDLE_TYPE], TYPE_DICT
+        set y, dict_del
+    
+    set push, b 					; LEFT
+    set push, [a + REFERENCE_RIGHT] ; RIGHT
+    jsr y
+    
+    set x, NONE
+    set pc, postamble
+    
 :del_name
-	set push, [current_scope]
-	set push, a
-	jsr scope_del
+    set push, [current_scope]
+    set push, a
+    jsr scope_del
 
-	set x, NONE
-	set pc, postamble
-	
+    set x, NONE
+    set pc, postamble
+    
 ;----------------------------------------------------------------
 :cast_common_number_type
 ; fastcall
@@ -554,32 +554,32 @@
 ;   a: struct handle *left_or_new_left
 ;   b: struct handle *right_or_new_right
 ;----------------------------------------------------------------
-	; automatic type conversions
-	ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
-		ife [b + HANDLE_TYPE], TYPE_FLOAT
-			set pc, itof_left
-	
-	ifb [b + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
-		ife [a + HANDLE_TYPE], TYPE_FLOAT
-			set pc, itof_right
+    ; automatic type conversions
+    ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
+        ife [b + HANDLE_TYPE], TYPE_FLOAT
+            set pc, itof_left
+    
+    ifb [b + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
+        ife [a + HANDLE_TYPE], TYPE_FLOAT
+            set pc, itof_right
 
-	set pc, pop
+    set pc, pop
 
 :itof_left
-	set push, a
-	jsr float_from_int
-	set [z-1], x
-	set a, x
-	set pc, pop
+    set push, a
+    jsr float_from_int
+    set [z-1], x
+    set a, x
+    set pc, pop
 
 :itof_right
-	set push, b
-	jsr float_from_int
-	set [z-2], x
-	set b, x
-	set pc, pop
+    set push, b
+    jsr float_from_int
+    set [z-2], x
+    set b, x
+    set pc, pop
 
-		
+        
 ;----------------------------------------------------------------
 ; utility subroutines to handle function setup and cleanup
 ;----------------------------------------------------------------
@@ -589,30 +589,30 @@
 ; restore register and stack to original state and do rts.
 ; x:   return value
 :postamble
-	set sp, z				; free local vars and heap refs
-	set z, pop				; restore fp
-	
-	set y, pop				; restore registers
-	set j, pop
-	set i, pop
-	set c, pop
-	set b, pop
-	set a, pop
+    set sp, z				; free local vars and heap refs
+    set z, pop				; restore fp
+    
+    set y, pop				; restore registers
+    set j, pop
+    set i, pop
+    set c, pop
+    set b, pop
+    set a, pop
 
-	add sp, 1				; pop sizeof(heap refs)
+    add sp, 1				; pop sizeof(heap refs)
 
-	add [sp], sp			; calculate ptr to 1st arg
-	add [sp], 1				; sp + num args + 1
+    add [sp], sp			; calculate ptr to 1st arg
+    add [sp], 1				; sp + num args + 1
 
-	; no good... but i couldn't figure out better way to do this
-	set push, z				; store fp to free a register for processing
-	set z, [sp+1]			; peek ptr to 1st arg
-	set [z], [sp+2]			; overwrite 1st arg with original return address
-	set z, pop				; pop fp
-	set sp, [sp]			; clear stack except for the return address
-	; ---
+    ; no good... but i couldn't figure out better way to do this
+    set push, z				; store fp to free a register for processing
+    set z, [sp+1]			; peek ptr to 1st arg
+    set [z], [sp+2]			; overwrite 1st arg with original return address
+    set z, pop				; pop fp
+    set sp, [sp]			; clear stack except for the return address
+    ; ---
 
-	set pc, pop				; rts
+    set pc, pop				; rts
 
 ; preamble - subroutines must 
 ;  1. push number of subroutine arguments
@@ -637,202 +637,202 @@
 ; [sp+11] [fp+10] arg2 (rightmost)
 ; [sp+12] [fp+11] arg1 (leftmost)
 :preamble
-	set x, pop				; pop return address
+    set x, pop				; pop return address
 
-	; store registers
-	set push, a
-	set push, b
-	set push, c
-	set push, i
-	set push, j
-	set push, y
+    ; store registers
+    set push, a
+    set push, b
+    set push, c
+    set push, i
+    set push, j
+    set push, y
 
-	; update frame pointer
-	set push, z				; old fp
-	set z, sp				; new fp
+    ; update frame pointer
+    set push, z				; old fp
+    set z, sp				; new fp
 
-	; init local variables and heap references to 0
-	set i, sp
-	sub i, [z+7]
+    ; init local variables and heap references to 0
+    set i, sp
+    sub i, [z+7]
 
 :preamble_init_local
-	ife sp, i
-		set pc, x
-	set push, 0
+    ife sp, i
+        set pc, x
+    set push, 0
 
-	set pc, preamble_init_local
+    set pc, preamble_init_local
 
 
 ;----------------------------------------------------------------
 ; void print(struct handle *string)
 ;----------------------------------------------------------------
 :print_repr
-	set push, 1
-	set push, 1
-	jsr preamble
+    set push, 1
+    set push, 1
+    jsr preamble
 
-	set pc, print_with_repr
+    set pc, print_with_repr
 ;----------------------------------------------------------------
 ; void print(struct handle *string)
 ;----------------------------------------------------------------
 :print
-	set push, 1
-	set push, 1
-	jsr preamble
+    set push, 1
+    set push, 1
+    jsr preamble
 
-	set y, FALSE
+    set y, FALSE
 
-	set a, [z+10]
-	ife [a + HANDLE_TYPE], TYPE_STR
-		set pc, print_skip_repr
+    set a, [z+10]
+    ife [a + HANDLE_TYPE], TYPE_STR
+        set pc, print_skip_repr
 
 :print_with_repr
-	set push, [z+10]
-	jsr repr
-	set [z-1], x
-	set a, x
-	
-	set y, TRUE
+    set push, [z+10]
+    jsr repr
+    set [z-1], x
+    set a, x
+    
+    set y, TRUE
 
 :print_skip_repr
-	set b, 0xffff		; index
+    set b, 0xffff		; index
 
 :print_loop
-	add b, 1
-	jsr array__get
+    add b, 1
+    jsr array__get
 
 :print_loop__check
-	ife x, 0
-		set pc, postamble
+    ife x, 0
+        set pc, postamble
 
-	ife y, FALSE
-		ife x, 47
-			set pc, print_loop_escape
+    ife y, FALSE
+        ife x, 47
+            set pc, print_loop_escape
 
-	set c, x			; char
-	jsr screen_add_char
+    set c, x			; char
+    jsr screen_add_char
 
-	set pc, print_loop
+    set pc, print_loop
 
 :print_loop_escape
-	add b, 1
-	jsr array__get
-	
-	ife x, 'n'
-		set pc, print_loop_newline
-		
-	set c, 47
-	jsr screen_add_char
-	
-	set pc, print_loop__check
+    add b, 1
+    jsr array__get
+    
+    ife x, 'n'
+        set pc, print_loop_newline
+        
+    set c, 47
+    jsr screen_add_char
+    
+    set pc, print_loop__check
 
 :print_loop_newline
-	set c, 10
-	jsr screen_add_char
+    set c, 10
+    jsr screen_add_char
 
-	set pc, print_loop
+    set pc, print_loop
 
 ;----------------------------------------------------------------
 ; struct handle *repr(struct handle *value)
 ;----------------------------------------------------------------
 :repr
-	set push, 1
-	set push, 1
-	jsr preamble
+    set push, 1
+    set push, 1
+    jsr preamble
 
 ;	set push, [z+10]
 ;	jsr eval
 ;	set [z-1], x
 ;	set a, x
 
-	set x, [z+10]
+    set x, [z+10]
 
-	ife [x + HANDLE_TYPE], TYPE_STR
-		set pc, repr_string
-	ife [x + HANDLE_TYPE], TYPE_NAME
-		set pc, postamble
-	ife [x + HANDLE_TYPE], TYPE_BOOL
-		set pc, repr_boolean
-	ife [x + HANDLE_TYPE], TYPE_NONE
-		set pc, repr_none
+    ife [x + HANDLE_TYPE], TYPE_STR
+        set pc, repr_string
+    ife [x + HANDLE_TYPE], TYPE_NAME
+        set pc, postamble
+    ife [x + HANDLE_TYPE], TYPE_BOOL
+        set pc, repr_boolean
+    ife [x + HANDLE_TYPE], TYPE_NONE
+        set pc, repr_none
 
-	set y, recover
-	ife [x + HANDLE_TYPE], TYPE_INT
-		set y, int_to_str
-	ife [x + HANDLE_TYPE], TYPE_FLOAT
-		set y, float_to_str
-	ifb [x + HANDLE_TYPE], TYPE_TUPLE + TYPE_LIST
-		set y, list_repr
+    set y, recover
+    ife [x + HANDLE_TYPE], TYPE_INT
+        set y, int_to_str
+    ife [x + HANDLE_TYPE], TYPE_FLOAT
+        set y, float_to_str
+    ifb [x + HANDLE_TYPE], TYPE_TUPLE + TYPE_LIST
+        set y, list_repr
 
-	ife [x + HANDLE_TYPE], TYPE_DICT
-		set y, dict_repr
+    ife [x + HANDLE_TYPE], TYPE_DICT
+        set y, dict_repr
 
-	set push, x
-	jsr y
-	set pc, postamble
+    set push, x
+    jsr y
+    set pc, postamble
 
 :repr_string
-	set a, [x]
-	set a, [a]
-	add a, 2
+    set a, [x]
+    set a, [a]
+    add a, 2
 
-	set push, a
-	set push, TYPE_STR
-	jsr alloc
-	set [z-1], x
-	
-	set push, [z-1]
-	set push, 39
-	jsr array__append
-	
-	set push, [z-1]
-	set push, [z+10]
-	jsr array_merge
-	set [z-1], x
+    set push, a
+    set push, TYPE_STR
+    jsr alloc
+    set [z-1], x
+    
+    set push, [z-1]
+    set push, 39
+    jsr array__append
+    
+    set push, [z-1]
+    set push, [z+10]
+    jsr array_merge
+    set [z-1], x
 
-	set push, [z-1]
-	set push, 39
-	jsr array__append
+    set push, [z-1]
+    set push, 39
+    jsr array__append
 
-	set x, [z-1]
-	set pc, postamble
+    set x, [z-1]
+    set pc, postamble
 
 
 :repr_boolean
-	set a, x
+    set a, x
 
-	set x, STR_TRUE
-	ife a, BOOL_FALSE
-		set x, STR_FALSE
+    set x, STR_TRUE
+    ife a, BOOL_FALSE
+        set x, STR_FALSE
 
-	set pc, postamble
+    set pc, postamble
 
 :repr_none
-	set x, STR_NONE
-	set pc, postamble
+    set x, STR_NONE
+    set pc, postamble
 
 ;----------------------------------------------------------------
 :detect_hardware
 ;----------------------------------------------------------------
-	hwn i
+    hwn i
 :detect_hardware__loop
-	ife i, 0
-	   set pc, pop
-	sub i, 1
-	hwq i
-	ife a, 0xf615
-	    ife b, 0x7349
-	        set [monitor], i
-	ife a, 0x7406
-	    ife b, 0x30cf
-	        set [keyboard], i
-	ife a, 0xb402
-	    ife b, 0x12d0
-	        set [clock], i
-	ife a, 0x24c5
-	    ife b, 0x4fd5
-	        set [floppy], i
-	set pc, detect_hardware__loop
+    ife i, 0
+       set pc, pop
+    sub i, 1
+    hwq i
+    ife a, 0xf615
+        ife b, 0x7349
+            set [monitor], i
+    ife a, 0x7406
+        ife b, 0x30cf
+            set [keyboard], i
+    ife a, 0xb402
+        ife b, 0x12d0
+            set [clock], i
+    ife a, 0x24c5
+        ife b, 0x4fd5
+            set [floppy], i
+    set pc, detect_hardware__loop
           
 ;----------------------------------------------------------------
 :win_getchar
@@ -856,14 +856,16 @@
 
     set push, c
 
-    set a, 2
-    set b, KEY_CTRL
-    shl c, 15
-    bor [sp], c
+;    set a, 2
+;    set b, KEY_SHIFT
+;    hwi [keyboard]
+;    shl c, 14
+;    bor [sp], c
 
     set a, 2
-    set b, KEY_SHIFT
-    shl c, 14
+    set b, KEY_CTRL
+    hwi [keyboard]
+    shl c, 15
     bor c, pop
 
     set pc, pop
@@ -872,81 +874,81 @@
 ; struct handle *raw_input(struct handle *prompt)
 ;----------------------------------------------------------------
 :raw_input
-	set push, 1
-	set push, 1
-	jsr preamble
+    set push, 1
+    set push, 1
+    jsr preamble
 
-	ife [z+10], 0
-		set pc, raw_input_no_prompt
+    ife [z+10], 0
+        set pc, raw_input_no_prompt
 
-	; print prompt
-	set push, [z+10]
-	jsr eval
-	set [z-1], x
-	
-	set push, [z-1]
-	jsr print
-	
+    ; print prompt
+    set push, [z+10]
+    jsr eval
+    set [z-1], x
+    
+    set push, [z-1]
+    jsr print
+    
 :raw_input_no_prompt
 ;	set y, [cursor]
-	set y, [current_screen]
-	set b, [y + SCREEN__CURSOR]
+    set y, [current_screen]
+    set b, [y + SCREEN__CURSOR]
 
 :next_char_loop
-	; start of input
-	jsr screen_toggle_cursor
-	
-	; Handle keyboard input  
+    ; start of input
+    jsr screen_toggle_cursor
+    
+    ; Handle keyboard input  
 :input_loop
-	set a, 1                      ; store next key mode
-	hwi [keyboard]
-	ife c, 0
-	    set pc, input_loop        ; no input
+    set a, 1                      ; store next key mode
+    hwi [keyboard]
+    ife c, 0
+        set pc, input_loop        ; no input
     ifg c, 0x7f
         set pc, input_loop
 
-	jsr screen_toggle_cursor
-	
-	ife c, KEY_NEWLINE
-		set pc, finish
+    jsr screen_toggle_cursor
+    
+    ife c, KEY_NEWLINE
+        set pc, finish
 
-	ife c, KEY_BS
-		ife [y + SCREEN__CURSOR], b
-			set pc, next_char_loop
+    ife c, KEY_BS
+        ife [y + SCREEN__CURSOR], b
+            set pc, next_char_loop
 
-	set a, [y + SCREEN__END]
-	sub a, 1
-	ifn c, KEY_BS
-		ifn c, KEY_NEWLINE
-			ife [y + SCREEN__CURSOR], a
-				sub b, SCREEN_COLS
+    set a, [y + SCREEN__END]
+    sub a, 1
+    ifn c, KEY_BS
+        ifn c, KEY_NEWLINE
+            ife [y + SCREEN__CURSOR], a
+                sub b, SCREEN_COLS
 
-	jsr screen_add_char
+    jsr screen_add_char
 
-	set pc, next_char_loop
+    set pc, next_char_loop
 
 :finish
-	set a, [y + SCREEN__CURSOR]
-	sub a, b
-	add a, 1
+    set a, [y + SCREEN__CURSOR]
+    sub a, b
+    add a, 1
 
-	set push, a
-	set push, TYPE_STR
-	jsr array_create
+    set push, a
+    set push, TYPE_STR
+    jsr array_create
 
-	set j, [x]					; struct string *
-	add j, [j]					; string[last]
-	set [j], 10					; set newline
-	std i, [y + SCREEN__CURSOR] 	; i = cursor -1
+    set j, [x]					; struct string *
+    add j, [j]					; string[last]
+    set [j], 10					; set newline
+    std i, [y + SCREEN__CURSOR] 	; i = cursor -1
 
 :finish_loop
-	ifl i, b
-		set pc, postamble
-	set [j], [i]
-	and [j], 0x007f
-	
-	std pc, finish_loop
-	
+    ifl i, b
+        set pc, postamble
+    set [j], [i]
+    and [j], 0x007f
+    
+    std pc, finish_loop
+    
 ;----------------------------------------------------------------
 :built_in_matcher
 ; fastcall
@@ -956,18 +958,18 @@
 ; return
 ;   c: value
 ;----------------------------------------------------------------
-	sub a, 1
-	add b, 1
-	sub x, 1
+    sub a, 1
+    add b, 1
+    sub x, 1
 
 :built_in_matcher_list_loop
-	sti j, x
+    sti j, x
 
     ; calculate return value pointer
-	set x, [j]
+    set x, [j]
     add x, j
 
-	set c, [x]
+    set c, [x]
     ife [j], 1      ; length
         set pc, pop
 
@@ -989,12 +991,12 @@
 ;----------------------------------------------------------------
 :return_true
 ;----------------------------------------------------------------
-	set x, BOOL_TRUE
-	set pc, postamble
+    set x, BOOL_TRUE
+    set pc, postamble
 
 ;----------------------------------------------------------------
 :return_false
 ;----------------------------------------------------------------
-	set x, BOOL_FALSE
-	set pc, postamble
+    set x, BOOL_FALSE
+    set pc, postamble
 
