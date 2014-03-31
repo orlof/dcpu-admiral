@@ -318,6 +318,9 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 3, "rm", built_in_rm
     dat 4, "dir", built_in_dir
     dat 4, "hex", built_in_hex
+    dat 4, "hwi", built_in_hwi
+    dat 4, "hwn", built_in_hwn
+    dat 4, "hwq", built_in_hwq
     dat 4, "mem", built_in_mem
     dat 4, "rnd", built_in_rnd
     dat 4, "int", built_in_int
