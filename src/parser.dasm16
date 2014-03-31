@@ -3132,6 +3132,69 @@
 	set pc, postamble
 
 ;----------------------------------------------------------------
+:built_in_call
+;----------------------------------------------------------------
+	jsr built_in_params
+	ifn i, 1
+		jsr recover
+
+	set x, [z-1]
+	ifn [x + HANDLE_TYPE], TYPE_INT
+		jsr recover
+
+	set push, x
+	jsr int_to_int16
+
+	jsr x
+
+	set pc, postamble
+
+;----------------------------------------------------------------
+:built_in_peek
+;----------------------------------------------------------------
+	jsr built_in_params
+	ifn i, 1
+		jsr recover
+
+	set x, [z-1]
+	ifn [x + HANDLE_TYPE], TYPE_INT
+		jsr recover
+
+	set push, x
+	jsr int_to_int16
+
+    set push, [x]
+	jsr uint16_to_int
+
+	set pc, postamble
+
+;----------------------------------------------------------------
+:built_in_poke
+;----------------------------------------------------------------
+	jsr built_in_params
+	ifn i, 2
+		jsr recover
+
+	set x, [z-1]
+	ifn [x + HANDLE_TYPE], TYPE_INT
+		jsr recover
+
+	set push, x
+	jsr int_to_int16
+    set y, x
+
+	set x, [z-2]
+	ifn [x + HANDLE_TYPE], TYPE_INT
+		jsr recover
+
+	set push, x
+	jsr int_to_int16
+    set [y], x
+    
+	set x, VOID
+	set pc, postamble
+
+;----------------------------------------------------------------
 :built_in_scroll
 ;----------------------------------------------------------------
 	jsr built_in_params
