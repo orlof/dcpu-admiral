@@ -1,336 +1,336 @@
 :lexer_init
-	set [lexer_string], x
-	set [lexer_token], 0
-	set [lexer_start], 0
-	set [lexer_end], 0
-	set [lexer_target_indent], 0
-	set [lexer_current_indent], 0
+    set [lexer_string], x
+    set [lexer_token], 0
+    set [lexer_start], 0
+    set [lexer_end], 0
+    set [lexer_target_indent], 0
+    set [lexer_current_indent], 0
 
-	jsr lexer_next
+    jsr lexer_next
 
-	set pc, pop
+    set pc, pop
 
 :lexer_store
-	set x, pop
-	set push, [lexer_string]
-	set push, [lexer_token]
-	set push, [lexer_start]
-	set push, [lexer_end]
-	set push, [lexer_target_indent]
-	set push, [lexer_current_indent]
-	set pc, x
+    set x, pop
+    set push, [lexer_string]
+    set push, [lexer_token]
+    set push, [lexer_start]
+    set push, [lexer_end]
+    set push, [lexer_target_indent]
+    set push, [lexer_current_indent]
+    set pc, x
 
 :lexer_restore
-	set x, pop
-	set [lexer_current_indent], [SP]
-	set [lexer_target_indent], [SP+1]
-	set [lexer_end], [SP+2]
-	set [lexer_start], [SP+3]
-	set [lexer_token], [SP+4]
-	set [lexer_string], [SP+5]
-	set pc, x
+    set x, pop
+    set [lexer_current_indent], [SP]
+    set [lexer_target_indent], [SP+1]
+    set [lexer_end], [SP+2]
+    set [lexer_start], [SP+3]
+    set [lexer_token], [SP+4]
+    set [lexer_string], [SP+5]
+    set pc, x
 
 :lexer_get_token_as_string
-	set push, [lexer_string]
-	set push, [lexer_start]
-	set push, [lexer_end]
-	jsr array_split
-	ife [lexer_token], token_name
-		set [x + HANDLE_TYPE], TYPE_NAME
-	set pc, pop
+    set push, [lexer_string]
+    set push, [lexer_start]
+    set push, [lexer_end]
+    jsr array_split
+    ife [lexer_token], token_name
+        set [x + HANDLE_TYPE], TYPE_NAME
+    set pc, pop
 
 ;----------------------------------------------------------------
 ; struct handle *lexer__get_line()
 ;----------------------------------------------------------------
 :lexer__get_line
-	set push, a
-	set push, b
-	
-	set a, [lexer_string]
-	set push, a
-	
-	set b, [lexer_start]	
-	jsr lexer__goto_sol
-	set push, b
+    set push, a
+    set push, b
+    
+    set a, [lexer_string]
+    set push, a
+    
+    set b, [lexer_start]    
+    jsr lexer__goto_sol
+    set push, b
 
-	jsr lexer__goto_eol
-	set push, b
-	jsr array_split
+    jsr lexer__goto_eol
+    set push, b
+    jsr array_split
 
-	set b, pop
-	set a, pop
+    set b, pop
+    set a, pop
 
-	set pc, pop
+    set pc, pop
 
 ;----------------------------------------------------------------
 :lexer__goto_eol
 ;----------------------------------------------------------------
-	jsr array__get
-	
-	ife x, 0
-		set pc, pop
-	
-	ife [x + lexer_table], lexer_char_newline
-		set pc, pop
+    jsr array__get
+    
+    ife x, 0
+        set pc, pop
+    
+    ife [x + lexer_table], lexer_char_newline
+        set pc, pop
 
-	add b, 1
-	set pc, lexer__goto_eol
+    add b, 1
+    set pc, lexer__goto_eol
 
 ;----------------------------------------------------------------
 :lexer__goto_sol
 ;----------------------------------------------------------------
-	ife b, 0
-		set pc, pop
-		
-	sub b, 1
-	jsr array__get
-	
-	ifn [x + lexer_table], lexer_char_newline
-		set pc, lexer__goto_sol
+    ife b, 0
+        set pc, pop
+        
+    sub b, 1
+    jsr array__get
+    
+    ifn [x + lexer_table], lexer_char_newline
+        set pc, lexer__goto_sol
 
-	add b, 1
-	set pc, pop
+    add b, 1
+    set pc, pop
 
 ;----------------------------------------------------------------
 ; void lexer_advance(struct handle *expected_token)
 ;----------------------------------------------------------------
 :lexer_advance
-	set x, pop
-	ifn [lexer_token], pop
-		jsr recover
-	
-	set push, x
-	jsr lexer_next
+    set x, pop
+    ifn [lexer_token], pop
+        jsr recover
+    
+    set push, x
+    jsr lexer_next
 
-	set pc, pop
+    set pc, pop
 
 ;----------------------------------------------------------------
 ; void lexer_next()
 ;----------------------------------------------------------------
 :lexer_next
-	set push, a
-	set push, b
-	set push, c
+    set push, a
+    set push, b
+    set push, c
 
-	ifg [lexer_current_indent], [lexer_target_indent]
-		set pc, lexer_dedent
-	ifl [lexer_current_indent], [lexer_target_indent]
-		set pc, lexer_indent
-		
-	set a, [lexer_string]		; struct handle *
-	set b, [lexer_end]
-	
-	ife [lexer_token], token_str
-		add b, 1
+    ifg [lexer_current_indent], [lexer_target_indent]
+        set pc, lexer_dedent
+    ifl [lexer_current_indent], [lexer_target_indent]
+        set pc, lexer_indent
+        
+    set a, [lexer_string]        ; struct handle *
+    set b, [lexer_end]
+    
+    ife [lexer_token], token_str
+        add b, 1
 
-	jsr lexer_skip_white
+    jsr lexer_skip_white
 
-	set [lexer_start], b	; token start index
+    set [lexer_start], b    ; token start index
 
-	ifg x, 127
-		jsr recover
+    ifg x, 127
+        jsr recover
 
-	set pc, [x + lexer_table]
+    set pc, [x + lexer_table]
 
 :lexer_finish_advance
-	add b, 1
+    add b, 1
 
 :lexer_finish
-	set [lexer_end], b
+    set [lexer_end], b
 
 :lexer__exit
-	set c, pop
-	set b, pop
-	set a, pop
-	
-	set pc, pop
+    set c, pop
+    set b, pop
+    set a, pop
+    
+    set pc, pop
 
 ;----------------------------------------------------------------
 :lexer_char_newline
 ;----------------------------------------------------------------
-	set [lexer_token], token_newline
+    set [lexer_token], token_newline
 
 :lexer_char_newline_restart
-	add b, 1
-	set c, 0	; current indent
-	
+    add b, 1
+    set c, 0    ; current indent
+    
 :lexer_char_newline_loop
-	jsr array__get
-	ifn x, ' '
-		set pc, lexer_char_newline_break
+    jsr array__get
+    ifn x, ' '
+        set pc, lexer_char_newline_break
 
-	add c, 1		; inc indent
-	add b, 1		; advance position
-	set pc, lexer_char_newline_loop
+    add c, 1        ; inc indent
+    add b, 1        ; advance position
+    set pc, lexer_char_newline_loop
 
 :lexer_char_newline_break
-	ife [lexer_table + x], lexer_char_comment
-		jsr lexer__goto_eol
+    ife [lexer_table + x], lexer_char_comment
+        jsr lexer__goto_eol
 
-	ife [lexer_table + x], lexer_char_newline
-		set pc, lexer_char_newline_restart
+    ife [lexer_table + x], lexer_char_newline
+        set pc, lexer_char_newline_restart
 
-	ife x, 0
-;		set pc, lexer_char_eof
-		set pc, lexer_finish
+    ife x, 0
+;        set pc, lexer_char_eof
+        set pc, lexer_finish
 
-	set [lexer_target_indent], c
+    set [lexer_target_indent], c
 
-	set pc, lexer_finish
+    set pc, lexer_finish
 
 ;----------------------------------------------------------------
 :lexer_indent
 ;----------------------------------------------------------------
-	set [lexer_token], token_indent
-	add [lexer_current_indent], 1
-	set pc, lexer__exit
+    set [lexer_token], token_indent
+    add [lexer_current_indent], 1
+    set pc, lexer__exit
 ;----------------------------------------------------------------
 :lexer_dedent
 ;----------------------------------------------------------------
-	set [lexer_token], token_dedent
-	sub [lexer_current_indent], 1
-	set pc, lexer__exit
+    set [lexer_token], token_dedent
+    sub [lexer_current_indent], 1
+    set pc, lexer__exit
 
 ;----------------------------------------------------------------
 :lexer_char_dot
 ;----------------------------------------------------------------
-	add b, 1
-	jsr array__get
+    add b, 1
+    jsr array__get
 
-	ife [x + lexer_table], lexer_char_digit
-		set pc, lexer_float
+    ife [x + lexer_table], lexer_char_digit
+        set pc, lexer_float
 
-	set [lexer_token], token_reference
-	set pc, lexer_finish
+    set [lexer_token], token_reference
+    set pc, lexer_finish
 
 ;----------------------------------------------------------------
 :lexer_char_tilde
 ;----------------------------------------------------------------
-	set [lexer_token], token_tilde
-	set pc, lexer_finish_advance
+    set [lexer_token], token_tilde
+    set pc, lexer_finish_advance
 
 ;----------------------------------------------------------------
 :lexer_char_colon
 ;----------------------------------------------------------------
-	set [lexer_token], token_colon
-	set pc, lexer_finish_advance
+    set [lexer_token], token_colon
+    set pc, lexer_finish_advance
 
 ;----------------------------------------------------------------
 :lexer_char_comma
 ;----------------------------------------------------------------
-	set [lexer_token], token_comma
-	set pc, lexer_finish_advance
+    set [lexer_token], token_comma
+    set pc, lexer_finish_advance
 
 ;----------------------------------------------------------------
 :lexer_char_lparen
 ;----------------------------------------------------------------
-	set [lexer_token], token_lparen
-	set pc, lexer_finish_advance
+    set [lexer_token], token_lparen
+    set pc, lexer_finish_advance
 
 ;----------------------------------------------------------------
 :lexer_char_rparen
 ;----------------------------------------------------------------
-	set [lexer_token], token_rparen
-	set pc, lexer_finish_advance
+    set [lexer_token], token_rparen
+    set pc, lexer_finish_advance
 
 ;----------------------------------------------------------------
 :lexer_char_lcurly
 ;----------------------------------------------------------------
-	set [lexer_token], token_lcurly
-	set pc, lexer_finish_advance
+    set [lexer_token], token_lcurly
+    set pc, lexer_finish_advance
 
 ;----------------------------------------------------------------
 :lexer_char_rcurly
 ;----------------------------------------------------------------
-	set [lexer_token], token_rcurly
-	set pc, lexer_finish_advance
+    set [lexer_token], token_rcurly
+    set pc, lexer_finish_advance
 
 ;----------------------------------------------------------------
 :lexer_char_lbrack
 ;----------------------------------------------------------------
-	set [lexer_token], token_lbrack
-	set pc, lexer_finish_advance
+    set [lexer_token], token_lbrack
+    set pc, lexer_finish_advance
 
 ;----------------------------------------------------------------
 :lexer_char_rbrack
 ;----------------------------------------------------------------
-	set [lexer_token], token_rbrack
-	set pc, lexer_finish_advance
+    set [lexer_token], token_rbrack
+    set pc, lexer_finish_advance
 
 ;----------------------------------------------------------------
 :lexer_char_plus
 ;----------------------------------------------------------------
-	set [lexer_token], token_plus
-	set c, token_augass_plus
-	set pc, check_augass
+    set [lexer_token], token_plus
+    set c, token_augass_plus
+    set pc, check_augass
 
 ;----------------------------------------------------------------
 :lexer_char_minus
 ;----------------------------------------------------------------
-	set [lexer_token], token_minus
-	set c, token_augass_minus
-	set pc, check_augass
+    set [lexer_token], token_minus
+    set c, token_augass_minus
+    set pc, check_augass
 
 ;----------------------------------------------------------------
 :lexer_char_star
 ;----------------------------------------------------------------
-	add b, 1
-	jsr array__get
-	ife x, '='
-		set pc, lexer_char_star_assign
-	ife x, '*'
-		set pc, lexer_char_star_star
+    add b, 1
+    jsr array__get
+    ife x, '='
+        set pc, lexer_char_star_assign
+    ife x, '*'
+        set pc, lexer_char_star_star
 
-	set [lexer_token], token_star
-	set pc, lexer_finish
+    set [lexer_token], token_star
+    set pc, lexer_finish
 :lexer_char_star_assign
-	set [lexer_token], token_augass_star
-	set pc, lexer_finish_advance
+    set [lexer_token], token_augass_star
+    set pc, lexer_finish_advance
 :lexer_char_star_star
-	set [lexer_token], token_power
-	set pc, lexer_finish_advance
-	
+    set [lexer_token], token_power
+    set pc, lexer_finish_advance
+    
 ;----------------------------------------------------------------
 :lexer_char_caret
 ;----------------------------------------------------------------
-	set [lexer_token], token_bitwise_xor
-	set c, token_augass_xor
-	set pc, check_augass
+    set [lexer_token], token_bitwise_xor
+    set c, token_augass_xor
+    set pc, check_augass
 
 ;----------------------------------------------------------------
 :lexer_char_vbar
 ;----------------------------------------------------------------
-	set [lexer_token], token_bitwise_or
-	set c, token_augass_or
-	set pc, check_augass
+    set [lexer_token], token_bitwise_or
+    set c, token_augass_or
+    set pc, check_augass
 
 ;----------------------------------------------------------------
 :lexer_char_ambersand
 ;----------------------------------------------------------------
-	set [lexer_token], token_bitwise_and
-	set c, token_augass_and
-	set pc, check_augass
+    set [lexer_token], token_bitwise_and
+    set c, token_augass_and
+    set pc, check_augass
 
 ;----------------------------------------------------------------
 :lexer_char_slash
 ;----------------------------------------------------------------
-	set [lexer_token], token_slash
-	set c, token_augass_slash
-	set pc, check_augass
+    set [lexer_token], token_slash
+    set c, token_augass_slash
+    set pc, check_augass
 
 ;----------------------------------------------------------------
 :lexer_char_percent
 ;----------------------------------------------------------------
-	set [lexer_token], token_percent
-	set c, token_augass_percent
-	set pc, check_augass
+    set [lexer_token], token_percent
+    set c, token_augass_percent
+    set pc, check_augass
 
 ;----------------------------------------------------------------
 :lexer_char_equal
 ;----------------------------------------------------------------
-	set [lexer_token], token_assign
-	set c, token_equal
-	set pc, check_augass
+    set [lexer_token], token_assign
+    set c, token_equal
+    set pc, check_augass
 
 ;----------------------------------------------------------------
 :lexer_char_less
@@ -339,28 +339,28 @@
 ; '<<' token_lshift
 ; '<<=' token_augass_lshift
 ;----------------------------------------------------------------
-	set [lexer_token], token_less
+    set [lexer_token], token_less
 
-	add b, 1
-	jsr array__get
-	ife x, '<'
-		set pc, lexer_char_less_less	
-	ifn x, '='
-		set pc, lexer_finish
+    add b, 1
+    jsr array__get
+    ife x, '<'
+        set pc, lexer_char_less_less    
+    ifn x, '='
+        set pc, lexer_finish
 
-	set [lexer_token], token_less_or_equal
-	set pc, lexer_finish_advance
+    set [lexer_token], token_less_or_equal
+    set pc, lexer_finish_advance
 
 :lexer_char_less_less
-	set [lexer_token], token_lshift
-	
-	add b, 1
-	jsr array__get
-	ifn x, '='
-		set pc, lexer_finish
-	
-	set [lexer_token], token_augass_lshift
-	set pc, lexer_finish_advance
+    set [lexer_token], token_lshift
+    
+    add b, 1
+    jsr array__get
+    ifn x, '='
+        set pc, lexer_finish
+    
+    set [lexer_token], token_augass_lshift
+    set pc, lexer_finish_advance
 
 ;----------------------------------------------------------------
 :lexer_char_greater
@@ -369,260 +369,260 @@
 ; '>>' token_rshift
 ; '>>=' token_augass_rshift
 ;----------------------------------------------------------------
-	set [lexer_token], token_greater
+    set [lexer_token], token_greater
 
-	add b, 1
-	jsr array__get
-	ife x, '>'
-		set pc, lexer_char_greater_greater	
-	ifn x, '='
-		set pc, lexer_finish
+    add b, 1
+    jsr array__get
+    ife x, '>'
+        set pc, lexer_char_greater_greater    
+    ifn x, '='
+        set pc, lexer_finish
 
-	set [lexer_token], token_greater_or_equal
-	set pc, lexer_finish_advance
+    set [lexer_token], token_greater_or_equal
+    set pc, lexer_finish_advance
 
 :lexer_char_greater_greater
-	set [lexer_token], token_rshift
-	
-	add b, 1
-	jsr array__get
-	ifn x, '='
-		set pc, lexer_finish
-	
-	set [lexer_token], token_augass_rshift
-	set pc, lexer_finish_advance
+    set [lexer_token], token_rshift
+    
+    add b, 1
+    jsr array__get
+    ifn x, '='
+        set pc, lexer_finish
+    
+    set [lexer_token], token_augass_rshift
+    set pc, lexer_finish_advance
 
 ;----------------------------------------------------------------
 :lexer_char_exclamation
 ;----------------------------------------------------------------
-	set [lexer_token], token_not
-	set c, token_not_equal
-	set pc, check_augass
+    set [lexer_token], token_not
+    set c, token_not_equal
+    set pc, check_augass
 
 ;----------------------------------------------------------------
 :check_augass
 ;----------------------------------------------------------------
-	add b, 1
-	jsr array__get
-	ifn x, '='
-		set pc, lexer_finish
+    add b, 1
+    jsr array__get
+    ifn x, '='
+        set pc, lexer_finish
 
-	set [lexer_token], c
-	set pc, lexer_finish_advance
+    set [lexer_token], c
+    set pc, lexer_finish_advance
 
 ;----------------------------------------------------------------
 :lexer_char_eof
 ;----------------------------------------------------------------
-	set [lexer_token], token_eof
-	set [lexer_target_indent], 0
-	set pc, lexer_finish
+    set [lexer_token], token_eof
+    set [lexer_target_indent], 0
+    set pc, lexer_finish
 
 ;----------------------------------------------------------------
 :lexer_char_digit
 ;----------------------------------------------------------------
-	ifn x, '0'
-		set pc, lexer_char_digit_start
+    ifn x, '0'
+        set pc, lexer_char_digit_start
 
-	add b, 1
-	jsr array__get
-	
-	ife x, 'x'
-		set pc, lexer_char_hex
+    add b, 1
+    jsr array__get
+    
+    ife x, 'x'
+        set pc, lexer_char_hex
 
-	ife x, 'X'
-		set pc, lexer_char_hex
+    ife x, 'X'
+        set pc, lexer_char_hex
 
-	set pc, lexer_char_digit_start
+    set pc, lexer_char_digit_start
 
 :lexer_char_digit_loop
-	add b, 1
-	jsr array__get
+    add b, 1
+    jsr array__get
 
 :lexer_char_digit_start
-	ife x, '.'		; discard int and go for float
-		set pc, lexer_float
-	ife x, 'e'		; discard int and go for float
-		set pc, lexer_float
+    ife x, '.'        ; discard int and go for float
+        set pc, lexer_float
+    ife x, 'e'        ; discard int and go for float
+        set pc, lexer_float
 
-	ife [x + lexer_table], lexer_char_digit
-		set pc, lexer_char_digit_loop
+    ife [x + lexer_table], lexer_char_digit
+        set pc, lexer_char_digit_loop
 
-	set [lexer_end], b			; lexer.data1
+    set [lexer_end], b            ; lexer.data1
 
-	set [lexer_token], token_int
-	set pc, lexer_finish
+    set [lexer_token], token_int
+    set pc, lexer_finish
 
 ;----------------------------------------------------------------
 :lexer_char_hex
 ;----------------------------------------------------------------
-	add b, 1
-	jsr array__get
+    add b, 1
+    jsr array__get
 
-	ife [x + lexer_table], lexer_char_digit
-		set pc, lexer_char_hex
+    ife [x + lexer_table], lexer_char_digit
+        set pc, lexer_char_hex
 
-	ifg x, 'a'-1
-		ifl x, 'f'+1
-			set pc, lexer_char_hex
+    ifg x, 'a'-1
+        ifl x, 'f'+1
+            set pc, lexer_char_hex
 
-	ifg x, 'A'-1
-		ifl x, 'F'+1
-			set pc, lexer_char_hex
+    ifg x, 'A'-1
+        ifl x, 'F'+1
+            set pc, lexer_char_hex
 
-	set [lexer_end], b			; lexer.data1
+    set [lexer_end], b            ; lexer.data1
 
-	set [lexer_token], token_hex
-	set pc, lexer_finish
+    set [lexer_token], token_hex
+    set pc, lexer_finish
 
 ;----------------------------------------------------------------
 :lexer_char_letter
 ;----------------------------------------------------------------
 :lexer_name_loop
-	add b, 1
-	jsr array__get
+    add b, 1
+    jsr array__get
 
-	ife [x + lexer_table], lexer_char_letter
-		set pc, lexer_name_loop
-	ife [x + lexer_table], lexer_char_digit
-		set pc, lexer_name_loop
+    ife [x + lexer_table], lexer_char_letter
+        set pc, lexer_name_loop
+    ife [x + lexer_table], lexer_char_digit
+        set pc, lexer_name_loop
 
-	set [lexer_end], b
-	
-	set a, [a]
-	add a, [lexer_start]
-	sub b, [lexer_start]
-	add a, 1
+    set [lexer_end], b
+    
+    set a, [a]
+    add a, [lexer_start]
+    sub b, [lexer_start]
+    add a, 1
 
-	set push, i
-	set push, j
+    set push, i
+    set push, j
 
-	set x, built_in_stmts
-	jsr built_in_matcher
-	
-	set j, pop
-	set i, pop
-	
-	set [lexer_token], c
-	
-	set pc, lexer__exit
+    set x, built_in_stmts
+    jsr built_in_matcher
+    
+    set j, pop
+    set i, pop
+    
+    set [lexer_token], c
+    
+    set pc, lexer__exit
 
 ;----------------------------------------------------------------
 :lexer_char_quotationmark
 ;----------------------------------------------------------------
-	set y, x
-	add [lexer_start], 1 	; skip "
+    set y, x
+    add [lexer_start], 1     ; skip "
 
 :lexer_literal_string_loop
-	add b, 1
-	jsr array__get
+    add b, 1
+    jsr array__get
 
-	ife x, 0
-		jsr recover
-	ife [x + lexer_table], lexer_char_newline
-		jsr recover
+    ife x, 0
+        jsr recover
+    ife [x + lexer_table], lexer_char_newline
+        jsr recover
 
-	ifn x, y
-		set pc, lexer_literal_string_loop
+    ifn x, y
+        set pc, lexer_literal_string_loop
 
-	set [lexer_end], b
+    set [lexer_end], b
 
-	set [lexer_token], token_str
-	set pc, lexer_finish
+    set [lexer_token], token_str
+    set pc, lexer_finish
 
 ;----------------------------------------------------------------
 :lexer_float
 ; d*.d*
 ;----------------------------------------------------------------
-	set b, [lexer_start]			; restore start position
-	set c, FP_STATE_START
+    set b, [lexer_start]            ; restore start position
+    set c, FP_STATE_START
 
 :lexer_float_loop
-	jsr array__get
-	add b, 1
+    jsr array__get
+    add b, 1
 
-	ife x, '+'
-		set pc, lexer_float_plus
-	ife x, '-'
-		set pc, lexer_float_minus
-	ife x, 'e'
-		set pc, lexer_float_exponent
-	ife x, '.'
-		set pc, lexer_float_decimal_point
+    ife x, '+'
+        set pc, lexer_float_plus
+    ife x, '-'
+        set pc, lexer_float_minus
+    ife x, 'e'
+        set pc, lexer_float_exponent
+    ife x, '.'
+        set pc, lexer_float_decimal_point
 
-	ifn [x + lexer_table], lexer_char_digit
-		set pc, lexer_float_finish
+    ifn [x + lexer_table], lexer_char_digit
+        set pc, lexer_float_finish
 
-	ifb c, FP_STATE_E + FP_STATE_EXPONENT_SIGN
-		set pc, lexer_float_exponent_number
-	ifb c, FP_STATE_DIGIT_DECIMAL + FP_STATE_DECIMAL_POINT		; if in fraction part
-		set pc, lexer_float_decimal_number
-	ifb c, FP_STATE_START + FP_STATE_SIGN + FP_STATE_DIGIT_WHOLE	; if in whole number part
-		set pc, lexer_float_integral_number
+    ifb c, FP_STATE_E + FP_STATE_EXPONENT_SIGN
+        set pc, lexer_float_exponent_number
+    ifb c, FP_STATE_DIGIT_DECIMAL + FP_STATE_DECIMAL_POINT        ; if in fraction part
+        set pc, lexer_float_decimal_number
+    ifb c, FP_STATE_START + FP_STATE_SIGN + FP_STATE_DIGIT_WHOLE    ; if in whole number part
+        set pc, lexer_float_integral_number
 
-	set pc, lexer_float_finish		; wrong state for a number
+    set pc, lexer_float_finish        ; wrong state for a number
 
 :lexer_float_decimal_number
-	; parse digit to fraction
-	set c, FP_STATE_DIGIT_DECIMAL						; set state
-	set pc, lexer_float_loop
+    ; parse digit to fraction
+    set c, FP_STATE_DIGIT_DECIMAL                        ; set state
+    set pc, lexer_float_loop
 
 :lexer_float_integral_number
-	set c, FP_STATE_DIGIT_WHOLE							; set state
-	set pc, lexer_float_loop
+    set c, FP_STATE_DIGIT_WHOLE                            ; set state
+    set pc, lexer_float_loop
 
 :lexer_float_exponent_number
-	set c, FP_STATE_EXPONENT_DIGIT	; set state
-	set pc, lexer_float_loop
+    set c, FP_STATE_EXPONENT_DIGIT    ; set state
+    set pc, lexer_float_loop
 
 :lexer_float_plus
 :lexer_float_minus
-	ifn c, FP_STATE_E
-		set pc, lexer_float_finish
-	set c, FP_STATE_EXPONENT_SIGN
-	set pc, lexer_float_loop
-	
+    ifn c, FP_STATE_E
+        set pc, lexer_float_finish
+    set c, FP_STATE_EXPONENT_SIGN
+    set pc, lexer_float_loop
+    
 :lexer_float_decimal_point
-	ifc c, FP_STATE_START + FP_STATE_SIGN + FP_STATE_DIGIT_WHOLE
-		set pc, lexer_float_finish
+    ifc c, FP_STATE_START + FP_STATE_SIGN + FP_STATE_DIGIT_WHOLE
+        set pc, lexer_float_finish
 
-	set c, FP_STATE_DECIMAL_POINT
-	set pc, lexer_float_loop
-	
+    set c, FP_STATE_DECIMAL_POINT
+    set pc, lexer_float_loop
+    
 :lexer_float_exponent
-	ifc c, FP_STATE_START + FP_STATE_SIGN + FP_STATE_DIGIT_WHOLE + FP_STATE_DIGIT_DECIMAL
-		set pc, lexer_float_finish
+    ifc c, FP_STATE_START + FP_STATE_SIGN + FP_STATE_DIGIT_WHOLE + FP_STATE_DIGIT_DECIMAL
+        set pc, lexer_float_finish
 
-	set c, FP_STATE_E
-	set pc, lexer_float_loop
+    set c, FP_STATE_E
+    set pc, lexer_float_loop
 
 :lexer_float_finish
-	ifb c, FP_STATE_START + FP_STATE_SIGN + FP_STATE_E + FP_STATE_EXPONENT_SIGN
-		jsr recover
+    ifb c, FP_STATE_START + FP_STATE_SIGN + FP_STATE_E + FP_STATE_EXPONENT_SIGN
+        jsr recover
 
-	sub b, 1
-	set [lexer_end], b			; lexer.data1	
-	set [lexer_token], token_float
+    sub b, 1
+    set [lexer_end], b            ; lexer.data1    
+    set [lexer_token], token_float
 
-	set pc, lexer__exit
+    set pc, lexer__exit
 
 ;----------------------------------------------------------------
 :lexer_skip_white
 ; a: struct handle *
 ; b: index
 ;----------------------------------------------------------------
-	jsr array__get
-	ifn x, ' '
-		set pc, pop
-	add b, 1
-	set pc, lexer_skip_white
+    jsr array__get
+    ifn x, ' '
+        set pc, pop
+    add b, 1
+    set pc, lexer_skip_white
 
 ;----------------------------------------------------------------
 :lexer_char_comment
 ;----------------------------------------------------------------
-	add b, 1
-	jsr lexer__goto_eol
-	set pc, lexer_char_newline
+    add b, 1
+    jsr lexer__goto_eol
+    set pc, lexer_char_newline
 
 :lexer_char_whitespace
-	jsr recover
+    jsr recover
 

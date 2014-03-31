@@ -2,126 +2,126 @@
 ; struct handle *list_get(struct handle *list, struct handle *index)
 ;----------------------------------------------------------------
 :list_get
-	set push, 2		; sizeof(args)
-	set push, 0		; sizeof(refs)
-	jsr preamble
+    set push, 2        ; sizeof(args)
+    set push, 0        ; sizeof(refs)
+    jsr preamble
 
-	set a, [z+11]		; struct handle *list
+    set a, [z+11]        ; struct handle *list
 
-	set push, [z+10]		; struct handle *int
-	jsr int_to_int16
-	set b, x
+    set push, [z+10]        ; struct handle *int
+    jsr int_to_int16
+    set b, x
 
-	jsr array__get
+    jsr array__get
 
-	jsr postamble
-	
+    jsr postamble
+    
 ;----------------------------------------------------------------
 ; void list_set(struct handle *list, struct handle *index, struct handle *item)
 ;----------------------------------------------------------------
 :list_set
-	set push, 3		; sizeof(args)
-	set push, 0		; sizeof(vars)
-	jsr preamble
+    set push, 3        ; sizeof(args)
+    set push, 0        ; sizeof(vars)
+    jsr preamble
 
-	set a, [z+12]		; struct handle *list
+    set a, [z+12]        ; struct handle *list
 
-	set push, [z+11]		; struct handle *int
-	jsr int_to_int16
-	set b, x
-	
-	set c, [z+10]
-	jsr array__set
+    set push, [z+11]        ; struct handle *int
+    jsr int_to_int16
+    set b, x
+    
+    set c, [z+10]
+    jsr array__set
 
-	jsr postamble
+    jsr postamble
 
 ;----------------------------------------------------------------
 ; void list_del(struct handle *list, struct handle *index)
 ;----------------------------------------------------------------
 :list_del
-	set push, 2		; sizeof(args)
-	set push, 0		; sizeof(refs)
-	jsr preamble
+    set push, 2        ; sizeof(args)
+    set push, 0        ; sizeof(refs)
+    jsr preamble
 
-	set a, [z+11]		; struct handle *list
-	ifc [a + HANDLE_TYPE], TYPE_LIST
-		jsr recover
+    set a, [z+11]        ; struct handle *list
+    ifc [a + HANDLE_TYPE], TYPE_LIST
+        jsr recover
 
-	set push, [z+10]	; struct handle *int
-	jsr int_to_int16
-	set b, x
+    set push, [z+10]    ; struct handle *int
+    jsr int_to_int16
+    set b, x
 
-	jsr array__del
+    jsr array__del
 
-	jsr postamble
-	
+    jsr postamble
+    
 ;----------------------------------------------------------------
 ; uint list_cmp(struct handle *left, struct handle *right)
 ;----------------------------------------------------------------
 :list_cmp
-	set push, [sp]
-	set [sp + 1], val_cmp
-	set pc, array_cmp
+    set push, [sp]
+    set [sp + 1], val_cmp
+    set pc, array_cmp
 
 ;----------------------------------------------------------------
 ; struct handle *list_repr(struct handle *list)
 ;----------------------------------------------------------------
 :list_repr
-	set push, 1
-	set push, 2
-	jsr preamble
-	
-	set y, [z+10]
-	
-	set push, 10
-	set push, TYPE_STR
-	jsr alloc
-	set [z-1], x
+    set push, 1
+    set push, 2
+    jsr preamble
+    
+    set y, [z+10]
+    
+    set push, 10
+    set push, TYPE_STR
+    jsr alloc
+    set [z-1], x
 
-	set push, x
-	ife [y + HANDLE_TYPE], TYPE_TUPLE
-		set push, '('
-	ife [y + HANDLE_TYPE], TYPE_LIST
-		set push, '['
-	jsr array__append
+    set push, x
+    ife [y + HANDLE_TYPE], TYPE_TUPLE
+        set push, '('
+    ife [y + HANDLE_TYPE], TYPE_LIST
+        set push, '['
+    jsr array__append
 
-	set i, 0					; index
-	set b, [y]					; struct list *
-	set b, [b]					; list.size
+    set i, 0                    ; index
+    set b, [y]                    ; struct list *
+    set b, [b]                    ; list.size
 
 :list_repr_loop
-	ife i, b
-		set pc, list_repr_finish
+    ife i, b
+        set pc, list_repr_finish
 
-	ife i, 0
-		set pc, list_repr_skip_comma
+    ife i, 0
+        set pc, list_repr_skip_comma
 
-	set push, [z-1]					; struct handle *str
-	set push, ','
-	jsr array__append
+    set push, [z-1]                    ; struct handle *str
+    set push, ','
+    jsr array__append
 
 :list_repr_skip_comma
-	set x, [y]				; struct list *
-	add x, i				; current item
-	
-	set push, [x+1]			; get repr of next item
-	jsr repr
-	set [z-2], x
-	
-	set push, [z-1]
-	set push, [z-2]
-	jsr array_merge
-	set [z-1], x
+    set x, [y]                ; struct list *
+    add x, i                ; current item
+    
+    set push, [x+1]            ; get repr of next item
+    jsr repr
+    set [z-2], x
+    
+    set push, [z-1]
+    set push, [z-2]
+    jsr array_merge
+    set [z-1], x
 
-	sti pc, list_repr_loop
-		
+    sti pc, list_repr_loop
+        
 :list_repr_finish
-	set push, [z-1]
-	ife [y + HANDLE_TYPE], TYPE_TUPLE
-		set push, ')'
-	ife [y + HANDLE_TYPE], TYPE_LIST
-		set push, ']'
-	jsr array__append
+    set push, [z-1]
+    ife [y + HANDLE_TYPE], TYPE_TUPLE
+        set push, ')'
+    ife [y + HANDLE_TYPE], TYPE_LIST
+        set push, ']'
+    jsr array__append
 
-	set x, [z-1]
-	jsr postamble
+    set x, [z-1]
+    jsr postamble

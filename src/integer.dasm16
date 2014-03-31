@@ -3,60 +3,60 @@
 ; convert 16 bit register value to admiral's integer
 ;----------------------------------------------------------------
 ;:int16_to_int
-;	set push, 1
-;	set push, 0
-;	jsr preamble
+;    set push, 1
+;    set push, 0
+;    jsr preamble
 ;
-;	set c, 1
-;	set pc, uint16_to_int_alloc
+;    set c, 1
+;    set pc, uint16_to_int_alloc
 
 ;----------------------------------------------------------------
 ; struct handle *uint16_to_int(uint16 value)
 ; convert 16 bit register value to admiral's integer
 ;----------------------------------------------------------------
 :uint16_to_int
-	ifl [sp+1], 0x11
-		set pc, uint16_to_int__optimize
+    ifl [sp+1], 0x11
+        set pc, uint16_to_int__optimize
 
-	set push, 1
+    set push, 1
 
-	; special case here. if msb is 1, we must not convert it to
-	; negative integer, but instead extend integer length to keep the
-	; value positive
-	ifb [sp+2], 0x8000
-		set [sp], 2
+    ; special case here. if msb is 1, we must not convert it to
+    ; negative integer, but instead extend integer length to keep the
+    ; value positive
+    ifb [sp+2], 0x8000
+        set [sp], 2
 
-	set push, TYPE_INT
-	jsr array_create
+    set push, TYPE_INT
+    jsr array_create
 
-	set a, [x]
-	add a, [a]
-	set [a], [sp+1]	
+    set a, [x]
+    add a, [a]
+    set [a], [sp+1]    
 
-	set [sp], pop
-	set pc, pop
+    set [sp], pop
+    set pc, pop
 
 :uint16_to_int__optimize
-	set x, [sp+1]
-	mul x, 4
-	add x, INT_TABLE
-	set [sp], pop
-	set pc ,pop
+    set x, [sp+1]
+    mul x, 4
+    add x, INT_TABLE
+    set [sp], pop
+    set pc ,pop
 ;----------------------------------------------------------------
 ; struct handle *int_to_int16(struct handle *integer)
 :int_to_int16
 ; fastcall with argument in stack
-;  [sp+1]	struct handle integer *
+;  [sp+1]    struct handle integer *
 ; return
 ;  x: int16 value
 ;----------------------------------------------------------------
-	set x, [sp+1]	; struct handle *
-	set x, [x]		; struct integer *
-	add x, [x]		; integer.lsw *
-	set x, [x]		; integer.lsw
-	
-	set [sp], pop	; move rts over arg
-	set pc, pop
+    set x, [sp+1]    ; struct handle *
+    set x, [x]        ; struct integer *
+    add x, [x]        ; integer.lsw *
+    set x, [x]        ; integer.lsw
+    
+    set [sp], pop    ; move rts over arg
+    set pc, pop
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_parse(struct handle *string)
@@ -67,275 +67,275 @@
 ; Return pointer to int handle or 0 if error
 ;----------------------------------------------------------------
 :int_parse
-	set push, 1			; sizeof(args)
-	set push, 1			; sizeof(refs)
-	jsr preamble
+    set push, 1            ; sizeof(args)
+    set push, 1            ; sizeof(refs)
+    jsr preamble
 
-	set [z-1], INT_0
+    set [z-1], INT_0
 
-	set a, [z+10]		; struct handle *str
-	set b, 0			; index
-	set y, FALSE		; negative flag
+    set a, [z+10]        ; struct handle *str
+    set b, 0            ; index
+    set y, FALSE        ; negative flag
 
-	jsr array__get
-	ifn [x + lexer_table], lexer_char_minus
-		set pc, int_parse_hex_check
+    jsr array__get
+    ifn [x + lexer_table], lexer_char_minus
+        set pc, int_parse_hex_check
 
-	set y, TRUE
-	add b, 1
-	jsr array__get
-	
+    set y, TRUE
+    add b, 1
+    jsr array__get
+    
 :int_parse_hex_check
-	ifn x, '0'
-		set pc, int_parse_loop
+    ifn x, '0'
+        set pc, int_parse_loop
 
-	add b, 1
-	jsr array__get
-	ifn x, 'x'
-		set pc, int_parse_loop
+    add b, 1
+    jsr array__get
+    ifn x, 'x'
+        set pc, int_parse_loop
 
-	add b, 1
-	jsr array__get
+    add b, 1
+    jsr array__get
 
-	set pc, int_parse_hex_loop
+    set pc, int_parse_hex_loop
 
 :int_parse_loop
-	set c, x
+    set c, x
 
-	ifn [c + lexer_table], lexer_char_digit
-		set pc, int_parse_finish
+    ifn [c + lexer_table], lexer_char_digit
+        set pc, int_parse_finish
 
-	set push, INT_10
-	set push, [z-1]
-	jsr int_mul
-	set [z-1], x
+    set push, INT_10
+    set push, [z-1]
+    jsr int_mul
+    set [z-1], x
 
-	sub c, '0'						; convert char to int
-	shl c, 2
-	add c, INT_TABLE
+    sub c, '0'                        ; convert char to int
+    shl c, 2
+    add c, INT_TABLE
 
-	set push, [z-1]
-	set push, c
-	jsr int_add	
-	set [z-1], x
-	
-	add b, 1
-	jsr array__get
-	set pc, int_parse_loop	
+    set push, [z-1]
+    set push, c
+    jsr int_add    
+    set [z-1], x
+    
+    add b, 1
+    jsr array__get
+    set pc, int_parse_loop    
 
 :int_parse_finish
-	set x, [z-1]
-	ife y, FALSE
-		set pc, postamble
+    set x, [z-1]
+    ife y, FALSE
+        set pc, postamble
 
-	set push, [z-1]
-	jsr int_negate
+    set push, [z-1]
+    jsr int_negate
 
-	set pc, postamble
+    set pc, postamble
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_parse_hex(struct handle *string)
 ;----------------------------------------------------------------
 :int_parse_hex
-	set push, 1			; sizeof(args)
-	set push, 1			; sizeof(refs)
-	jsr preamble
+    set push, 1            ; sizeof(args)
+    set push, 1            ; sizeof(refs)
+    jsr preamble
 
-	set [z-1], INT_0
+    set [z-1], INT_0
 
-	set a, [z+10]		; struct handle *str
-	set b, 0			; index
-	set y, FALSE		; negative flag
+    set a, [z+10]        ; struct handle *str
+    set b, 0            ; index
+    set y, FALSE        ; negative flag
 
-	jsr array__get
-	ifn [x + lexer_table], lexer_char_minus
-		set pc, int_parse_hex_0x
+    jsr array__get
+    ifn [x + lexer_table], lexer_char_minus
+        set pc, int_parse_hex_0x
 
-	set y, TRUE
-	add b, 1
+    set y, TRUE
+    add b, 1
 
 :int_parse_hex_0x
-	add b, 2
-	jsr array__get
+    add b, 2
+    jsr array__get
 
 :int_parse_hex_loop
-	set c, x
+    set c, x
 
-	ifg c, '0'-1
-		ifl c, '9'+1
-			set pc, int_parse_hex_loop_continue
+    ifg c, '0'-1
+        ifl c, '9'+1
+            set pc, int_parse_hex_loop_continue
 
-	ifg c, 'a'-1
-		ifl c, 'f'+1
-			set pc, int_parse_hex_loop_continue
+    ifg c, 'a'-1
+        ifl c, 'f'+1
+            set pc, int_parse_hex_loop_continue
 
-	ifg c, 'A'-1
-		ifl c, 'F'+1
-			set pc, int_parse_hex_loop_continue
+    ifg c, 'A'-1
+        ifl c, 'F'+1
+            set pc, int_parse_hex_loop_continue
 
-	set pc, int_parse_finish
+    set pc, int_parse_finish
 
 :int_parse_hex_loop_continue
-	set push, INT_16
-	set push, [z-1]
-	jsr int_mul
-	set [z-1], x
+    set push, INT_16
+    set push, [z-1]
+    jsr int_mul
+    set [z-1], x
 
-	set x, c
-	ifg c, '0'-1
-		ifl c, '9'+1
-			sub x, '0'
+    set x, c
+    ifg c, '0'-1
+        ifl c, '9'+1
+            sub x, '0'
 
-	ifg c, 'a'-1
-		ifl c, 'f'+1
-			sub x, 'a'-10
+    ifg c, 'a'-1
+        ifl c, 'f'+1
+            sub x, 'a'-10
 
-	ifg c, 'A'-1
-		ifl c, 'F'+1
-			sub x, 'A'-10
-	
-	shl x, 2
-	add x, INT_TABLE
+    ifg c, 'A'-1
+        ifl c, 'F'+1
+            sub x, 'A'-10
+    
+    shl x, 2
+    add x, INT_TABLE
 
-	set push, [z-1]
-	set push, x
-	jsr int_add	
-	set [z-1], x
-	
-	add b, 1
-	jsr array__get
-	set pc, int_parse_hex_loop	
+    set push, [z-1]
+    set push, x
+    jsr int_add    
+    set [z-1], x
+    
+    add b, 1
+    jsr array__get
+    set pc, int_parse_hex_loop    
 
 :int_to_hex
-	set push, 1
-	set push, 1
-	jsr preamble
-	set y, INT_16
-	set pc, int_to_str_start
+    set push, 1
+    set push, 1
+    jsr preamble
+    set y, INT_16
+    set pc, int_to_str_start
 ;----------------------------------------------------------------
 ; extern struct handle *int_to_str(struct handle *integer)
 ; local variable space
 ;   [ -1] REF temp
 ;----------------------------------------------------------------
 :int_to_str
-	set push, 1
-	set push, 1
-	jsr preamble
-	set y, INT_10
+    set push, 1
+    set push, 1
+    jsr preamble
+    set y, INT_10
 
 :int_to_str_start
-	set push, [z+10]
-	jsr int_abs
-	set [z-1], x
+    set push, [z+10]
+    jsr int_abs
+    set [z-1], x
 
-	; character count
-	set i, 0
+    ; character count
+    set i, 0
 
 :int_to_str_loop
-	set push, [z-1]
-	set push, y
-	jsr int_division
-	set [z-1], x
+    set push, [z-1]
+    set push, y
+    jsr int_division
+    set [z-1], x
 
-	set a, [x]	; struct list *tuple
-	set b, [a + INT_DIVISION_REMAINDER]	; struct handle *remainder
-	set b, [b]	; struct int *remainder
-	add b, [b]	; remainder lsw *
-	set b, [b]	; remainder lsw
-	set b, [b + HEX]
-	sti push, b
+    set a, [x]    ; struct list *tuple
+    set b, [a + INT_DIVISION_REMAINDER]    ; struct handle *remainder
+    set b, [b]    ; struct int *remainder
+    add b, [b]    ; remainder lsw *
+    set b, [b]    ; remainder lsw
+    set b, [b + HEX]
+    sti push, b
 
-	set [z-1], [a + INT_DIVISION_QUOTIENT]
+    set [z-1], [a + INT_DIVISION_QUOTIENT]
 
-	set push, [z-1]
-	jsr int_sgn
+    set push, [z-1]
+    jsr int_sgn
 
-	ifn x, 0
-		set pc, int_to_str_loop
+    ifn x, 0
+        set pc, int_to_str_loop
 
-	ife y, INT_10
-		set pc, int_to_str_negative
-		
-	sti push, 'x'
-	sti push, '0'
+    ife y, INT_10
+        set pc, int_to_str_negative
+        
+    sti push, 'x'
+    sti push, '0'
 
 :int_to_str_negative
-	; add minus sign
-	set push, [z+10]
-	jsr int_sgn
+    ; add minus sign
+    set push, [z+10]
+    jsr int_sgn
 
-	ifn x, -1
-		set pc, allocate_chars
+    ifn x, -1
+        set pc, allocate_chars
 
-	sti push, '-'
+    sti push, '-'
 
 :allocate_chars
-	set push, i
-	set push, TYPE_STR
-	jsr array_create
-	set [z-1], x
+    set push, i
+    set push, TYPE_STR
+    jsr array_create
+    set [z-1], x
 
-	set a, [x]
-	add a, i
+    set a, [x]
+    add a, i
 
-	sti j, [x]	; struct string *
+    sti j, [x]    ; struct string *
 
 :itoa_reverse_string
-	set [j], pop
-	
-	ifl j, a
-		sti pc, itoa_reverse_string
+    set [j], pop
+    
+    ifl j, a
+        sti pc, itoa_reverse_string
 
-	set pc, postamble
+    set pc, postamble
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_random(struct handle *min, struct handle *max)
 ;----------------------------------------------------------------
 :int_random
-	set push, 2
-	set push, 2
-	jsr preamble
-	
-	set push, [z+10]
-	set push, [z+11]
-	jsr int_sub
-	set [z-1], x
+    set push, 2
+    set push, 2
+    jsr preamble
+    
+    set push, [z+10]
+    set push, [z+11]
+    jsr int_sub
+    set [z-1], x
 
-	set a, [z-1]
-	set a, [a]
-	
-	set push, [a]
-	set push, TYPE_INT
-	jsr array_create
-	set [z-2], x
-	
-	set a, [x]
-	add a, 1
-	
-	set i, [x]
-	add i, [i]
-	
+    set a, [z-1]
+    set a, [a]
+    
+    set push, [a]
+    set push, TYPE_INT
+    jsr array_create
+    set [z-2], x
+    
+    set a, [x]
+    add a, 1
+    
+    set i, [x]
+    add i, [i]
+    
 :int_random_loop
-	jsr int_rnd_lfsr
-;	jsr int_rnd_lcg
-	ife i, a
-		and x, 0x7fff
-	set [i], x
-	ifg i, a
-		std pc, int_random_loop
+    jsr int_rnd_lfsr
+;    jsr int_rnd_lcg
+    ife i, a
+        and x, 0x7fff
+    set [i], x
+    ifg i, a
+        std pc, int_random_loop
 
-	set push, [z-2]
-	set push, [z-1]
-	jsr int_division
-	
-	set x, [x]
-	set [z-1], [x + INT_DIVISION_REMAINDER]
+    set push, [z-2]
+    set push, [z-1]
+    jsr int_division
+    
+    set x, [x]
+    set [z-1], [x + INT_DIVISION_REMAINDER]
 
-	set push, [z+11]
-	set push, [z-1]
-	jsr int_add
+    set push, [z+11]
+    set push, [z-1]
+    jsr int_add
 
-	set pc, postamble
+    set pc, postamble
 
 ;----------------------------------------------------------------
 ; kirinyaga's "Linear feedback shift register" pseudo random number generator
@@ -349,14 +349,14 @@
 ; 13 words / 14 cycles 
 ;----------------------------------------------------------------
 :int_rnd_lfsr ; return pseudo-random 0000-FFFF in x 
-	set x, [rnd_lfsr_seed] 
-	shr x, 1 
-	bor x, [rnd_lfsr_seed + 1] 
-	set [rnd_lfsr_seed + 1], ex 
-	ifn ex, 0 
-		xor x, [rnd_lfsr_poly] 
-	set [rnd_lfsr_seed], x 
-	set pc, pop 
+    set x, [rnd_lfsr_seed] 
+    shr x, 1 
+    bor x, [rnd_lfsr_seed + 1] 
+    set [rnd_lfsr_seed + 1], ex 
+    ifn ex, 0 
+        xor x, [rnd_lfsr_poly] 
+    set [rnd_lfsr_seed], x 
+    set pc, pop 
 
 ;----------------------------------------------------------------
 ; Entroper's Linear congruential generator
@@ -366,296 +366,296 @@
 ; Sets x to a 16-bit PRN.
 ;----------------------------------------------------------------
 ;:int_rnd_lcg
-;	; 0x0019660D x seed + 1
-;	set push, a
-;	set a, [rnd_lcg_seed]
-;	set x, [rnd_lcg_seed + 1]
-;	mul x, 0x660D
-;	mul a, 0x0019
-;	mul [rnd_lcg_seed], 0x660D
-;	adx x, a
-;	add [rnd_lcg_seed], 1
-;	add x, ex
-;	set [rnd_lcg_seed + 1], x
-;	set a, pop
-;	set pc, pop
+;    ; 0x0019660D x seed + 1
+;    set push, a
+;    set a, [rnd_lcg_seed]
+;    set x, [rnd_lcg_seed + 1]
+;    mul x, 0x660D
+;    mul a, 0x0019
+;    mul [rnd_lcg_seed], 0x660D
+;    adx x, a
+;    add [rnd_lcg_seed], 1
+;    add x, ex
+;    set [rnd_lcg_seed + 1], x
+;    set a, pop
+;    set pc, pop
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_bitwise_or(struct handle *i1, struct handle *i2)
 ;----------------------------------------------------------------
 :int_bitwise_or
-	set push, 2
-	set push, 2
-	jsr preamble
+    set push, 2
+    set push, 2
+    jsr preamble
 
-	set y, int_bitwise_or
+    set y, int_bitwise_or
 
 :int_bitwise
-	; figure out max length
-	set a, [z+11]
-	set a, [a]
-	set b, [z+10]
-	set b, [b]
+    ; figure out max length
+    set a, [z+11]
+    set a, [a]
+    set b, [z+10]
+    set b, [b]
 
-	set c, [a]
-	ifg [b], c
-		set c, [b]
+    set c, [a]
+    ifg [b], c
+        set c, [b]
 
-	; extend both arguments to max length
-	set push, [z+10]
-	set push, c
-	jsr int_extend
-	set [z-2], x
+    ; extend both arguments to max length
+    set push, [z+10]
+    set push, c
+    jsr int_extend
+    set [z-2], x
 
-	set push, [z+11]
-	set push, c
-	jsr int_extend
-	set [z-1], x
+    set push, [z+11]
+    set push, c
+    jsr int_extend
+    set [z-1], x
 
-	; get pointers to extended values
-	set a, [x]
-	set i, a
-	add a, [a]
-	
-	set j, [z-2]
-	sti j, [j]
+    ; get pointers to extended values
+    set a, [x]
+    set i, a
+    add a, [a]
+    
+    set j, [z-2]
+    sti j, [j]
 
 :int_bitwise_loop
-	ife y, int_bitwise_or
-		bor [i], [j]
-	ife y, int_bitwise_xor
-		xor [i], [j]
-	ife y, int_bitwise_and
-		and [i], [j]
+    ife y, int_bitwise_or
+        bor [i], [j]
+    ife y, int_bitwise_xor
+        xor [i], [j]
+    ife y, int_bitwise_and
+        and [i], [j]
 
-	ifl i, a
-		sti pc, int_bitwise_loop
+    ifl i, a
+        sti pc, int_bitwise_loop
 
-	set push, x
-	jsr int_normalize
-	
-	set pc, postamble
+    set push, x
+    jsr int_normalize
+    
+    set pc, postamble
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_bitwise_xor(struct handle *i1, struct handle *i2)
 ;----------------------------------------------------------------
 :int_bitwise_xor
-	set push, 2
-	set push, 2
-	jsr preamble
+    set push, 2
+    set push, 2
+    jsr preamble
 
-	set y, int_bitwise_xor
-	set pc, int_bitwise
+    set y, int_bitwise_xor
+    set pc, int_bitwise
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_bitwise_and(struct handle *i1, struct handle *i2)
 ;----------------------------------------------------------------
 :int_bitwise_and
-	set push, 2
-	set push, 2
-	jsr preamble
-	
-	set y, int_bitwise_and
-	set pc, int_bitwise
+    set push, 2
+    set push, 2
+    jsr preamble
+    
+    set y, int_bitwise_and
+    set pc, int_bitwise
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_lshift(struct handle *i1, struct handle *i2)
 ;----------------------------------------------------------------
 :int_lshift
-	set push, 2
-	set push, 1
-	jsr preamble
+    set push, 2
+    set push, 1
+    jsr preamble
 
-	set push, [z+10]
-	jsr int_to_int16
+    set push, [z+10]
+    jsr int_to_int16
 
-	; number of words to add to tail
-	set a, x
-	div a, 16
+    ; number of words to add to tail
+    set a, x
+    div a, 16
 
-	; number of bits to shift
-	set b, x
-	mod b, 16
-	
-	set c, [z+11]	; struct handle *int
-	set c, [c]		; struct int *base
+    ; number of bits to shift
+    set b, x
+    mod b, 16
+    
+    set c, [z+11]    ; struct handle *int
+    set c, [c]        ; struct int *base
 
-	set c, [c]		; orig size
-	add c, a		; new words
-	add c, 1		; one for shift overflow
-	
-	set push, [z+11]
-	set push, c
-	jsr int_extend
-	set [z-1], x
+    set c, [c]        ; orig size
+    add c, a        ; new words
+    add c, 1        ; one for shift overflow
+    
+    set push, [z+11]
+    set push, c
+    jsr int_extend
+    set [z-1], x
 
-	; x: struct handle *new
-	; c: size of new int
-	; a: number of words to shift
-	; b: number of bits to shift
-	set i, [x]
-	set j, [x]
-	add c, [x]
-	
-	add j, a
-	add j, 2
-	
-	shl [i+1], b
+    ; x: struct handle *new
+    ; c: size of new int
+    ; a: number of words to shift
+    ; b: number of bits to shift
+    set i, [x]
+    set j, [x]
+    add c, [x]
+    
+    add j, a
+    add j, 2
+    
+    shl [i+1], b
 
 :int_lshift_loop
-	set y, [j]
-	set [j], 0
-	set [i+2], y
-	
-	shl [i+2], b
-	bor [i+1], ex
-	
-	ifl j, c
-		sti pc, int_lshift_loop
+    set y, [j]
+    set [j], 0
+    set [i+2], y
+    
+    shl [i+2], b
+    bor [i+1], ex
+    
+    ifl j, c
+        sti pc, int_lshift_loop
 
-	; the end
-	set push, x
-	jsr int_normalize	
+    ; the end
+    set push, x
+    jsr int_normalize    
 
-	set pc, postamble
+    set pc, postamble
 
 :int_rshift_by_uint
-	set push, 2
-	set push, 1
-	jsr preamble
+    set push, 2
+    set push, 1
+    jsr preamble
 
-	set x, [z+10]
-	set pc, int_rshift_join
+    set x, [z+10]
+    set pc, int_rshift_join
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_rshift(struct handle *i1, struct handle *i2)
 ;----------------------------------------------------------------
 :int_rshift
-	set push, 2
-	set push, 1
-	jsr preamble
-	
-	set push, [z+10]
-	jsr int_to_int16
+    set push, 2
+    set push, 1
+    jsr preamble
+    
+    set push, [z+10]
+    jsr int_to_int16
 
 :int_rshift_join
-	; number of words to add to tail
-	set a, x
-	div a, 16
+    ; number of words to add to tail
+    set a, x
+    div a, 16
 
-	; number of bits to shift
-	set b, x
-	mod b, 16
-	
-	set c, [z+11]	; struct handle *int
-	set c, [c]		; struct int *base
+    ; number of bits to shift
+    set b, x
+    mod b, 16
+    
+    set c, [z+11]    ; struct handle *int
+    set c, [c]        ; struct int *base
 
-	set c, [c]		; orig size
+    set c, [c]        ; orig size
 
-	ifl a, c
-		set pc, int_rshift_real
+    ifl a, c
+        set pc, int_rshift_real
 
-	set x, INT_0
-	set pc, postamble
+    set x, INT_0
+    set pc, postamble
 
 :int_rshift_real
-	sub c, a
-	
-	set i, [z+11]
-	set i, [i]
-	add i, c		; src[-1]
+    sub c, a
+    
+    set i, [z+11]
+    set i, [i]
+    add i, c        ; src[-1]
 
-	set push, c
-	set push, TYPE_INT
-	jsr array_create
-	set a, [x]
-	add a, 1		; dst[0]
+    set push, c
+    set push, TYPE_INT
+    jsr array_create
+    set a, [x]
+    add a, 1        ; dst[0]
 
-	add c, [x]		; dst[-1]
-	set j, c		; dst[-1]
+    add c, [x]        ; dst[-1]
+    set j, c        ; dst[-1]
 
 :int_rshift_loop
-	set [j], [i]
-	ife a, j
-		asr [j], b
-	ifn a, j
-		shr [j], b
-	ifn c, j
-		bor [j+1], ex
+    set [j], [i]
+    ife a, j
+        asr [j], b
+    ifn a, j
+        shr [j], b
+    ifn c, j
+        bor [j+1], ex
 
-	ifn a, j
-		std pc, int_rshift_loop	
-	
-	set push, x
-	jsr int_normalize	
-	set pc, postamble
+    ifn a, j
+        std pc, int_rshift_loop    
+    
+    set push, x
+    jsr int_normalize    
+    set pc, postamble
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_abs(struct handle *integer)
 ;----------------------------------------------------------------
 :int_abs
-	set push, 1
-	set push, 0
-	jsr preamble
+    set push, 1
+    set push, 0
+    jsr preamble
 
-	set x, [z+10]
-	set a, [x]
-	ifc [a+1], 0x8000
-		jsr postamble
+    set x, [z+10]
+    set a, [x]
+    ifc [a+1], 0x8000
+        jsr postamble
 
-	set push, x
-	jsr int_negate
+    set push, x
+    jsr int_negate
 
-	jsr postamble
+    jsr postamble
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_complement(struct handle *integer)
 ; bitwise complement -1 <-> 0
 ;----------------------------------------------------------------
 :int_complement
-	set push, 1
-	set push, 1
-	jsr preamble
+    set push, 1
+    set push, 1
+    jsr preamble
 
-	set b, 0
+    set b, 0
 
-	set pc, int_negate_or_complement
+    set pc, int_negate_or_complement
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_negate(struct handle *integer)
 ; arithmetic negative -1 <-> +1
 ;----------------------------------------------------------------
 :int_negate
-	set push, 1
-	set push, 1
-	jsr preamble
+    set push, 1
+    set push, 1
+    jsr preamble
 
 :int_negate_or_complement
-	set i, [z+10]	; struct handle *
-	set i, [i]	; struct int *
+    set i, [z+10]    ; struct handle *
+    set i, [i]    ; struct int *
 
-	set push, [i]	; len
-	set push, TYPE_INT
-	jsr array_create
-	set [z-1], x
-	
-	set a, [x]	; struct int *
+    set push, [i]    ; len
+    set push, TYPE_INT
+    jsr array_create
+    set [z-1], x
+    
+    set a, [x]    ; struct int *
 
-	add i, [i]	; i: orig lsw
+    add i, [i]    ; i: orig lsw
 
-	set j, a	; j: new lsw
-	add j, [a]
+    set j, a    ; j: new lsw
+    add j, [a]
 
-	set b, 1
+    set b, 1
 :xor_loop
-	set [j], [i]
-	xor [j], 0xffff
-	add [j], b
-	std b, ex
-	ifn j, a
-		set pc, xor_loop
+    set [j], [i]
+    xor [j], 0xffff
+    add [j], b
+    std b, ex
+    ifn j, a
+        set pc, xor_loop
 
-	jsr postamble
+    jsr postamble
 
 ;----------------------------------------------------------------
 ; extern int16 int_sgn(struct handle *integer)
@@ -666,25 +666,25 @@
 ;   +1 if integer > 0
 ;----------------------------------------------------------------
 :int_sgn
-	set push, 1
-	set push, 0
-	jsr preamble
+    set push, 1
+    set push, 0
+    jsr preamble
 
-	set a, [z+10]
-	set a, [a]
+    set a, [z+10]
+    set a, [a]
 
-	; sign comparison
-	ifb [a + INT_DATA], 0x8000
-		set x, -1
-			
-	ifc [a + INT_DATA], 0x8000
-		set x, 1
+    ; sign comparison
+    ifb [a + INT_DATA], 0x8000
+        set x, -1
+            
+    ifc [a + INT_DATA], 0x8000
+        set x, 1
 
-	ife [a + INT_LEN], 1
-		ife [a + INT_DATA], 0
-			set x, 0
+    ife [a + INT_LEN], 1
+        ife [a + INT_DATA], 0
+            set x, 0
 
-	jsr postamble
+    jsr postamble
 
 ;----------------------------------------------------------------
 ; extern int16 int_cmp(struct handle *left, struct handle *right)
@@ -703,53 +703,53 @@
     set push, i
     set push, j
 
-	set i, [sp + 4]
-	set i, [i]		; struct int *left
+    set i, [sp + 4]
+    set i, [i]        ; struct int *left
 
-	set j, [sp + 3]
-	set j, [j]		; struct int *right
+    set j, [sp + 3]
+    set j, [j]        ; struct int *right
 
-	; sign comparison
-	ifb [i + INT_DATA], 0x8000
-		ifc [j + INT_DATA], 0x8000
-			set pc, int_cmp_lt
-			
-	ifc [i + INT_DATA], 0x8000
-		ifb [j + INT_DATA], 0x8000
-			set pc, int_cmp_gt
+    ; sign comparison
+    ifb [i + INT_DATA], 0x8000
+        ifc [j + INT_DATA], 0x8000
+            set pc, int_cmp_lt
+            
+    ifc [i + INT_DATA], 0x8000
+        ifb [j + INT_DATA], 0x8000
+            set pc, int_cmp_gt
 
-	; length comparison
-	; for negative numbers, long is less than short
-	ifb [i + INT_DATA], 0x8000 ; if negative
-		ifg [i], [j]
-			set pc, int_cmp_lt
+    ; length comparison
+    ; for negative numbers, long is less than short
+    ifb [i + INT_DATA], 0x8000 ; if negative
+        ifg [i], [j]
+            set pc, int_cmp_lt
 
-	ifb [i + INT_DATA], 0x8000 ; if negative
-		ifl [i], [j]
-			set pc, int_cmp_gt
+    ifb [i + INT_DATA], 0x8000 ; if negative
+        ifl [i], [j]
+            set pc, int_cmp_gt
 
-	; for positive numbers, long is greater than short
-	ifc [i + INT_DATA], 0x8000 ; if positive
-		ifg [i], [j]
-			set pc, int_cmp_gt
+    ; for positive numbers, long is greater than short
+    ifc [i + INT_DATA], 0x8000 ; if positive
+        ifg [i], [j]
+            set pc, int_cmp_gt
 
-	ifc [i + INT_DATA], 0x8000 ; if positive
-		ifl [i], [j]
-			set pc, int_cmp_lt
+    ifc [i + INT_DATA], 0x8000 ; if positive
+        ifl [i], [j]
+            set pc, int_cmp_lt
 
-	; compare each word
-	sti x, i
-	add x, [x]
+    ; compare each word
+    sti x, i
+    add x, [x]
 
-:int_cmp_loop			
-	ifg [i], [j]
-		set pc, int_cmp_gt
-	ifl [i], [j]
-		set pc, int_cmp_lt
-	ifn i, x
-		sti pc, int_cmp_loop
+:int_cmp_loop            
+    ifg [i], [j]
+        set pc, int_cmp_gt
+    ifl [i], [j]
+        set pc, int_cmp_lt
+    ifn i, x
+        sti pc, int_cmp_loop
 
-	sub x, x
+    sub x, x
 
 :int_cmp__finish
     set j, pop
@@ -761,308 +761,308 @@
     set pc, pop
 
 :int_cmp_lt
-	set x, -1
-	set pc, int_cmp__finish
-	
+    set x, -1
+    set pc, int_cmp__finish
+    
 :int_cmp_gt
-	set x, 1
-	set pc, int_cmp__finish
+    set x, 1
+    set pc, int_cmp__finish
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_sub(struct handle *minuend, struct handle *subtrahend)
 ;----------------------------------------------------------------
 :int_sub
-	set push, 2
-	set push, 1
-	jsr preamble
+    set push, 2
+    set push, 1
+    jsr preamble
 
-	set push, [z+10]           ; negate subtrahend
-	jsr int_negate
-	set [z-1], x
+    set push, [z+10]           ; negate subtrahend
+    jsr int_negate
+    set [z-1], x
 
-	set push, [z+11]
-	set push, [z-1]
-	jsr int_add
+    set push, [z+11]
+    set push, [z-1]
+    jsr int_add
 
-	jsr postamble
+    jsr postamble
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_add(struct handle *term1, struct handle *term2)
 ;----------------------------------------------------------------
 :int_add
-	set push, 2
-	set push, 1
-	jsr preamble
+    set push, 2
+    set push, 1
+    jsr preamble
 
-	set a, [z+11]	; struct handle *term1
-	set a, [a]		; a: struct int *term1
+    set a, [z+11]    ; struct handle *term1
+    set a, [a]        ; a: struct int *term1
 
-	set i, a		; ptr to len
-	add i, [a]		; i: ptr to lsw
+    set i, a        ; ptr to len
+    add i, [a]        ; i: ptr to lsw
 
-	set b, [z+10]	; struct handle *term2
-	set b, [b]		; b: struct int *term2
+    set b, [z+10]    ; struct handle *term2
+    set b, [b]        ; b: struct int *term2
 
-	set j, b		; ptr to len
-	add j, [b]		; j: ptr to lsw
+    set j, b        ; ptr to len
+    add j, [b]        ; j: ptr to lsw
 
-	; lsw + lsw
-	set c, 1		; c: number of words in result
-	set y, [i]		; y: current sum
-	add y, [j]
-	set x, ex
-	set push, y
+    ; lsw + lsw
+    set c, 1        ; c: number of words in result
+    set y, [i]        ; y: current sum
+    add y, [j]
+    set x, ex
+    set push, y
 
 :int_add_loop
-	std y, x		; init sum with previous carry, and move indexes toward msw
+    std y, x        ; init sum with previous carry, and move indexes toward msw
 
-	; --------- term 1 ---------	
-	set x, [a+1]	; x: default value for term1 current word (no data)
-	asr x, 15		; sign extension
+    ; --------- term 1 ---------    
+    set x, [a+1]    ; x: default value for term1 current word (no data)
+    asr x, 15        ; sign extension
 
-	ifg i, a		; ...use real value if more words are available
-		set x, [i]
+    ifg i, a        ; ...use real value if more words are available
+        set x, [i]
 
-	add y, x		; add term1 word to sum
-	
-	; --------- term 2 ---------	
-	set x, [b+1]	; do the same for term2
-	asr x, 15
-	
-	ifg j, b
-		set x, [j]
-		
-	add y, x
-	set x, ex
+    add y, x        ; add term1 word to sum
+    
+    ; --------- term 2 ---------    
+    set x, [b+1]    ; do the same for term2
+    asr x, 15
+    
+    ifg j, b
+        set x, [j]
+        
+    add y, x
+    set x, ex
 
-	; ---------  ---------	
-	set push, y		; push current sum
-	add c, 1		; add word counter
+    ; ---------  ---------    
+    set push, y        ; push current sum
+    add c, 1        ; add word counter
 
-	ifl a, i		; continue if more words available in term1
-		set pc, int_add_loop
+    ifl a, i        ; continue if more words available in term1
+        set pc, int_add_loop
 
-	ifl b, j		; continue if more words available in term2
-		set pc, int_add_loop
-	; ---------  ---------	
-	set push, c
-	set push, TYPE_INT
-	jsr array_create
-	set [z-1], x
-	
-	sti i, [x]
-	add c, i
+    ifl b, j        ; continue if more words available in term2
+        set pc, int_add_loop
+    ; ---------  ---------    
+    set push, c
+    set push, TYPE_INT
+    jsr array_create
+    set [z-1], x
+    
+    sti i, [x]
+    add c, i
 
 :int_add_copy_loop
-	sti [i], pop
-	ifn i, c
-		set pc, int_add_copy_loop
+    sti [i], pop
+    ifn i, c
+        set pc, int_add_copy_loop
 
-	set push, [z-1]
-	jsr int_normalize
+    set push, [z-1]
+    jsr int_normalize
 
-	jsr postamble
+    jsr postamble
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_pow(struct handle *base, struct handle *exp)
 ;----------------------------------------------------------------
 :int_pow
-	set push, 2						; number of function arguments (base and exp)
-	set push, 2						; number of heap handles
-	jsr preamble
+    set push, 2                        ; number of function arguments (base and exp)
+    set push, 2                        ; number of heap handles
+    jsr preamble
 
-	set push, [z+10]				; sgn(exp)
-	jsr int_sgn
-	
-	ife x, 0						; exp = 0
-		set pc, int_pow_1			; return 1
-	ife x, -1						; base < 0
-		set pc, int_pow_0			; return 0
+    set push, [z+10]                ; sgn(exp)
+    jsr int_sgn
+    
+    ife x, 0                        ; exp = 0
+        set pc, int_pow_1            ; return 1
+    ife x, -1                        ; base < 0
+        set pc, int_pow_0            ; return 0
 
-	set push, [z+10]				; exp to register (only support exp < 2**16)
-	jsr int_to_int16
-	set c, x						; c = (uint16) exp
+    set push, [z+10]                ; exp to register (only support exp < 2**16)
+    jsr int_to_int16
+    set c, x                        ; c = (uint16) exp
 
-	set [z-1], [z+11] 				; p
-	set [z-2], INT_1		; r
-	
+    set [z-1], [z+11]                 ; p
+    set [z-2], INT_1        ; r
+    
 :int_pow_loop
-	ife c, 0
-		set pc, int_pow_break
+    ife c, 0
+        set pc, int_pow_break
 
-	ifc c, 1
-		set pc, int_pow_skip
+    ifc c, 1
+        set pc, int_pow_skip
 
-	; r = p * r
-	set push, [z-2]
-	set push, [z-1]
-	jsr int_mul
-	set [z-2], x
-	
+    ; r = p * r
+    set push, [z-2]
+    set push, [z-1]
+    jsr int_mul
+    set [z-2], x
+    
 :int_pow_skip
-	; p = p * p
-	set push, [z-1]
-	set push, [z-1]
-	jsr int_mul
-	set [z-1], x
+    ; p = p * p
+    set push, [z-1]
+    set push, [z-1]
+    jsr int_mul
+    set [z-1], x
 
-	; c = c / 2
-	div c, 2
-	set pc, int_pow_loop
+    ; c = c / 2
+    div c, 2
+    set pc, int_pow_loop
 
 :int_pow_break
-	; return r
-	set x, [z-2]
-	set pc, postamble	
+    ; return r
+    set x, [z-2]
+    set pc, postamble    
 
 :int_pow_0
-	; return 0
-	set x, INT_0
-	set pc, postamble
+    ; return 0
+    set x, INT_0
+    set pc, postamble
 :int_pow_1
-	; return 1
-	set x, INT_1
-	set pc, postamble
+    ; return 1
+    set x, INT_1
+    set pc, postamble
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_mul(struct handle *factor1, struct handle *factor2)
 ;----------------------------------------------------------------
 :int_mul
-	set push, 2
-	set push, 3
-	jsr preamble
+    set push, 2
+    set push, 3
+    jsr preamble
 
-	set push, [z+11]	; struct handle *factor1
-	jsr int_abs
-	set [z-1], x		; struct handle *f1
-	set a, [x]			; a: struct int *f1
+    set push, [z+11]    ; struct handle *factor1
+    jsr int_abs
+    set [z-1], x        ; struct handle *f1
+    set a, [x]            ; a: struct int *f1
 
-	set i, a
-	add i, [a]			; i: lsw of f1
-	
-	set push, [z+10]	; struct handle *factor2
-	jsr int_abs
-	set [z-2], x		; struct handle *f2
-	set b, [x]			; b: struct int *f2
+    set i, a
+    add i, [a]            ; i: lsw of f1
+    
+    set push, [z+10]    ; struct handle *factor2
+    jsr int_abs
+    set [z-2], x        ; struct handle *f2
+    set b, [x]            ; b: struct int *f2
 
-	set j, b			; j: lsw of f2
-	add j, [b]
-	
-	set c, [a]			; max product size
-	add c, [b]
+    set j, b            ; j: lsw of f2
+    add j, [b]
+    
+    set c, [a]            ; max product size
+    add c, [b]
 
-	set push, c
-	set push, TYPE_INT
-	jsr array_create
+    set push, c
+    set push, TYPE_INT
+    jsr array_create
 
-	set [z-3], x
-	
-	set c, [x]
-	add c, [c]			; c: product lsw
+    set [z-3], x
+    
+    set c, [x]
+    add c, [c]            ; c: product lsw
 
-	; a: struct int *factor1 
-	; b: struct int *factor2
-	; c: product current word *
-	; i: factor1 current word *
-	; j: factor2 current word *
-	; x: product word
+    ; a: struct int *factor1 
+    ; b: struct int *factor2
+    ; c: product current word *
+    ; i: factor1 current word *
+    ; j: factor2 current word *
+    ; x: product word
 :int_mul_words_loop
-	set x, [j]
-	mul x, [i]
+    set x, [j]
+    mul x, [i]
 
-	set y, ex		; store product high
-	add [c], x		; add product low
-	adx [c-1], y	; add product high
-	set x, ex
+    set y, ex        ; store product high
+    add [c], x        ; add product low
+    adx [c-1], y    ; add product high
+    set x, ex
 
-	set y, c		; y: product current word
-	sub y, 2
+    set y, c        ; y: product current word
+    sub y, 2
 :int_mul_carry_loop
-	ife x, 0
-		set pc, int_mul_carry_break
-	add [y], x
-	set x, ex	
-	sub y, 1
-	set pc, int_mul_carry_loop
+    ife x, 0
+        set pc, int_mul_carry_break
+    add [y], x
+    set x, ex    
+    sub y, 1
+    set pc, int_mul_carry_loop
 
 :int_mul_carry_break
-	sub j, 1		; move f2 cword towards msw
-	sub c, 1		; move product cword towards msw
+    sub j, 1        ; move f2 cword towards msw
+    sub c, 1        ; move product cword towards msw
 
-	ifn j, b		; if f2 cword not out of bounds
-		set pc, int_mul_words_loop
+    ifn j, b        ; if f2 cword not out of bounds
+        set pc, int_mul_words_loop
 
-	add j, [b]		; set f2 cword back to lsw
-	add c, [b]		; move product cword back the same amount
-	
-	sub i, 1		; move f1 cwords towards msw
-	sub c, 1		; move product cword towards msw
-	
-	ifn i, a		; if f1 cword not out of bounds
-		set pc, int_mul_words_loop
+    add j, [b]        ; set f2 cword back to lsw
+    add c, [b]        ; move product cword back the same amount
+    
+    sub i, 1        ; move f1 cwords towards msw
+    sub c, 1        ; move product cword towards msw
+    
+    ifn i, a        ; if f1 cword not out of bounds
+        set pc, int_mul_words_loop
 
-	; all multiplications done here
+    ; all multiplications done here
 
-	set push, [z-3]
-	jsr int_normalize
-	set [z-3], x
+    set push, [z-3]
+    jsr int_normalize
+    set [z-3], x
 
-	set push, [z+10]	; factor 2 sign
-	jsr int_sgn
-	set a, x
-	
-	set push, [z+11]	; factor 1 sign
-	jsr int_sgn
-	xor a, x
+    set push, [z+10]    ; factor 2 sign
+    jsr int_sgn
+    set a, x
+    
+    set push, [z+11]    ; factor 1 sign
+    jsr int_sgn
+    xor a, x
 
-	set x, [z-3]
-	ifc a, 0x8000
-		jsr postamble
+    set x, [z-3]
+    ifc a, 0x8000
+        jsr postamble
 
-	; negate product
-	set push, [z-3]
-	jsr int_negate
-	
-	jsr postamble
+    ; negate product
+    set push, [z-3]
+    jsr int_negate
+    
+    jsr postamble
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_div(struct handle *divident, struct handle *divisor)
 ;----------------------------------------------------------------
 :int_div
-	; [SP + 2] divident
-	; [SP + 1] divisor
-	; [SP + 0] RTS
+    ; [SP + 2] divident
+    ; [SP + 1] divisor
+    ; [SP + 0] RTS
 
-	set push, [sp + 2]
-	set push, [sp + 2]
-	jsr int_division
+    set push, [sp + 2]
+    set push, [sp + 2]
+    jsr int_division
 
-	set x, [x]
-	set x, [x + INT_DIVISION_QUOTIENT]
-	
-	set [sp], pop
-	set [sp], pop
-	set pc, pop
+    set x, [x]
+    set x, [x + INT_DIVISION_QUOTIENT]
+    
+    set [sp], pop
+    set [sp], pop
+    set pc, pop
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_mod(struct handle *divident, struct handle *divisor)
 ;----------------------------------------------------------------
 :int_mod
-	; [SP + 2] divident
-	; [SP + 1] divisor
-	; [SP + 0] RTS
+    ; [SP + 2] divident
+    ; [SP + 1] divisor
+    ; [SP + 0] RTS
 
-	set push, [sp + 2]
-	set push, [sp + 2]
-	jsr int_division
+    set push, [sp + 2]
+    set push, [sp + 2]
+    jsr int_division
 
-	set x, [x]
-	set x, [x + INT_DIVISION_REMAINDER]
+    set x, [x]
+    set x, [x + INT_DIVISION_REMAINDER]
 
-	set [sp], pop
-	set [sp], pop
-	set pc, pop
-	
+    set [sp], pop
+    set [sp], pop
+    set pc, pop
+    
 ;----------------------------------------------------------------
 ; struct handle *int_division(struct handle *divident, struct handle *divisor)
 ; return x: (struct handle *quotient, struct handle *remainder)
@@ -1073,300 +1073,300 @@
 ; [z-3] remainder
 ;----------------------------------------------------------------
 :int_division
-	set push, 2
-	set push, 3
-	jsr preamble
+    set push, 2
+    set push, 3
+    jsr preamble
 
-	; quotient = abs(divident)
-	set push, [z+11]
-	jsr int_abs
-	set [z-1], x
-	set a, [x]
+    ; quotient = abs(divident)
+    set push, [z+11]
+    jsr int_abs
+    set [z-1], x
+    set a, [x]
 
-	; divisor = abs(divisor)
-	set push, [z+10]
-	jsr int_abs
-	set [z-2], x
-	set b, [x]
+    ; divisor = abs(divisor)
+    set push, [z+10]
+    jsr int_abs
+    set [z-2], x
+    set b, [x]
 
-	; max len
-	set c, [a]
-	ifg [b], [a]
-		set c, [b]
+    ; max len
+    set c, [a]
+    ifg [b], [a]
+        set c, [b]
 
-	set push, [z-1]
-	set push, c
-	jsr int_extend
-	set [z-1], x	; quotient
-	set a, [x]
+    set push, [z-1]
+    set push, c
+    jsr int_extend
+    set [z-1], x    ; quotient
+    set a, [x]
 
-	set push, [z-2]
-	set push, c
-	jsr int_extend
-	set [z-2], x	; divisor
-	set b, [x]
+    set push, [z-2]
+    set push, c
+    jsr int_extend
+    set [z-2], x    ; divisor
+    set b, [x]
 
-	set push, c
-	set push, TYPE_INT
-	jsr array_create
-	set [z-3], x	; remainder
-	set c, [x]
+    set push, c
+    set push, TYPE_INT
+    jsr array_create
+    set [z-3], x    ; remainder
+    set c, [x]
 
-	ife [a], 1
-		ife [b], 1
-			set pc, division_16
+    ife [a], 1
+        ife [b], 1
+            set pc, division_16
 
-	ife [b], 1
-		ifc [b+1], 0xff00
-			set pc, division__nbit_8bit
+    ife [b], 1
+        ifc [b+1], 0xff00
+            set pc, division__nbit_8bit
 
-	; here starts long division
-	set y, [a]	; y: bits left
-	shl y, 4	; words * 16 = bits
+    ; here starts long division
+    set y, [a]    ; y: bits left
+    shl y, 4    ; words * 16 = bits
 
 :division_loop
-	ife y, 0
-		set pc, division_finish
-	sub y, 1
+    ife y, 0
+        set pc, division_finish
+    sub y, 1
 
-	; remainder << 1
-	set i, c
+    ; remainder << 1
+    set i, c
 
-	set x, c	; x: remainder end
-	add x, [c]
+    set x, c    ; x: remainder end
+    add x, [c]
 
 :remainder_shift_loop
-	shl [i+1], 1
-	ifn i, c
-		bor [i], ex
+    shl [i+1], 1
+    ifn i, c
+        bor [i], ex
 
-	add i, 1
-	ifn i, x
-		set pc, remainder_shift_loop
+    add i, 1
+    ifn i, x
+        set pc, remainder_shift_loop
 
-	; quotient << 1 (roll carry to remainder lsb)
-	set i, a
+    ; quotient << 1 (roll carry to remainder lsb)
+    set i, a
 
-	set j, a	; j: quotient_divident end
-	add j, [a]
+    set j, a    ; j: quotient_divident end
+    add j, [a]
 
 :quotient_shift_loop
-	shl [i+1], 1
-	ife i, a
-		bor [x], ex
-	ifn i, a
-		bor [i], ex
+    shl [i+1], 1
+    ife i, a
+        bor [x], ex
+    ifn i, a
+        bor [i], ex
 
-	add i, 1
-	ifn i, j
-		set pc, quotient_shift_loop
+    add i, 1
+    ifn i, j
+        set pc, quotient_shift_loop
 
-	; if remainder < divisor: loop
-	set i, c
-	set j, b
+    ; if remainder < divisor: loop
+    set i, c
+    set j, b
 
 :division_cmp_loop
-	sti x, x
-	ifl [i], [j]
-		set pc, division_loop
+    sti x, x
+    ifl [i], [j]
+        set pc, division_loop
 
-	ife [i], [j]
-		ifn i, x
-			set pc, division_cmp_loop
+    ife [i], [j]
+        ifn i, x
+            set pc, division_cmp_loop
 
-	; remainder -= divisor	
-	set i, c
-	add i, [c]
+    ; remainder -= divisor    
+    set i, c
+    add i, [c]
 
-	set j, b
-	add j, [b]
+    set j, b
+    add j, [b]
 
 :division_subtract_loop
-	sbx [i], [j]
-	std x, x
-	ifn i, c
-		set pc, division_subtract_loop
+    sbx [i], [j]
+    std x, x
+    ifn i, c
+        set pc, division_subtract_loop
 
-	; set quotient lsb=1
-	set x, a
-	add x, [a]
-	bor [x], 1
-	set pc, division_loop
+    ; set quotient lsb=1
+    set x, a
+    add x, [a]
+    bor [x], 1
+    set pc, division_loop
 
 :division_16
-	set [c+1], [a+1]
-	div [a+1], [b+1]
-	mod [c+1], [b+1]
-	set pc, division_finish_signs
+    set [c+1], [a+1]
+    div [a+1], [b+1]
+    mod [c+1], [b+1]
+    set pc, division_finish_signs
 
 :division__nbit_8bit
-	; divident / quotient
-	set i, [z-1]
-	set i, [i]
-	set x, i
-	add x, [x]		; x: quotient[-1] *
-	add i, 1		; j: quotient *
+    ; divident / quotient
+    set i, [z-1]
+    set i, [i]
+    set x, i
+    add x, [x]        ; x: quotient[-1] *
+    add i, 1        ; j: quotient *
 
-	; divisor
-	set y, [z - 2]
-	set y, [y]
-	set y, [y + 1]	; y: divisor value (8bit)
+    ; divisor
+    set y, [z - 2]
+    set y, [y]
+    set y, [y + 1]    ; y: divisor value (8bit)
 
-	set b, 0
+    set b, 0
 
 :division__nbit_8bit__loop
-	shl b, 8
+    shl b, 8
 
-	set a, [i]
-	shr a, 8
+    set a, [i]
+    shr a, 8
 
-	bor a, b
-	set b, a
+    bor a, b
+    set b, a
 
-	div a, y
-	mod b, y
+    div a, y
+    mod b, y
 
-	shl a, 8
-	set c, a
+    shl a, 8
+    set c, a
 
-	shl b, 8
-	
-	set a, [i]
-	and a, 0x00ff
-	
-	bor a, b
-	set b, a
-	
-	div a, y
-	mod b, y
+    shl b, 8
+    
+    set a, [i]
+    and a, 0x00ff
+    
+    bor a, b
+    set b, a
+    
+    div a, y
+    mod b, y
 
-	bor c, a
-	set [i], c
-	
-	ifn i, x
-		sti pc, division__nbit_8bit__loop
+    bor c, a
+    set [i], c
+    
+    ifn i, x
+        sti pc, division__nbit_8bit__loop
 
-	set x, [z-3]
-	set x, [x]
-	add x, [x]
-	set [x], b
+    set x, [z-3]
+    set x, [x]
+    add x, [x]
+    set [x], b
 
 :division_finish
-	set push, [z-1]
-	jsr int_normalize
-	set [z-1], x
+    set push, [z-1]
+    jsr int_normalize
+    set [z-1], x
 
-	set push, [z-3]
-	jsr int_normalize
-	set [z-3], x
+    set push, [z-3]
+    jsr int_normalize
+    set [z-3], x
 
 :division_finish_signs
-	; figure out signs
-	set i, [z+11]
-	set i, [i]
-	set i, [i+1]
-	
-	set j, [z+10]
-	set j, [j]
-	set j, [j+1]
-	
-	xor i, j
+    ; figure out signs
+    set i, [z+11]
+    set i, [i]
+    set i, [i+1]
+    
+    set j, [z+10]
+    set j, [j]
+    set j, [j+1]
+    
+    xor i, j
 
-	ifc i, 0x8000
-		set pc, division_set_modulo_sign
+    ifc i, 0x8000
+        set pc, division_set_modulo_sign
 
-	; negate quotient and invert modulo
-	set push, [z-1]
-	jsr int_negate
-	set [z-1], x
+    ; negate quotient and invert modulo
+    set push, [z-1]
+    jsr int_negate
+    set [z-1], x
 
-	set push, [z-2]
-	set push, [z-3]
-	jsr int_sub
-	set [z-3], x
+    set push, [z-2]
+    set push, [z-3]
+    jsr int_sub
+    set [z-3], x
 
 :division_set_modulo_sign
-	ifc j, 0x8000
-		set pc, division_return_tuple
+    ifc j, 0x8000
+        set pc, division_return_tuple
 
-	set push, [z-3]
-	jsr int_negate
-	set [z-3], x
+    set push, [z-3]
+    jsr int_negate
+    set [z-3], x
 
 :division_return_tuple
-	; finally create result tuple
-	set push, 2
-	set push, TYPE_TUPLE
-	jsr array_create
-	
-	sti i, [x]
+    ; finally create result tuple
+    set push, 2
+    set push, TYPE_TUPLE
+    jsr array_create
+    
+    sti i, [x]
 
-	sti [i], [z-1]
-	set [i], [z-3]
-	
-	jsr postamble
+    sti [i], [z-1]
+    set [i], [z-3]
+    
+    jsr postamble
 
 ;----------------------------------------------------------------
 ; struct handle *int_normalize(struct handle *integer)
 ;----------------------------------------------------------------
 :int_normalize
-	set push, 1
-	set push, 1
-	jsr preamble
+    set push, 1
+    set push, 1
+    jsr preamble
 
-	set b, [z+10]
-	set a, [b]	; a: struct int *
-	
-	set i, a	; i: msw *
-	add a, [a]	; a: lsw *
+    set b, [z+10]
+    set a, [b]    ; a: struct int *
+    
+    set i, a    ; i: msw *
+    add a, [a]    ; a: lsw *
 
 :int_normalize_count_loop
-	add i, 1
+    add i, 1
 
-	ife i, a
-		set pc, int_normalize_count_break
+    ife i, a
+        set pc, int_normalize_count_break
 
-	ife [i], 0xffff
-		ifb [i+1], 0x8000
-			set pc, int_normalize_count_loop
+    ife [i], 0xffff
+        ifb [i+1], 0x8000
+            set pc, int_normalize_count_loop
 
-	ife [i], 0x0000
-		ifc [i+1], 0x8000
-			set pc, int_normalize_count_loop
-	
+    ife [i], 0x0000
+        ifc [i+1], 0x8000
+            set pc, int_normalize_count_loop
+    
 :int_normalize_count_break
-	add a, 1
-	set c, a
-	sub c, i
+    add a, 1
+    set c, a
+    sub c, i
 
-	sub i, [b]
+    sub i, [b]
 
-	set x, b
-	set b, [b]
-	ife [b + INT_LEN], c
-		jsr postamble
-	
-	set push, c
-	set push, TYPE_INT
-	jsr array_create
+    set x, b
+    set b, [b]
+    ife [b + INT_LEN], c
+        jsr postamble
+    
+    set push, c
+    set push, TYPE_INT
+    jsr array_create
 
-	set [z-1], x
+    set [z-1], x
 
-	set a, [z+10]
-	set a, [a]
-	add i, a
-	add a, [a]	
-	add a, 1
+    set a, [z+10]
+    set a, [a]
+    add i, a
+    add a, [a]    
+    add a, 1
 
-	set j, [x]	; struct int *new
-	add j, 1	; msw *
+    set j, [x]    ; struct int *new
+    add j, 1    ; msw *
 
 :int_normalize_copy_loop
-	sti [j], [i]				
-	ifn i, a
-		set pc, int_normalize_copy_loop
+    sti [j], [i]                
+    ifn i, a
+        set pc, int_normalize_copy_loop
 
-	jsr postamble
+    jsr postamble
 
 ;----------------------------------------------------------------
 ; struct handle *int_extend(struct handle *integer, uint len)
@@ -1380,44 +1380,44 @@
 ; [SP + 1] i
 ; [SP + 0] j
 
-	set push, a
-	set push, i
-	set push, j
+    set push, a
+    set push, i
+    set push, j
 
-	set push, [sp + 4]
-	set push, TYPE_INT
-	jsr array_create
+    set push, [sp + 4]
+    set push, TYPE_INT
+    jsr array_create
 
-	set j, [x]		; j: new lsw
-	add j, [j]
+    set j, [x]        ; j: new lsw
+    add j, [j]
 
-	set a, [sp + 5]	; struct handle *
+    set a, [sp + 5]    ; struct handle *
 
-	set i, [a]
-	add i, [i]		; i: orig lsw
+    set i, [a]
+    add i, [i]        ; i: orig lsw
 
 :int_extend_copy_loop
-	std [j], [i]
-	ifg i, [a]
-		set pc, int_extend_copy_loop
-		
-	ife j, [x]
-		set pc, int_extend_finish
+    std [j], [i]
+    ifg i, [a]
+        set pc, int_extend_copy_loop
+        
+    ife j, [x]
+        set pc, int_extend_finish
 
-	set a, [i+1]
-	asr a, 15
-	
+    set a, [i+1]
+    asr a, 15
+    
 :int_extend_fill_loop
-	std [j], a
-	ifg j, [x]
-		set pc, int_extend_fill_loop
+    std [j], a
+    ifg j, [x]
+        set pc, int_extend_fill_loop
 
 :int_extend_finish
-	set j, pop
-	set i, pop
-	set a, pop
-	set [sp], pop
-	set [sp], pop	
+    set j, pop
+    set i, pop
+    set a, pop
+    set [sp], pop
+    set [sp], pop    
 
-	set pc, pop
+    set pc, pop
 
