@@ -2,9 +2,9 @@
 ; uint str_cmp(struct handle *left, struct handle *right)
 ;----------------------------------------------------------------
 :str_cmp
-	set push, [sp]
-	set [sp + 1], str_comparator
-	set pc, array_cmp
+    set push, [sp]
+    set [sp + 1], str_comparator
+    set pc, array_cmp
 
 :str_comparator
     set x, 0
@@ -16,617 +16,617 @@
     set [sp], pop
     set [sp], pop
 
-	set pc, pop
+    set pc, pop
 ;----------------------------------------------------------------
 ; uint str_cmp_ignore_case(struct handle *str, struct handle *str)
 ;----------------------------------------------------------------
 :str_cmp_ignore_case
-	set push, [sp]
-	set [sp + 1], str_comparator__ignore_case
-	set pc, array_cmp
+    set push, [sp]
+    set [sp + 1], str_comparator__ignore_case
+    set pc, array_cmp
 
 :str_comparator__ignore_case
-	; convert upper case letter to lower case
+    ; convert upper case letter to lower case
 
-	; x = toLower(x)
-	ifg [sp+2], 'A'-1
-		ifl [sp+2], 'Z'+1
-			add [sp+2], 'a' - 'A'
+    ; x = toLower(x)
+    ifg [sp+2], 'A'-1
+        ifl [sp+2], 'Z'+1
+            add [sp+2], 'a' - 'A'
 
-	; y = toLower(y)
-	ifg [sp+1], 'A'-1
-		ifl [sp+1], 'Z'+1
-			add [sp+1], 'a' - 'A'
+    ; y = toLower(y)
+    ifg [sp+1], 'A'-1
+        ifl [sp+1], 'Z'+1
+            add [sp+1], 'a' - 'A'
 
-	set pc, str_comparator
+    set pc, str_comparator
 
 ;----------------------------------------------------------------
 ; uint str_search_3(struct handle *haystack, struct handle *needle, uint16 start, uint16 end)
 ;----------------------------------------------------------------
 :str_search_3
-	set push, 4
-	set push, 0
-	jsr preamble
+    set push, 4
+    set push, 0
+    jsr preamble
 
-	set a, [z+13]	; struct handle *haystack	
-	set a, [a]
+    set a, [z+13]    ; struct handle *haystack    
+    set a, [a]
 
-	set x, [z+11]
-	ifu x, 0
-		add x, [a]
-	ifu x, 0
-		sub x, x
-	ifa x, [a]
-		set x, [a]
-		
-	set push, [z+10]
-	ifu [sp], 0
-		add [sp], [a]
-	ifu [sp], 0
-		sub [sp], [sp]
-	ifa [sp], [a]
-		set [sp], [a]
-	
-	set b, [z+12]	; struct handle *needle
-	set b, [b]
+    set x, [z+11]
+    ifu x, 0
+        add x, [a]
+    ifu x, 0
+        sub x, x
+    ifa x, [a]
+        set x, [a]
+        
+    set push, [z+10]
+    ifu [sp], 0
+        add [sp], [a]
+    ifu [sp], 0
+        sub [sp], [sp]
+    ifa [sp], [a]
+        set [sp], [a]
+    
+    set b, [z+12]    ; struct handle *needle
+    set b, [b]
 
-	set y, b	; needle last char *
-	add y, [b]
+    set y, b    ; needle last char *
+    add y, [b]
 
-	set pc, str_search_outer_loop
+    set pc, str_search_outer_loop
 
 ;----------------------------------------------------------------
 ; uint str_cmp(struct handle *haystack, struct handle *needle)
 ;----------------------------------------------------------------
 :str_search
-	set push, 2
-	set push, 0
-	jsr preamble
+    set push, 2
+    set push, 0
+    jsr preamble
 
-	set x, 0	; haystack walker
+    set x, 0    ; haystack walker
 
-	set a, [z+11]	; struct handle *haystack	
-	set a, [a]
-	set push, [a]
+    set a, [z+11]    ; struct handle *haystack    
+    set a, [a]
+    set push, [a]
 
-	set b, [z+10]	; struct handle *needle
-	set b, [b]
+    set b, [z+10]    ; struct handle *needle
+    set b, [b]
 
-	set y, b	; needle last char *
-	add y, [b]
+    set y, b    ; needle last char *
+    add y, [b]
 
 :str_search_outer_loop
-	set c, x	; haystack_walker + needle_len <= haystack_len
-	add c, [b]
-	ifg c, [sp]
-		set pc, str_search_no_match
+    set c, x    ; haystack_walker + needle_len <= haystack_len
+    add c, [b]
+    ifg c, [sp]
+        set pc, str_search_no_match
 
-	set i, a	; target[i+j]
-	add i, x
+    set i, a    ; target[i+j]
+    add i, x
 
-	set j, b	; query[j]
+    set j, b    ; query[j]
 
 :str_search_inner_loop
-	ife [i+1], [j+1]	; target[i+j]==query[j]
-		ifl j, y	; j < queryLen
-			sti pc, str_search_inner_loop	; j++
+    ife [i+1], [j+1]    ; target[i+j]==query[j]
+        ifl j, y    ; j < queryLen
+            sti pc, str_search_inner_loop    ; j++
 
-	ife j, y
-		jsr postamble
+    ife j, y
+        jsr postamble
 
-	add x, 1
-	set pc, str_search_outer_loop
+    add x, 1
+    set pc, str_search_outer_loop
 
 :str_search_no_match
-	set x, -1
-	jsr postamble
+    set x, -1
+    jsr postamble
 
 ;----------------------------------------------------------------
 :built_in__str_isalpha
 ;----------------------------------------------------------------
-	jsr built_in__object_method__init
+    jsr built_in__object_method__init
 
-	ifn i, 0
-		jsr recover
+    ifn i, 0
+        jsr recover
 
-	set i, [a]
+    set i, [a]
 
-	ife [i], 0
-		set pc, return_false
+    ife [i], 0
+        set pc, return_false
 
-	add i, [i]
+    add i, [i]
 
 :built_in__str_isalpha_loop
-	ife i, [a]
-		set pc, return_true
+    ife i, [a]
+        set pc, return_true
 
-	ifg [i], 'A'-1
-		ifl [i], 'Z'+1
-			std pc, built_in__str_isalpha_loop
+    ifg [i], 'A'-1
+        ifl [i], 'Z'+1
+            std pc, built_in__str_isalpha_loop
 
-	ifg [i], 'a'-1
-		ifl [i], 'z'+1
-			std pc, built_in__str_isalpha_loop
+    ifg [i], 'a'-1
+        ifl [i], 'z'+1
+            std pc, built_in__str_isalpha_loop
 
-	set pc, return_false
+    set pc, return_false
 
 ;----------------------------------------------------------------
 :built_in__str_isdigit
 ;----------------------------------------------------------------
-	jsr built_in__object_method__init
+    jsr built_in__object_method__init
 
-	ifn i, 0
-		jsr recover
+    ifn i, 0
+        jsr recover
 
-	set i, [a]
-	
-	ife [i], 0
-		set pc, return_false
-	
-	add i, [i]
+    set i, [a]
+    
+    ife [i], 0
+        set pc, return_false
+    
+    add i, [i]
 
 :built_in__str_isdigit_loop
-	ife i, [a]
-		set pc, return_true
-		
-	ifg [i], '0'-1
-		ifl [i], '9'+1
-			std pc, built_in__str_isdigit_loop
-		
-	set pc, return_false
+    ife i, [a]
+        set pc, return_true
+        
+    ifg [i], '0'-1
+        ifl [i], '9'+1
+            std pc, built_in__str_isdigit_loop
+        
+    set pc, return_false
 
 ;----------------------------------------------------------------
 :built_in__str_lower
 ;----------------------------------------------------------------
-	jsr built_in__object_method__init
+    jsr built_in__object_method__init
 
-	ifn i, 0
-		jsr recover
+    ifn i, 0
+        jsr recover
 
-	set push, a
-	jsr array_clone
-	
-	set i, [x]
-	add i, [i]
+    set push, a
+    jsr array_clone
+    
+    set i, [x]
+    add i, [i]
 
 :built_in__str_lower_loop
-	ife i, [x]
-		set pc, postamble
+    ife i, [x]
+        set pc, postamble
 
-	ifg [i], 'A'-1
-		ifl [i], 'Z'+1
-			add [i], ('a'-'A')
+    ifg [i], 'A'-1
+        ifl [i], 'Z'+1
+            add [i], ('a'-'A')
 
-	std pc, built_in__str_lower_loop
-	
-	set pc, postamble
+    std pc, built_in__str_lower_loop
+    
+    set pc, postamble
 
 ;----------------------------------------------------------------
 :built_in__str_upper
 ;----------------------------------------------------------------
-	jsr built_in__object_method__init
+    jsr built_in__object_method__init
 
-	ifn i, 0
-		jsr recover
+    ifn i, 0
+        jsr recover
 
-	set push, a
-	jsr array_clone
-	
-	set i, [x]
-	add i, [i]
+    set push, a
+    jsr array_clone
+    
+    set i, [x]
+    add i, [i]
 
 :built_in__str_upper_loop
-	ife i, [x]
-		set pc, postamble
+    ife i, [x]
+        set pc, postamble
 
-	ifg [i], 'a'-1
-		ifl [i], 'z'+1
-			sub [i], ('a'-'A')
+    ifg [i], 'a'-1
+        ifl [i], 'z'+1
+            sub [i], ('a'-'A')
 
-	std pc, built_in__str_upper_loop
+    std pc, built_in__str_upper_loop
 
 ;----------------------------------------------------------------
 :built_in__str_find
 ;----------------------------------------------------------------
-	jsr built_in__object_method__init
+    jsr built_in__object_method__init
 
-	set push, a
-	set a, [a]
+    set push, a
+    set a, [a]
 
-	ife i, 0
-		jsr recover
-		
-	ifg i, 3
-		jsr recover
+    ife i, 0
+        jsr recover
+        
+    ifg i, 3
+        jsr recover
 
-	set x, [z-1]
-	ifn [x + HANDLE_TYPE], TYPE_STR
-		jsr recover
+    set x, [z-1]
+    ifn [x + HANDLE_TYPE], TYPE_STR
+        jsr recover
 
-	set push, x
-		
-	ife i, 1
-		set pc, built_in__str_find__no_start
+    set push, x
+        
+    ife i, 1
+        set pc, built_in__str_find__no_start
 
-	set x, [z-2]
-	ifn [x + HANDLE_TYPE], TYPE_INT
-		jsr recover
-		
-	set push, x
-	jsr int_to_int16
-	set push, x
-	
-	ife i, 2
-		set pc, built_in__str_find__no_end
+    set x, [z-2]
+    ifn [x + HANDLE_TYPE], TYPE_INT
+        jsr recover
+        
+    set push, x
+    jsr int_to_int16
+    set push, x
+    
+    ife i, 2
+        set pc, built_in__str_find__no_end
 
-	set x, [z-3]
-	ifn [x + HANDLE_TYPE], TYPE_INT
-		jsr recover
-		
-	set push, x
-	jsr int_to_int16
-	set push, x
-	
-	set pc, built_in__str_find__finish
+    set x, [z-3]
+    ifn [x + HANDLE_TYPE], TYPE_INT
+        jsr recover
+        
+    set push, x
+    jsr int_to_int16
+    set push, x
+    
+    set pc, built_in__str_find__finish
 
 :built_in__str_find__no_start
-	set push, 0
+    set push, 0
 
 :built_in__str_find__no_end
-	set push, [a]
-	
+    set push, [a]
+    
 :built_in__str_find__finish
-	jsr str_search_3
-	
-	set push, x
-	set x, INT_N1
+    jsr str_search_3
+    
+    set push, x
+    set x, INT_N1
 
-	ifc peek, 0x8000
-		jsr uint16_to_int
-	
-	set pc, postamble	
+    ifc peek, 0x8000
+        jsr uint16_to_int
+    
+    set pc, postamble    
 
 ;----------------------------------------------------------------
 :built_in__str_endswith
 ;----------------------------------------------------------------
-	set y, built_in__str_endswith__cmp 
-	set pc, built_in__str_xwith
+    set y, built_in__str_endswith__cmp 
+    set pc, built_in__str_xwith
 
 ;----------------------------------------------------------------
 :built_in__str_startswith
 ;----------------------------------------------------------------
-	set y, built_in__str_startswith__cmp 
+    set y, built_in__str_startswith__cmp 
 
 :built_in__str_xwith
-	jsr built_in__object_method__init
-	
-	ifn i, 1
-		jsr recover
-	
-	set b, [z-1]
-	ifb [b + HANDLE_TYPE], TYPE_STR
-		set pc, built_in__str_xwith__str
+    jsr built_in__object_method__init
+    
+    ifn i, 1
+        jsr recover
+    
+    set b, [z-1]
+    ifb [b + HANDLE_TYPE], TYPE_STR
+        set pc, built_in__str_xwith__str
 
-	ifb [b + HANDLE_TYPE], TYPE_TUPLE + TYPE_LIST
-		set pc, built_in__str_xwith__array
+    ifb [b + HANDLE_TYPE], TYPE_TUPLE + TYPE_LIST
+        set pc, built_in__str_xwith__array
 
-	jsr recover
+    jsr recover
 
 :built_in__str_xwith__array
-	set c, [b]
-	set i, c
-	add i, [i]
+    set c, [b]
+    set i, c
+    add i, [i]
 
 :built_in__str_xwith__array_loop
-	ife i, c
-		set pc, return_false
-	
-	set b, [i]
-	ifn [b + HANDLE_TYPE], TYPE_STR
-		jsr recover
-		
-	jsr y
+    ife i, c
+        set pc, return_false
+    
+    set b, [i]
+    ifn [b + HANDLE_TYPE], TYPE_STR
+        jsr recover
+        
+    jsr y
 
-	std pc, built_in__str_xwith__array_loop
-	
+    std pc, built_in__str_xwith__array_loop
+    
 :built_in__str_xwith__str
-	jsr y
+    jsr y
 
-	set pc, return_false
-	
+    set pc, return_false
+    
 :built_in__str_startswith__cmp
-	set push, a
-	set push, b
-	set push, 0
+    set push, a
+    set push, b
+    set push, 0
 
-	set x, [b]
-	set push, [x]
-	jsr str_search_3
-	ife x, 0
-		set pc, return_true
-	
-	set x, FALSE
-	set pc, pop
+    set x, [b]
+    set push, [x]
+    jsr str_search_3
+    ife x, 0
+        set pc, return_true
+    
+    set x, FALSE
+    set pc, pop
 
 :built_in__str_endswith__cmp
-	set push, a
-	set push, b
+    set push, a
+    set push, b
 
-	set x, [b]
-	set push, [x]
-	xor [sp], 0xffff
-	add [sp], 1	
-	
-	set push, 0x7fff
-	jsr str_search_3
-	ifn x, -1
-		set pc, return_true
-	
-	set x, FALSE
-	set pc, pop
+    set x, [b]
+    set push, [x]
+    xor [sp], 0xffff
+    add [sp], 1    
+    
+    set push, 0x7fff
+    jsr str_search_3
+    ifn x, -1
+        set pc, return_true
+    
+    set x, FALSE
+    set pc, pop
 
 ;----------------------------------------------------------------
 :built_in__str_decrypt
 ;----------------------------------------------------------------
-	jsr built_in__object_method__init
-	
-	ifn i, 1
-		jsr recover
-	
-	set push, a
-	jsr array_clone
-	set [z-2], x
+    jsr built_in__object_method__init
+    
+    ifn i, 1
+        jsr recover
+    
+    set push, a
+    jsr array_clone
+    set [z-2], x
 
-	set y, crypt__Decrypt
-	
-	set pc, built_in__str_crypt
+    set y, crypt__Decrypt
+    
+    set pc, built_in__str_crypt
 
 ;----------------------------------------------------------------
 :built_in__str_encrypt
 ;----------------------------------------------------------------
-	jsr built_in__object_method__init
-	
-	ifn i, 1
-		jsr recover
-	
-	set push, a
-	jsr array_clone
-	set [z-2], x
+    jsr built_in__object_method__init
+    
+    ifn i, 1
+        jsr recover
+    
+    set push, a
+    jsr array_clone
+    set [z-2], x
 
-	set a, [heap_handle_start]
-	set b, a
-	add b, 16
-	
-	:built_in__str_encrypt__iv_loop	
-		sub b, 4
-	
-		set push, [z-2]
-		set push, [b]
-		jsr array__append	
-	
-		ifg b, a
-			set pc, built_in__str_encrypt__iv_loop
+    set a, [heap_handle_start]
+    set b, a
+    add b, 16
+    
+    :built_in__str_encrypt__iv_loop    
+        sub b, 4
+    
+        set push, [z-2]
+        set push, [b]
+        jsr array__append    
+    
+        ifg b, a
+            set pc, built_in__str_encrypt__iv_loop
 
-	set y, crypt__Encrypt
+    set y, crypt__Encrypt
 
 :built_in__str_crypt
-	; IV	
-	set a, [z-2]
-	set a, [a]
+    ; IV    
+    set a, [z-2]
+    set a, [a]
 
-	sub [a], 4			; cut IV [:-4]
-	set push, [a]		; msg.len	
-	
-	add a, [a]
-	add a, 1			; IV[0]
+    sub [a], 4            ; cut IV [:-4]
+    set push, [a]        ; msg.len    
+    
+    add a, [a]
+    add a, 1            ; IV[0]
 
-	; msg
-	set c, [z-2]
-	set c, [c]
-	add c, 1			; msg[0]
+    ; msg
+    set c, [z-2]
+    set c, [c]
+    add c, 1            ; msg[0]
 
-	; key
-	set b, [z-1]
-	set b, [b]
-	
-	ifn [b], 8
-		jsr recover
-		
-	add b, 1			; key[0]
-	
-	jsr y
+    ; key
+    set b, [z-1]
+    set b, [b]
+    
+    ifn [b], 8
+        jsr recover
+        
+    add b, 1            ; key[0]
+    
+    jsr y
 
-	set x, [z-2]
-	ife y, crypt__Decrypt
-		set pc, postamble	
+    set x, [z-2]
+    ife y, crypt__Decrypt
+        set pc, postamble    
 
-	set a, [x]
-	add [a], 4
-	
-	set pc, postamble	
+    set a, [x]
+    add [a], 4
+    
+    set pc, postamble    
 
 ;----------------------------------------------------------------
 :built_in__str_replace
 ;----------------------------------------------------------------
-	jsr built_in__object_method__init
-	ifn i, 2
-		jsr recover
+    jsr built_in__object_method__init
+    ifn i, 2
+        jsr recover
 
-	set x, [z-1]			; search str
-	ifc [x + HANDLE_TYPE], TYPE_STR
-		jsr recover
+    set x, [z-1]            ; search str
+    ifc [x + HANDLE_TYPE], TYPE_STR
+        jsr recover
 
-	set c, [x]
-	set c, [c]
+    set c, [x]
+    set c, [c]
 
-	set x, [z-2]			; replace str
-	ifc [x + HANDLE_TYPE], TYPE_STR
-		jsr recover
-		
-	set [z-3], a			; src str
+    set x, [z-2]            ; replace str
+    ifc [x + HANDLE_TYPE], TYPE_STR
+        jsr recover
+        
+    set [z-3], a            ; src str
 
-	set push, [a + HANDLE_SIZE]
-	set push, TYPE_STR
-	jsr alloc
-	set [z-4], x			; dst str
+    set push, [a + HANDLE_SIZE]
+    set push, TYPE_STR
+    jsr alloc
+    set [z-4], x            ; dst str
 
-	; [z-1] old
-	; [z-2] new
-	; [z-3] src
-	; [z-4] dst
+    ; [z-1] old
+    ; [z-2] new
+    ; [z-3] src
+    ; [z-4] dst
 
-	set i, 0				; cpos
+    set i, 0                ; cpos
 
 :built_in__str_replace__loop_restart
-	set push, [z-3]			; src
-	set push, [z-1]			; search
-	set push, i
-	set push, 0x7fff
-	jsr str_search_3
-	set j, x				; npos
+    set push, [z-3]            ; src
+    set push, [z-1]            ; search
+    set push, i
+    set push, 0x7fff
+    jsr str_search_3
+    set j, x                ; npos
 
 :built_in__str_replace__loop
-	ife i, j
-		set pc, built_in__str_replace__do_replace
+    ife i, j
+        set pc, built_in__str_replace__do_replace
 
-	; copy char from src to dst
-	set a, [z-3]
-	set b, i
-	jsr array__get
-	ife x, 0
-		set pc, built_in__str_replace__finish
+    ; copy char from src to dst
+    set a, [z-3]
+    set b, i
+    jsr array__get
+    ife x, 0
+        set pc, built_in__str_replace__finish
 
-	set push, [z-4]
-	set push, x
-	jsr array__append
-	
-	add i, 1
-	set pc, built_in__str_replace__loop
+    set push, [z-4]
+    set push, x
+    jsr array__append
+    
+    add i, 1
+    set pc, built_in__str_replace__loop
 
 :built_in__str_replace__do_replace
-	set push, [z-4]
-	set push, [z-2]
-	jsr array__append_array
+    set push, [z-4]
+    set push, [z-2]
+    jsr array__append_array
 
-	add i, c
+    add i, c
 
-	set pc, built_in__str_replace__loop_restart
+    set pc, built_in__str_replace__loop_restart
 
-:built_in__str_replace__finish	
-	set x, [z-4]
-	set pc, postamble	
+:built_in__str_replace__finish    
+    set x, [z-4]
+    set pc, postamble    
 
 ;----------------------------------------------------------------
 :built_in__str_split
 ;----------------------------------------------------------------
-	jsr built_in__object_method__init
+    jsr built_in__object_method__init
 
-	set [z-2], a
+    set [z-2], a
 
-	set push, 10
-	set push, TYPE_LIST
-	jsr alloc
-	set [z-3], x			; return list
+    set push, 10
+    set push, TYPE_LIST
+    jsr alloc
+    set [z-3], x            ; return list
 
-	set b, 0				; cpos
+    set b, 0                ; cpos
 
-	ife i, 0
-		set pc, built_in__str_split__ws
-	ifn i, 1
-		jsr recover
+    ife i, 0
+        set pc, built_in__str_split__ws
+    ifn i, 1
+        jsr recover
 
-	; str split with defined separator
-	set x, [z-1]			; sep str
-	ifc [x + HANDLE_TYPE], TYPE_STR
-		jsr recover
+    ; str split with defined separator
+    set x, [z-1]            ; sep str
+    ifc [x + HANDLE_TYPE], TYPE_STR
+        jsr recover
 
-	set c, [x]
-	set c, [c]				; sep.len
+    set c, [x]
+    set c, [c]                ; sep.len
 
 :built_in__str_split__loop
-	set push, [z-2]
-	set push, [z-1]
-	set push, b
-	set push, 0x7fff
-	jsr str_search_3
-	set j, x				; npos
+    set push, [z-2]
+    set push, [z-1]
+    set push, b
+    set push, 0x7fff
+    jsr str_search_3
+    set j, x                ; npos
 
-	ife j, -1
-		set j, 0x7fff
+    ife j, -1
+        set j, 0x7fff
 
-	set push, [z-2]
-	set push, b
-	set push, j
-	jsr array_split
-	set [z-4], x
-	
-	set b, j
-	
-	set push, [z-3]
-	set push, x
-	jsr array__append
+    set push, [z-2]
+    set push, b
+    set push, j
+    jsr array_split
+    set [z-4], x
+    
+    set b, j
+    
+    set push, [z-3]
+    set push, x
+    jsr array__append
 
-	set x, [z-3]
-	ife j, 0x7fff
-		set pc, postamble	
+    set x, [z-3]
+    ife j, 0x7fff
+        set pc, postamble    
 
-	add b, c
-	set pc, built_in__str_split__loop
+    add b, c
+    set pc, built_in__str_split__loop
 
 :built_in__str_split__ws
-	; [z-1] is used as str nursery
-	; [z-2] original str
-	; [z-3] list
-	jsr array__get
-	
-	add b, 1
-	
-	ife x, 0
-		set pc, built_in__str_split__ws_finish
+    ; [z-1] is used as str nursery
+    ; [z-2] original str
+    ; [z-3] list
+    jsr array__get
+    
+    add b, 1
+    
+    ife x, 0
+        set pc, built_in__str_split__ws_finish
 
-	ife x, ' '
-		set pc, built_in__str_split__ws__handle_ws
-	ife x, 0x11
-		set pc, built_in__str_split__ws__handle_ws
-		
-	; handle text
-	set c, x
-	ifn [z-1], 0
-		set pc, built_in__str_split__ws__add_char
+    ife x, ' '
+        set pc, built_in__str_split__ws__handle_ws
+    ife x, 0x11
+        set pc, built_in__str_split__ws__handle_ws
+        
+    ; handle text
+    set c, x
+    ifn [z-1], 0
+        set pc, built_in__str_split__ws__add_char
 
-	set push, 6
-	set push, TYPE_STR
-	jsr alloc
-	set [z-1], x
+    set push, 6
+    set push, TYPE_STR
+    jsr alloc
+    set [z-1], x
 
 :built_in__str_split__ws__add_char
-	set push, [z-1]
-	set push, c
-	jsr array__append
-	set pc, built_in__str_split__ws
+    set push, [z-1]
+    set push, c
+    jsr array__append
+    set pc, built_in__str_split__ws
 
 :built_in__str_split__ws__handle_ws
-	ife [z-1], 0
-		set pc, built_in__str_split__ws
+    ife [z-1], 0
+        set pc, built_in__str_split__ws
 
-	set push, [z-3]
-	set push, [z-1]
-	jsr array__append
-	
-	set [z-1], 0
+    set push, [z-3]
+    set push, [z-1]
+    jsr array__append
+    
+    set [z-1], 0
 
-	set pc, built_in__str_split__ws
+    set pc, built_in__str_split__ws
 
 :built_in__str_split__ws_finish
-	ife [z-1], 0
-		set pc, built_in__str_split__ws_exit
+    ife [z-1], 0
+        set pc, built_in__str_split__ws_exit
 
-	set push, [z-3]
-	set push, [z-1]
-	jsr array__append
+    set push, [z-3]
+    set push, [z-1]
+    jsr array__append
 
 :built_in__str_split__ws_exit
-	set x, [z-3]
-	set pc, postamble
-	
+    set x, [z-3]
+    set pc, postamble
+    
 

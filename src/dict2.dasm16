@@ -3,247 +3,247 @@
 ; return x: struct handle *value or 0
 ;----------------------------------------------------------------
 :dict_get
-	set push, 2
-	set push, 2
-	jsr preamble
+    set push, 2
+    set push, 2
+    jsr preamble
 
-	set [z-1], [z+11]
-	set x, [z+10]
-	set [z-2], x
+    set [z-1], [z+11]
+    set x, [z+10]
+    set [z-2], x
 
-	set push, [x + HANDLE_TYPE]
-	ife peek, TYPE_NAME
-		set [x + HANDLE_TYPE], TYPE_STR
-	
-	set b, dict__get__finish
-	set pc, dict__bin_search
+    set push, [x + HANDLE_TYPE]
+    ife peek, TYPE_NAME
+        set [x + HANDLE_TYPE], TYPE_STR
+    
+    set b, dict__get__finish
+    set pc, dict__bin_search
 
 :dict__get__match
-	set a, [z-2]
-	set [a + HANDLE_TYPE], pop	
+    set a, [z-2]
+    set [a + HANDLE_TYPE], pop    
 
-	; translate memory address to value
-	set x, [c]		; struct handle *tuple
-	set x, [x]		; struct list *kv_tuple
+    ; translate memory address to value
+    set x, [c]        ; struct handle *tuple
+    set x, [x]        ; struct list *kv_tuple
 
-	set x, [x + DICT_ITEM_VALUE]
-	jsr postamble
+    set x, [x + DICT_ITEM_VALUE]
+    jsr postamble
 
 :dict__del__no_match
 :dict__get__no_match
-	set a, [z-2]
-	set [a + HANDLE_TYPE], pop	
+    set a, [z-2]
+    set [a + HANDLE_TYPE], pop    
 
-	set x, 0		; return none
-	set pc, postamble
+    set x, 0        ; return none
+    set pc, postamble
 
 ;----------------------------------------------------------------
 ; struct handle *dict__bin_insert_sort(struct handle *dict, struct handle *key, struct handle *value)
 ;----------------------------------------------------------------
 :dict__set
-	set push, 3
-	set push, 3
-	jsr preamble
+    set push, 3
+    set push, 3
+    jsr preamble
 
-	set [z-1], [z+12]
-	set x, [z+11]
-	set [z-2], x
+    set [z-1], [z+12]
+    set x, [z+11]
+    set [z-2], x
 
-	ifn [x + HANDLE_TYPE], TYPE_NAME
-		set pc, dict_set_skip
+    ifn [x + HANDLE_TYPE], TYPE_NAME
+        set pc, dict_set_skip
 
-	set push, x
-	jsr array_clone
-	set [x + HANDLE_TYPE], TYPE_STR
-	set [z-2], x
+    set push, x
+    jsr array_clone
+    set [x + HANDLE_TYPE], TYPE_STR
+    set [z-2], x
 
 :dict_set_skip
-	; create item tuple
-	set push, 2
-	set push, TYPE_TUPLE
-	jsr array_create
-	set [z-3], x
+    ; create item tuple
+    set push, 2
+    set push, TYPE_TUPLE
+    jsr array_create
+    set [z-3], x
 
-	sti i, [x]
+    sti i, [x]
 
-	sti [i], [z-2]		; add key to tuple
-	set [i], [z+10]		; add value to tuple
+    sti [i], [z-2]        ; add key to tuple
+    set [i], [z+10]        ; add value to tuple
 
-	set b, dict__set__finish
-	set pc, dict__bin_search
+    set b, dict__set__finish
+    set pc, dict__bin_search
 
 :dict__set__match
-	; translate memory address to array index
-	set [c], [z - 3]
-	set pc, postamble
+    ; translate memory address to array index
+    set [c], [z - 3]
+    set pc, postamble
 
 :dict__set__no_match
-	sub i, a			; calculate index
-	sub i, 1
+    sub i, a            ; calculate index
+    sub i, 1
 
-	set push, [z+12]	; dict
-	set push, i			; index
-	set push, [z-3]		; tuple
-	jsr array__insert
+    set push, [z+12]    ; dict
+    set push, i            ; index
+    set push, [z-3]        ; tuple
+    jsr array__insert
 
-	set pc, postamble
+    set pc, postamble
 
 ;----------------------------------------------------------------
 ; struct handle *dict_del(struct handle *dict, struct handle *key)
 ; return x: struct handle *value or 0
 ;----------------------------------------------------------------
 :dict_del
-	set push, 2
-	set push, 2
-	jsr preamble
+    set push, 2
+    set push, 2
+    jsr preamble
 
-	set [z-1], [z+11]
-	set x, [z+10]
-	set [z-2], x
+    set [z-1], [z+11]
+    set x, [z+10]
+    set [z-2], x
 
-	set push, [x + HANDLE_TYPE]
-	ife peek, TYPE_NAME
-		set [x + HANDLE_TYPE], TYPE_STR
+    set push, [x + HANDLE_TYPE]
+    ife peek, TYPE_NAME
+        set [x + HANDLE_TYPE], TYPE_STR
 
-	set b, dict__del__finish
-	set pc, dict__bin_search
+    set b, dict__del__finish
+    set pc, dict__bin_search
 
 :dict__del__finish
-	dat dict__del__match
-	dat dict__del__no_match
+    dat dict__del__match
+    dat dict__del__no_match
 
 :dict__del__match
-	set b, [z-2]
-	set [b + HANDLE_TYPE], pop	
+    set b, [z-2]
+    set [b + HANDLE_TYPE], pop    
 
-	sub c, a
-	sub c, 1
+    sub c, a
+    sub c, 1
 
-	set a, [z-1]
-	set b, c
-	jsr array__del
+    set a, [z-1]
+    set b, c
+    jsr array__del
 
-	jsr postamble
+    jsr postamble
 
 ;----------------------------------------------------------------
 :dict__bin_search
 ; [z-1] struct handle *dict
 ; [z-2] struct handle *key
 ;----------------------------------------------------------------
-	set a, [z-1]			; struct handle *dict
-	set a, [a]				; struct dict *
+    set a, [z-1]            ; struct handle *dict
+    set a, [a]                ; struct dict *
 
-	sti i, a				; [0] item
-	set j, a				; [last] item
-	add j, [a]
+    sti i, a                ; [0] item
+    set j, a                ; [last] item
+    add j, [a]
 
 :dict__bin_search__loop
-	ifg i, j
-		set pc, [b + 1]
+    ifg i, j
+        set pc, [b + 1]
 
-	; calculate midpoint
-	set c, j
-	sub c, i
-	div c, 2
-	add c, i
+    ; calculate midpoint
+    set c, j
+    sub c, i
+    div c, 2
+    add c, i
 
-	set y, [c]						; struct handle *tuple
-	set y, [y]						; struct tuple *
-	
-	set push, [z - 2]				; search key
-	set push, [y + DICT_ITEM_KEY]	; key in midpoint
-	jsr val_cmp
-	
-	ife x, 1
-		set pc, dict__bin_search__upper
+    set y, [c]                        ; struct handle *tuple
+    set y, [y]                        ; struct tuple *
+    
+    set push, [z - 2]                ; search key
+    set push, [y + DICT_ITEM_KEY]    ; key in midpoint
+    jsr val_cmp
+    
+    ife x, 1
+        set pc, dict__bin_search__upper
 
-	ife x, -1
-		set pc, dict__bin_search__lower
+    ife x, -1
+        set pc, dict__bin_search__lower
 
-	set pc, [b]
-	
+    set pc, [b]
+    
 :dict__bin_search__upper
-	set i, c
-	add i, 1
-	set pc, dict__bin_search__loop
+    set i, c
+    add i, 1
+    set pc, dict__bin_search__loop
 
 :dict__bin_search__lower
-	set j, c
-	sub j, 1
-	set pc, dict__bin_search__loop
+    set j, c
+    sub j, 1
+    set pc, dict__bin_search__loop
 
 ;----------------------------------------------------------------
 ; struct handle *dict_repr(struct handle *dict)
 ;----------------------------------------------------------------
 :dict_repr
-	set push, 1
-	set push, 2
-	jsr preamble
-	
-	set y, [z+10]
-	
-	set push, 10
-	set push, TYPE_STR
-	jsr alloc
-	set [z-1], x
+    set push, 1
+    set push, 2
+    jsr preamble
+    
+    set y, [z+10]
+    
+    set push, 10
+    set push, TYPE_STR
+    jsr alloc
+    set [z-1], x
 
-	set push, x
-	set push, '{'
-	jsr array__append
+    set push, x
+    set push, '{'
+    jsr array__append
 
-	set i, 0					; index
-	set b, [y]					; struct list *
-	set b, [b]					; list.size
+    set i, 0                    ; index
+    set b, [y]                    ; struct list *
+    set b, [b]                    ; list.size
 
 :dict_repr_loop
-	ife i, b
-		set pc, dict_repr_finish
+    ife i, b
+        set pc, dict_repr_finish
 
-	ife i, 0
-		set pc, dict_repr_skip_comma
+    ife i, 0
+        set pc, dict_repr_skip_comma
 
-	set push, [z-1]					; struct handle *str
-	set push, ','
-	jsr array__append
+    set push, [z-1]                    ; struct handle *str
+    set push, ','
+    jsr array__append
 
 :dict_repr_skip_comma
-	set x, [y]				; struct dict *
-	add x, i				; current item
+    set x, [y]                ; struct dict *
+    add x, i                ; current item
 
-	set c, [x+1]			; struct handle *tuple
-	set x, [c]				; struct tuple *
-	set x, [x+1]			; struct handle *key
+    set c, [x+1]            ; struct handle *tuple
+    set x, [c]                ; struct tuple *
+    set x, [x+1]            ; struct handle *key
 
-	set x, [c]				; struct tuple *
-	set push, [x+1]
-	jsr repr
-	set [z-2], x
+    set x, [c]                ; struct tuple *
+    set push, [x+1]
+    jsr repr
+    set [z-2], x
 
-	set push, [z-1]
-	set push, [z-2]
-	jsr array_merge
-	set [z-1], x
+    set push, [z-1]
+    set push, [z-2]
+    jsr array_merge
+    set [z-1], x
 
-	set push, [z-1]
-	set push, ':'
-	jsr array__append
+    set push, [z-1]
+    set push, ':'
+    jsr array__append
 
-	set x, [c]				; struct tuple *
-	set push, [x+2]
-	jsr repr
-	set [z-2], x
+    set x, [c]                ; struct tuple *
+    set push, [x+2]
+    jsr repr
+    set [z-2], x
 
-	set push, [z-1]
-	set push, [z-2]
-	jsr array_merge
-	set [z-1], x
+    set push, [z-1]
+    set push, [z-2]
+    jsr array_merge
+    set [z-1], x
 
-	sti pc, dict_repr_loop
-		
+    sti pc, dict_repr_loop
+        
 :dict_repr_finish
-	set push, [z-1]
-	set push, '}'
-	jsr array__append
+    set push, [z-1]
+    set push, '}'
+    jsr array__append
 
-	set x, [z-1]
-	jsr postamble
+    set x, [z-1]
+    jsr postamble

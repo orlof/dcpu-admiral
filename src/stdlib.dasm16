@@ -97,8 +97,8 @@
     set pc, postamble
 
 :eval_name
-    set push, [current_scope]		; struct handle *dict
-    set push, x						; struct handle *name
+    set push, [current_scope]        ; struct handle *dict
+    set push, x                        ; struct handle *name
     jsr scope_get
 
     ife x, 0
@@ -133,8 +133,8 @@
 :eval_reference
     set x, [x]
 
-    set push, [x + REFERENCE_LEFT]		; struct handle *dict or *list
-    set push, [x + REFERENCE_RIGHT]		; struct handle *key or index
+    set push, [x + REFERENCE_LEFT]        ; struct handle *dict or *list
+    set push, [x + REFERENCE_RIGHT]        ; struct handle *key or index
     jsr scope_get
     
     ife x, 0
@@ -143,7 +143,7 @@
     set pc, postamble
 
 :eval_subscription
-    set a, [x]				; struct subscription *
+    set a, [x]                ; struct subscription *
     set b, [a + SUBSCRIPTION_LIST]
     set c, [a + SUBSCRIPTION_INDEX]
 
@@ -184,10 +184,10 @@
 
 :eval_subscription_str_slice
 :eval_subscription_array_slice
-    set a, [c]			; struct slice *
+    set a, [c]            ; struct slice *
     set push, b
 
-    set push, [a+1]		; start
+    set push, [a+1]        ; start
     jsr int_to_int16
     set push, x
 
@@ -195,7 +195,7 @@
     jsr int_to_int16
     set push, x
 
-    jsr array_split	
+    jsr array_split    
     set pc, postamble
 
 :eval_subscription_str
@@ -208,7 +208,7 @@
 :eval_subscription_str_index
     set push, b
 
-    set push, c		; struct handle *int
+    set push, c        ; struct handle *int
     jsr int_to_int16
 
     ; start index
@@ -223,11 +223,11 @@
     ifu x, 0
         jsr recover
         
-    set push, x		; start
+    set push, x        ; start
 
-    add x, 1		; end
+    add x, 1        ; end
     set push, x
-    jsr array_split	
+    jsr array_split    
 
     set pc, postamble
 
@@ -441,10 +441,10 @@
 :assign_tuple
     set i, 0
     set c, [a]
-    set c, [c]			; left side size
+    set c, [c]            ; left side size
 
     set y, [b]
-    ifn [y], c			; if leftLen != rightLen
+    ifn [y], c            ; if leftLen != rightLen
         jsr recover
 
 :assign_tuple_loop
@@ -530,7 +530,7 @@
     ife [b + HANDLE_TYPE], TYPE_DICT
         set y, dict_del
     
-    set push, b 					; LEFT
+    set push, b                     ; LEFT
     set push, [a + REFERENCE_RIGHT] ; RIGHT
     jsr y
     
@@ -589,30 +589,30 @@
 ; restore register and stack to original state and do rts.
 ; x:   return value
 :postamble
-    set sp, z				; free local vars and heap refs
-    set z, pop				; restore fp
+    set sp, z                ; free local vars and heap refs
+    set z, pop                ; restore fp
     
-    set y, pop				; restore registers
+    set y, pop                ; restore registers
     set j, pop
     set i, pop
     set c, pop
     set b, pop
     set a, pop
 
-    add sp, 1				; pop sizeof(heap refs)
+    add sp, 1                ; pop sizeof(heap refs)
 
-    add [sp], sp			; calculate ptr to 1st arg
-    add [sp], 1				; sp + num args + 1
+    add [sp], sp            ; calculate ptr to 1st arg
+    add [sp], 1                ; sp + num args + 1
 
     ; no good... but i couldn't figure out better way to do this
-    set push, z				; store fp to free a register for processing
-    set z, [sp+1]			; peek ptr to 1st arg
-    set [z], [sp+2]			; overwrite 1st arg with original return address
-    set z, pop				; pop fp
-    set sp, [sp]			; clear stack except for the return address
+    set push, z                ; store fp to free a register for processing
+    set z, [sp+1]            ; peek ptr to 1st arg
+    set [z], [sp+2]            ; overwrite 1st arg with original return address
+    set z, pop                ; pop fp
+    set sp, [sp]            ; clear stack except for the return address
     ; ---
 
-    set pc, pop				; rts
+    set pc, pop                ; rts
 
 ; preamble - subroutines must 
 ;  1. push number of subroutine arguments
@@ -637,7 +637,7 @@
 ; [sp+11] [fp+10] arg2 (rightmost)
 ; [sp+12] [fp+11] arg1 (leftmost)
 :preamble
-    set x, pop				; pop return address
+    set x, pop                ; pop return address
 
     ; store registers
     set push, a
@@ -648,8 +648,8 @@
     set push, y
 
     ; update frame pointer
-    set push, z				; old fp
-    set z, sp				; new fp
+    set push, z                ; old fp
+    set z, sp                ; new fp
 
     ; init local variables and heap references to 0
     set i, sp
@@ -695,7 +695,7 @@
     set y, TRUE
 
 :print_skip_repr
-    set b, 0xffff		; index
+    set b, 0xffff        ; index
 
 :print_loop
     add b, 1
@@ -709,7 +709,7 @@
         ife x, 47
             set pc, print_loop_escape
 
-    set c, x			; char
+    set c, x            ; char
     jsr screen_add_char
 
     set pc, print_loop
@@ -740,10 +740,10 @@
     set push, 1
     jsr preamble
 
-;	set push, [z+10]
-;	jsr eval
-;	set [z-1], x
-;	set a, x
+;    set push, [z+10]
+;    jsr eval
+;    set [z-1], x
+;    set a, x
 
     set x, [z+10]
 
@@ -890,7 +890,7 @@
     jsr print
     
 :raw_input_no_prompt
-;	set y, [cursor]
+;    set y, [cursor]
     set y, [current_screen]
     set b, [y + SCREEN__CURSOR]
 
@@ -936,10 +936,10 @@
     set push, TYPE_STR
     jsr array_create
 
-    set j, [x]					; struct string *
-    add j, [j]					; string[last]
-    set [j], 10					; set newline
-    std i, [y + SCREEN__CURSOR] 	; i = cursor -1
+    set j, [x]                    ; struct string *
+    add j, [j]                    ; string[last]
+    set [j], 10                    ; set newline
+    std i, [y + SCREEN__CURSOR]     ; i = cursor -1
 
 :finish_loop
     ifl i, b

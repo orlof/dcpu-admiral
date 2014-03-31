@@ -3,31 +3,31 @@
 ; 29440 bytes is the maximum file size for admiral.bin
 ; the "correct value for MEM_CODE_SIZE is len(admiral.bin)/2
 ;----------------------------------------------------------------
-#define MEM_CODE_SIZE			0x3980
-#define MEM_FLOPPY_SIZE			0x200
-#define MEM_SCREEN_SIZE			0x480
-#define MEM_STACK_SIZE			0x2000
+#define MEM_CODE_SIZE            0x3980
+#define MEM_FLOPPY_SIZE            0x200
+#define MEM_SCREEN_SIZE            0x480
+#define MEM_STACK_SIZE            0x2000
 
-#define MEM_STACK_END			0x10000
-#define MEM_STACK_START			MEM_STACK_END - MEM_STACK_SIZE
+#define MEM_STACK_END            0x10000
+#define MEM_STACK_START            MEM_STACK_END - MEM_STACK_SIZE
 
-#define MEM_SCREEN_END			MEM_STACK_START
-#define MEM_SCREEN_START		MEM_SCREEN_END - MEM_SCREEN_SIZE
+#define MEM_SCREEN_END            MEM_STACK_START
+#define MEM_SCREEN_START        MEM_SCREEN_END - MEM_SCREEN_SIZE
 
-#define MEM_FLOPPY_END			MEM_SCREEN_START
-#define MEM_FLOPPY_START		MEM_FLOPPY_END - MEM_FLOPPY_SIZE
+#define MEM_FLOPPY_END            MEM_SCREEN_START
+#define MEM_FLOPPY_START        MEM_FLOPPY_END - MEM_FLOPPY_SIZE
 
-#define MEM_HEAP_START			MEM_CODE_SIZE
-#define MEM_HEAP_END			MEM_FLOPPY_START
+#define MEM_HEAP_START            MEM_CODE_SIZE
+#define MEM_HEAP_END            MEM_FLOPPY_START
 
 ;----------------------------------------------------------------
 ; DATA TYPES
 ;----------------------------------------------------------------
 ; SYSTEM TYPES
-#define TYPE_MARKED			0x8000
-#define TYPE_VOID			0x4000
-#define TYPE_CONTROL		0x2000
-#define TYPE_EXTENSION		0x1000
+#define TYPE_MARKED            0x8000
+#define TYPE_VOID            0x4000
+#define TYPE_CONTROL        0x2000
+#define TYPE_EXTENSION        0x1000
 
 ; INTERNAL SYSTEM TYPES
 #define TYPE_NAME           0x0800
@@ -36,37 +36,37 @@
 #define TYPE_TUPLE_COMMA    0x0100
 
 ; USER TYPES
-#define TYPE_NONE			0x0080
+#define TYPE_NONE            0x0080
 #define TYPE_FLOAT          0x0040
 #define TYPE_INT            0x0020
 #define TYPE_BOOL           0x0010
 
-#define TYPE_STR         	0x0008
+#define TYPE_STR             0x0008
 #define TYPE_TUPLE          0x0004
 #define TYPE_LIST           0x0002
 #define TYPE_DICT           0x0001
 
 ; TYPE GROUPS
-#define TYPE_GROUP_CONTAINER		TYPE_CONTROL + TYPE_TUPLE + TYPE_LIST + TYPE_DICT + TYPE_TUPLE_COMMA + TYPE_REFERENCE + TYPE_SUBSCRIPTION
-#define TYPE_GROUP_CAN_REFERENCE	TYPE_LIST + TYPE_DICT + TYPE_STR
-#define TYPE_GROUP_INTEGER			TYPE_INT + TYPE_BOOL
-;define TYPE_GROUP_NON_INTEGER		0xffff - TYPE_GROUP_INTEGER
-#define TYPE_GROUP_NON_INTEGER		0xffcf
-#define TYPE_GROUP_NUMERIC			TYPE_GROUP_INTEGER + TYPE_FLOAT
-#define TYPE_GROUP_ALL				0x3fff
+#define TYPE_GROUP_CONTAINER        TYPE_CONTROL + TYPE_TUPLE + TYPE_LIST + TYPE_DICT + TYPE_TUPLE_COMMA + TYPE_REFERENCE + TYPE_SUBSCRIPTION
+#define TYPE_GROUP_CAN_REFERENCE    TYPE_LIST + TYPE_DICT + TYPE_STR
+#define TYPE_GROUP_INTEGER            TYPE_INT + TYPE_BOOL
+;define TYPE_GROUP_NON_INTEGER        0xffff - TYPE_GROUP_INTEGER
+#define TYPE_GROUP_NON_INTEGER        0xffcf
+#define TYPE_GROUP_NUMERIC            TYPE_GROUP_INTEGER + TYPE_FLOAT
+#define TYPE_GROUP_ALL                0x3fff
 
 ;----------------------------------------------------------------
 ; PARAMETERS
 ;----------------------------------------------------------------
-#define FONT_COLOR      		0x7000
+#define FONT_COLOR              0x7000
 
-#define HISTORY_SIZE			5
+#define HISTORY_SIZE            5
 
-#define EDIT_BUFFER_SIZE		0x0400
-#define HEAP_GC_TRIGGER 		40
+#define EDIT_BUFFER_SIZE        0x0400
+#define HEAP_GC_TRIGGER         40
 
-#define FLOAT_MANTISSA_WORDS	2
-#define FLOAT_PRECISION			(48 * FLOAT_MANTISSA_WORDS) / 10
+#define FLOAT_MANTISSA_WORDS    2
+#define FLOAT_PRECISION            (48 * FLOAT_MANTISSA_WORDS) / 10
 ; 2*16=32 bits for mantissa
 
 ;----------------------------------------------------------------
@@ -75,16 +75,16 @@
 #define TRUE            1
 #define FALSE           0
 
-#define FLOAT_CATEGORY_NAN		0x0000
-#define FLOAT_CATEGORY_PINF		0x0400
-#define FLOAT_CATEGORY_PNUM		0x0200
-#define FLOAT_CATEGORY_PZERO	0x0100
-#define FLOAT_CATEGORY_NINF		0x0004
-#define FLOAT_CATEGORY_NNUM		0x0002
-#define FLOAT_CATEGORY_NZERO	0x0001
+#define FLOAT_CATEGORY_NAN        0x0000
+#define FLOAT_CATEGORY_PINF        0x0400
+#define FLOAT_CATEGORY_PNUM        0x0200
+#define FLOAT_CATEGORY_PZERO    0x0100
+#define FLOAT_CATEGORY_NINF        0x0004
+#define FLOAT_CATEGORY_NNUM        0x0002
+#define FLOAT_CATEGORY_NZERO    0x0001
 
-#define FLOAT_MASK_POSITIVE 	0x0f00
-#define FLOAT_MASK_NEGATIVE 	0x000f
+#define FLOAT_MASK_POSITIVE     0x0f00
+#define FLOAT_MASK_NEGATIVE     0x000f
 
 #define SCREEN_COLS     32
 #define SCREEN_ROWS     12
@@ -107,20 +107,20 @@
 #define SCOPE_MODE_UPDATE   0x0002
 #define SCOPE_MODE_INSERT   0x0004
 
-#define FLOPPY__MBR__SECTOR				0x00
-#define FLOPPY__MBR__FREE_HEAD			MEM_FLOPPY_START
-#define FLOPPY__MBR__FREE_TAIL			MEM_FLOPPY_START + 1
-#define FLOPPY__MBR__DIR_HEAD			MEM_FLOPPY_START + 2
-#define FLOPPY__MBR__DIR_TAIL			MEM_FLOPPY_START + 3
+#define FLOPPY__MBR__SECTOR                0x00
+#define FLOPPY__MBR__FREE_HEAD            MEM_FLOPPY_START
+#define FLOPPY__MBR__FREE_TAIL            MEM_FLOPPY_START + 1
+#define FLOPPY__MBR__DIR_HEAD            MEM_FLOPPY_START + 2
+#define FLOPPY__MBR__DIR_TAIL            MEM_FLOPPY_START + 3
 
 ; data sector definitions
-#define FLOPPY__SECTOR__NEXT			MEM_FLOPPY_START
-#define FLOPPY__SECTOR__DATA			MEM_FLOPPY_START + 1
+#define FLOPPY__SECTOR__NEXT            MEM_FLOPPY_START
+#define FLOPPY__SECTOR__DATA            MEM_FLOPPY_START + 1
 
-#define FLOPPY__STATE__NO_MEDIA				0x00
-#define FLOPPY__STATE__READY				0x01
-#define FLOPPY__STATE__READY_WP				0x02
-#define FLOPPY__STATE__BUSY					0x03
+#define FLOPPY__STATE__NO_MEDIA                0x00
+#define FLOPPY__STATE__READY                0x01
+#define FLOPPY__STATE__READY_WP                0x02
+#define FLOPPY__STATE__BUSY                    0x03
 
 ;----------------------------------------------------------------
 ; DATA STRUCTURE DEFINITIONS
@@ -141,15 +141,15 @@
 #define HANDLE_NEXT     3
 
 ; struct float {
-;	uint16 category;
+;    uint16 category;
 ;   uint16 exponent;
 ;   uint16[] mantissa;
 ; }
-#define SIZEOF_FLOAT		FLOAT_PRECISION + 2
+#define SIZEOF_FLOAT        FLOAT_PRECISION + 2
 
-#define FLOAT_CATEGORY		0
-#define FLOAT_EXPONENT		1
-#define FLOAT_MANTISSA		2
+#define FLOAT_CATEGORY        0
+#define FLOAT_EXPONENT        1
+#define FLOAT_MANTISSA        2
 
 ; struct int_value {
 ;   uint16 len;
@@ -182,7 +182,7 @@
 ;   uint16 token;
 ;   [struct handle *value;] # only for return
 ; }
-#define SIZEOF_CONTROL		3
+#define SIZEOF_CONTROL        3
 #define CONTROL_SIGNAL      1
 #define CONTROL_VALUE       2
 
@@ -191,8 +191,8 @@
 ;   struct handle *dict;
 ;   struct handle *name;
 ; }
-#define REFERENCE_LEFT		1
-#define REFERENCE_RIGHT		2
+#define REFERENCE_LEFT        1
+#define REFERENCE_RIGHT        2
 
 ; struct subscription {
 ;   uint16 length;
@@ -209,20 +209,20 @@
 ;   uint16 *end;
 ;   uint16 *cursor;
 ; }
-#define SIZEOF_SCREEN		3
-#define SCREEN__START		0
-#define SCREEN__END			1
-#define SCREEN__CURSOR		2
+#define SIZEOF_SCREEN        3
+#define SCREEN__START        0
+#define SCREEN__END            1
+#define SCREEN__CURSOR        2
 
 ; struct inode {
 ;   struct handle *sector;
 ;   struct handle *size;
 ; }
-#define SIZEOF__INODE					4
-#define INODE__LENGTH					0
-#define INODE__SECTOR__HEAD				1
-#define INODE__SECTOR__TAIL				2
-#define INODE__SIZE						3
+#define SIZEOF__INODE                    4
+#define INODE__LENGTH                    0
+#define INODE__SECTOR__HEAD                1
+#define INODE__SECTOR__TAIL                2
+#define INODE__SIZE                        3
 
 ; struct lexer {
 ;   struct handle *string;
@@ -232,11 +232,11 @@
 ;   uint16_start;
 ;   uint16_end;
 ; }
-#define SIZEOF_LEXER					6
-#define LEXER__STR						0
-#define LEXER__INDENT_TARGET			1
-#define LEXER__INDENT_CURRENT			2
-#define LEXER__TOKEN					3
-#define LEXER__START					4
-#define LEXER__END						5
+#define SIZEOF_LEXER                    6
+#define LEXER__STR                        0
+#define LEXER__INDENT_TARGET            1
+#define LEXER__INDENT_CURRENT            2
+#define LEXER__TOKEN                    3
+#define LEXER__START                    4
+#define LEXER__END                        5
 
