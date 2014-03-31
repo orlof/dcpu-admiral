@@ -329,16 +329,19 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
 	dat 4, "cmp", built_in_cmp
 	dat 4, "key", built_in_key
 	dat 5, "bool", built_in_bool
+	dat 5, "call", built_in_call
 	dat 5, "edit", built_in_edit
 	dat 5, "exit", built_in_exit
 	dat 5, "getc", built_in_getchar
 	dat 5, "load", built_in_load
-	dat 5, "peek", built_in_win_get
-	dat 5, "poke", built_in_win_set
+	dat 5, "peek", built_in_peek
+	dat 5, "poke", built_in_poke
 	dat 5, "repr", built_in_repr
 	dat 5, "save", built_in_save
 	dat 5, "sort", built_in_sort
 	dat 5, "type", built_in_type
+	dat 5, "wget", built_in_win_get
+	dat 5, "wset", built_in_win_set
 	dat 6, "range", built_in_range
 	dat 6, "float", built_in_float
 	dat 6, "input", built_in_input
