@@ -2562,17 +2562,14 @@
         jsr recover
 
     set a, [a]
-    ifn [a], 1
-        jsr recover
-
-    set a, [a+1]
+    add a, [a]
 
     set push, 1
     set push, TYPE_STR
     jsr array_create
     
     sti i, [x]
-    set [i], a
+    set [i], [a]
 
     set pc, postamble    
 
@@ -3139,13 +3136,37 @@
         jsr recover
 
     set x, [z-1]
-    ifn [x + HANDLE_TYPE], TYPE_INT
-        jsr recover
+    ife [x + HANDLE_TYPE], TYPE_INT
+        set pc, built_in__call__int
+    ife [x + HANDLE_TYPE], TYPE_STR
+        set pc, built_in__call__str
 
+    jsr recover
+
+:built_in__call__int
     set push, x
     jsr int_to_int16
 
     jsr x
+
+    set pc, postamble
+
+:built_in__call__str
+    set i, [x]
+    set j, MEM_FLOPPY_START
+    add j, [i]
+    add i, [i]
+
+:built_in__call__str__loop
+    ife i, [x]
+        built_in__call__str__loop_break
+    std [j], [i]
+    set pc, built_in__call__str__loop
+
+:built_in__call__str__loop_break
+    set push, z
+    jsr j
+    set z, pop
 
     set pc, postamble
 
@@ -3212,13 +3233,51 @@
 :built_in_hwi
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 1
+
+    ; verify two parameters
+    ifn i, 2
         jsr recover
 
-    hwi x
+    ; verify that first parameter is int
+    set x, [z-1]
+    ifn [x + HANDLE_TYPE], TYPE_INT
+        jsr recover
+
+    ; push first parameter value to stack
+    set push, [z-1]
+    jsr int_to_int16
+    set push, x
+
+    ; verify that second parameter is str
+    set i, [z-2]
+    ifn [i + HANDLE_TYPE], TYPE_STR
+        jsr recover
+
+    ; verify that second parameter has 5 chars
+    sti i, [i]
+    ifn [i-1], 5
+        jsr recover
+
+    sti a, [i]    
+    sti b, [i]    
+    sti c, [i]    
+    sti x, [i]    
+    sti y, [i]    
+
+    hwi pop
 
     set push, x
-    jsr uint16_to_int
+
+    set push, 5
+    set push, TYPE_STR
+    jsr array_create    
+
+    sti i, [x]
+    sti [i], a
+    sti [i], b
+    sti [i], c
+    sti [i], pop
+    sti [i], y
 
     set pc, postamble
 
