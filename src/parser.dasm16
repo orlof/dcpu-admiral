@@ -3132,48 +3132,11 @@
 :built_in_call
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 1
-        jsr recover
-
-    set x, [z-1]
-    ife [x + HANDLE_TYPE], TYPE_INT
-        set pc, built_in__call__int
-    ife [x + HANDLE_TYPE], TYPE_STR
-        set pc, built_in__call__str
-
-    jsr recover
-
-:built_in__call__int
-    set push, x
-    jsr int_to_int16
-
-    jsr x
-
-    set pc, postamble
-
-:built_in__call__str
-    set i, [x]
-    set j, MEM_FLOPPY_START
-    add j, [i]
-    add i, [i]
-
-:built_in__call__str__loop
-    ife i, [x]
-        built_in__call__str__loop_break
-    std [j], [i]
-    set pc, built_in__call__str__loop
-
-:built_in__call__str__loop_break
-    set push, z
-    jsr j
-    set z, pop
-
-    set pc, postamble
-
-;----------------------------------------------------------------
-:built_in_peek
-;----------------------------------------------------------------
-    jsr built_in_params
+    
+    set x, MEM_FLOPPY_START
+    ife i, 0
+        set pc, built_in_call_registers
+    
     ifn i, 1
         jsr recover
 
@@ -3184,10 +3147,68 @@
     set push, x
     jsr int_to_int16
 
+:built_in_call_registers
+    set push, z
+    set push, x
+
+    jsr load_registers
+
+    jsr pop
+
+    jsr save_registers
+
+    set z, pop
+    set x, VOID
+    set pc, postamble
+
+;----------------------------------------------------------------
+:built_in_peek
+;----------------------------------------------------------------
+    jsr built_in_params
+
+    set x, [z-1]
+    ifn [x + HANDLE_TYPE], TYPE_INT
+        jsr recover
+
+    set push, x
+    jsr int_to_int16
+
+    ife i, 2
+        set pc, built_in_peek_str
+        
+    ifn i, 1
+        jsr recover
+
     set push, [x]
     jsr uint16_to_int
 
     set pc, postamble
+
+:built_in_peek_str
+    ; x: UINT16 *from
+    set i, x
+
+    set x, [z-2]
+    ifn [x + HANDLE_TYPE], TYPE_INT
+        jsr recover
+
+    set push, x
+    jsr int_to_int16
+    add i, x
+    sub i, 1
+
+    set push, x
+    set push, TYPE_STR
+    jsr array_create
+    set j, [x]
+    add j, [j]
+
+:built_in_peek_str_loop
+    ife j, [x]
+        set pc, postamble
+
+    std [j], [i]
+    set pc, built_in_peek_str_loop
 
 ;----------------------------------------------------------------
 :built_in_poke
@@ -3202,19 +3223,35 @@
 
     set push, x
     jsr int_to_int16
-    set y, x
+    set j, x
 
     set x, [z-2]
+    ife [x + HANDLE_TYPE], TYPE_STR
+        set pc, built_in_poke_str
+
     ifn [x + HANDLE_TYPE], TYPE_INT
         jsr recover
 
     set push, x
     jsr int_to_int16
-    set [y], x
+    set [j], x
     
-    set x, VOID
+    set x, [z-2]
     set pc, postamble
 
+:built_in_poke_str
+    set i, [x]
+    add j, [i]
+    sub j, 1
+    add i, [i]
+
+:built_in_poke_str_loop
+    ife i, [x]
+        set pc, postamble
+
+    std [j], [i]
+    set pc, built_in_poke_str_loop
+    
 ;----------------------------------------------------------------
 :built_in_hwn
 ;----------------------------------------------------------------
@@ -3235,7 +3272,7 @@
     jsr built_in_params
 
     ; verify two parameters
-    ifn i, 2
+    ifn i, 1
         jsr recover
 
     ; verify that first parameter is int
@@ -3244,40 +3281,15 @@
         jsr recover
 
     ; push first parameter value to stack
-    set push, [z-1]
+    set push, x
     jsr int_to_int16
     set push, x
 
-    ; verify that second parameter is str
-    set i, [z-2]
-    ifn [i + HANDLE_TYPE], TYPE_STR
-        jsr recover
-
-    ; verify that second parameter has 5 chars
-    sti i, [i]
-    ifn [i-1], 5
-        jsr recover
-
-    sti a, [i]    
-    sti b, [i]    
-    sti c, [i]    
-    sti x, [i]    
-    sti y, [i]    
+    jsr load_registers
 
     hwi pop
 
-    set push, x
-
-    set push, 5
-    set push, TYPE_STR
-    jsr array_create    
-
-    sti i, [x]
-    sti [i], a
-    sti [i], b
-    sti [i], c
-    sti [i], pop
-    sti [i], y
+    jsr save_registers
 
     set pc, postamble
 
@@ -3413,3 +3425,28 @@
     jsr lexer_advance    ; skip ')'
 
     set pc, pop
+
+;----------------------------------------------------------------
+:load_registers
+; fastcall
+;----------------------------------------------------------------
+    set a, [REGISTER_A]
+    set b, [REGISTER_B]
+    set c, [REGISTER_C]
+    set x, [REGISTER_X]
+    set y, [REGISTER_Y]
+    set pc, pop
+
+;----------------------------------------------------------------
+:save_registers
+; fastcall
+;----------------------------------------------------------------
+    set [REGISTER_A], a
+    set [REGISTER_B], b
+    set [REGISTER_C], c
+    set [REGISTER_X], x
+    set [REGISTER_Y], y
+    set pc, pop
+
+
+
