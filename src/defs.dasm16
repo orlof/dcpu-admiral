@@ -1,24 +1,30 @@
 ;----------------------------------------------------------------
 ; MEMORY LAYOUT
 ; 29440 bytes is the maximum file size for admiral.bin
-; the "optimal value for MEM_CODE_SIZE is len(admiral.bin)/2
+; the optimal value for MEM_CODE_SIZE is len(admiral.bin)/2
 ;----------------------------------------------------------------
-#define MEM_CODE_SIZE            0x3980
-#define MEM_FLOPPY_SIZE            0x200
-#define MEM_SCREEN_SIZE            0x480
-#define MEM_STACK_SIZE            0x2000
+#define MEM_CODE_SIZE          0x4000
+#define MEM_FLOPPY_SIZE        0x200
+#define MEM_SCREEN_SIZE        0x480
+#define MEM_STACK_SIZE         0x2000
 
-#define MEM_STACK_END            0x10000
-#define MEM_STACK_START            MEM_STACK_END - MEM_STACK_SIZE
+#define MEM_STACK_END          0x10000
+#define MEM_STACK_START        MEM_STACK_END - MEM_STACK_SIZE
 
-#define MEM_SCREEN_END            MEM_STACK_START
-#define MEM_SCREEN_START        MEM_SCREEN_END - MEM_SCREEN_SIZE
+#define MEM_SCREEN_END         MEM_STACK_START
+#define MEM_SCREEN_START       MEM_SCREEN_END - MEM_SCREEN_SIZE
 
-#define MEM_FLOPPY_END            MEM_SCREEN_START
-#define MEM_FLOPPY_START        MEM_FLOPPY_END - MEM_FLOPPY_SIZE
+#define MEM_FLOPPY_END         MEM_SCREEN_START
+#define MEM_FLOPPY_START       MEM_FLOPPY_END - MEM_FLOPPY_SIZE
 
-#define MEM_HEAP_START            MEM_CODE_SIZE
-#define MEM_HEAP_END            MEM_FLOPPY_START
+#define MEM_HEAP_START         MEM_CODE_SIZE
+#define MEM_HEAP_END           MEM_FLOPPY_START
+
+#define REGISTER_A             MEM_FLOPPY_END - 5
+#define REGISTER_B             MEM_FLOPPY_END - 4
+#define REGISTER_C             MEM_FLOPPY_END - 3
+#define REGISTER_X             MEM_FLOPPY_END - 2
+#define REGISTER_Y             MEM_FLOPPY_END - 1
 
 ;----------------------------------------------------------------
 ; DATA TYPES

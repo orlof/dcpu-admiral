@@ -187,9 +187,12 @@ NOTE: You may need to split admiral_dat.dasm16 file in two to get F1DE accept it
 
 <h4>USAGE</h4>
 
+NOTE: Latest Admiral interpreter does not output return value automatically to screen. Instead 'print' statement 
+must be used. This documentation is not yet updated to reflect the change.
+
 When Admiral starts, it will show an interactive prompt '>' and wait for input. It can evaluate one line statements.
 <pre>
->1+2**32
+>print 1+2**32
 4294967297 
 >for a in range(5): print a 
 0 
@@ -242,19 +245,18 @@ if "type" not in locals(): type='Gigalosaurus'
 Dicts and prototype assignment operator provide "poor mans" objects :-)
 <pre>
 >ship={}                  # create prototype object (i.e. dict)
-{} 
 >ship.spd=0               # assign value to prototype
-0 
 >ship.accelerate=edit()   # define function in prototype
-'me.spd+=me.acceleration  # function modifies object field
-' 
+--------------------------
+me.spd+=me.acceleration  # function modifies object field
+-------------------------- 
 >shuttle=ship.create()    # create new object from prototype
-...                       # new object "inherits" prototype's fields
 >shuttle.acceleration=8   # set value in new object
-8 
 >shuttle.accelerate()     # call new object's method (that is defined in prototype)
->shuttle.spd 8            # new objects field has changed...
->ship.spd 0               # and prototype's fields are intact
+>print shuttle.spd
+8                         # new objects field has changed...
+>print ship.spd 
+0                         # and prototype's fields are intact
 </pre>
 
 Admiral has three different types of built-in functionalities:  statements, global functions 
@@ -268,15 +270,12 @@ string value and class functions can be defined for dicts by adding function wit
 <pre>
 # global function example
 >a="print argv[0]"
-'print argv[0]'
 >a("Hello")
 Hello
 
 # class fuction example
 >a={}
-{}
 >a.x="print argv[0]"
-print argv[0]
 >a.x("Hello")
 Hello
 </pre>
@@ -287,45 +286,39 @@ Admiral provides some built-in data types i.e. dict, list, tuple, str, int, floa
 
 <h5>NUMBERS</h5>
 
-The Admiral interpreter acts as a simple calculator: you can type an expression at it and it will write 
-the value. Expression syntax is straightforward: the operators +, -, * and / work just like in most other 
-languages (for example, Pascal or C); parentheses can be used for grouping. For example:
+The Admiral interpreter acts as a simple calculator: you can type 'print' and an expression at it and it 
+will write the value. Expression syntax is straightforward: the operators +, -, * and / work just like 
+in most other languages (for example, Pascal or C); parentheses can be used for grouping. For example:
 
 <pre>
->2+2
+>print 2+2
 4
 ># This is a comment
->2+2 # and a comment on the same line as code
+>print 2+2 # and a comment on the same line as code
 4
->(50-5*6)/4
+>print (50-5*6)/4
 5
 ># Integer division returns the number closer to 0:
->7/3
+>print 7/3
 2
->7/-3
+>print 7/-3
 -2
 </pre>
 
-The equal sign ('=') is used to assign a value to a variable. Assigned value is displayed as result:
+The equal sign ('=') is used to assign a value to a variable.
 <pre>
 >width=20
-20
 >height=5*9
-45
 >width*height
-900
 </pre>
 
-A value can be assigned to several variables simultaneously:
+Admiral treats an assignment as both an expression and as a statement. As an expression, its 
+value is the value assigned to the variable. This is done to allow multiple assignments in a 
+single statement, such as 
 <pre>
->x = y = z = 0  # Zero x, y and z
-0
->x
-0
->y
-0
->z
-0
+>x=y=z=0  # Zero x, y and z
+>print x,y,z
+0 0 0
 </pre>
 
 Variables must be “defined” (assigned a value) before they can be used, or an error will occur:
@@ -336,15 +329,15 @@ n
  ^
 </pre>
 
-Error codes are not yet documented.
+Error codes are not yet documented and will change in every release.
 
 There is full support for floating point; operators with mixed type operands convert the integer operand 
 to floating point:
 
 <pre>
->3 * 3.75 / 1.5
+>print 3 * 3.75 / 1.5
 7.5
->7.0 / 2
+>print 7.0 / 2
 3.5
 </pre>
 
@@ -362,16 +355,13 @@ enclosed in single quotes or double quotes:
 
 <pre>
 >'spam eggs'
-'spam eggs'
 >"doesn't"
-'doesn't'
 >'"Yes," he said.'
-'"Yes," he said.'
 </pre>
 
-The interpreter prints the result of string operations in single quotes. 
+repr() function generates strings in single quotes. 
 
-String literals can not span multiple lines.
+String literals cannot span multiple lines.
 
 The str class can be used to handle 16-bit binary data and DCPU 7-bit text. Some str functions such as 
 replace or split will not work with binary data. (That will be addressed in later releases)
@@ -379,31 +369,32 @@ replace or split will not work with binary data. (That will be addressed in late
 Strings can be concatenated (glued together) with the + operator, and repeated with *:
 <pre>
 >word = 'Help' + 'A'
-'HelpA'
->'*' + word*5 + '*'
-'*HelpAHelpAHelpAHelpAHelpA*'
+>print word
+HelpA
+>print '*' + word*5 + '*'
+*HelpAHelpAHelpAHelpAHelpA*
 </pre>
 
 Strings can be subscripted (indexed); like in C, the first character of a string has subscript (index) 0. 
-There is no separate character type; a character is simply a string of size one. Like in Icon, substrings can 
+There is no separate character type; a character is simply a string of size one. Like in Python, substrings can 
 be specified with the slice notation: two indices separated by a colon.
 
 <pre>
->word[4]
-'A'
->word[0:2]
-'He'
->word[2:4]
-'lp'
+>print word[4]
+A
+>print word[0:2]
+He
+>print word[2:4]
+lp
 </pre>
 
 Slice indices have useful defaults; an omitted first index defaults to zero, an omitted second index defaults 
 to the size of the string being sliced.
 <pre>
->word[:2]    # The first two characters
-'He'
->word[2:]    # Everything except the first two characters
-'lpA'
+>print word[:2]    # The first two characters
+He
+>print word[2:]    # Everything except the first two characters
+lpA
 </pre>
 
 Unlike a C string, Admiral strings cannot be changed. Assigning to an indexed position in the string results 
@@ -411,42 +402,42 @@ in an error.
 
 However, creating a new string with the combined content is easy:
 <pre>
->'x' + word[1:]
-'xelpA'
->'Splat' + word[4]
-'SplatA'
+>print 'x' + word[1:]
+xelpA
+>print 'Splat' + word[4]
+SplatA
 </pre>
 
 Here’s a useful invariant of slice operations: s[:i] + s[i:] equals s.
 <pre>
->word[:2] + word[2:]
-'HelpA'
->word[:3] + word[3:]
-'HelpA'
+>print word[:2] + word[2:]
+HelpA
+>print word[:3] + word[3:]
+HelpA
 </pre>
 
 Degenerate slice indices are handled gracefully: an index that is too large is replaced by the string size, 
 an upper bound smaller than the lower bound returns an empty string.
 
 <pre>
->word[1:100]
-'elpA'
->word[10:]
+>print word[1:100]
+elpA
+>print repr(word[10:])
 ''
->word[2:1]
+>print repr(word[2:1])
 ''
 </pre>
 
 Indices may be negative numbers, to start counting from the right. For example:
 <pre>
->word[-1]     # The last character
-'A'
->word[-2]     # The last-but-one character
-'p'
->word[-2:]    # The last two characters
-'pA'
->word[:-2]    # Everything except the last two characters
-'Hel'
+>print word[-1]     # The last character
+A
+>print word[-2]     # The last-but-one character
+p
+>print word[-2:]    # The last two characters
+pA
+>print word[:-2]    # Everything except the last two characters
+Hel
 </pre>
 
 But note that -0 is really the same as 0, so it does not count from the right!
@@ -698,6 +689,15 @@ CONTAINER FUNCTIONS
   list range(int start, int end[, int step])
   {} locals()
   {} globals()
+
+HARDWARE FUNCTIONS (CAN CRASH ADMIRAL AND DCPU)
+  void call([int address])
+  int peek(int address)
+  str peek(int address, int length)
+  void poke(int address, (int|str) value)
+  int hwn()
+  int hardware_id, int hardware_version, int manufacturer = hwq(int n)
+  void hwi(int n)
 </pre>
 
 <h5>TYPE CONVERSION FUNCTIONS</h5>
@@ -820,6 +820,81 @@ Return a sorted version from the items in iterable.
 Strings and tuples are sorted by creating a new sorted iterable and lists are sorted in place.
 
 Reverse is a boolean value. If set to True, then the list elements are sorted as if each comparison were reversed.
+
+<h5>HARDWARE FUNCTIONS</h5>
+
+<h6>void call([int address])</h6>
+Hands the CPU over to a the machine language subroutine at a specific address. If address is not specified then 
+start of the floppy drive buffer is used as a default. Floppy drive buffer provides 512 words of space that is
+used only when Admiral executes floppy commands. Floppy commands will overwrite the buffer area completely.
+
+Given address should be in the range 0 thru 65535, or $0000 thru $FFFF. If the given address is outside these 
+limits, Admiral will use LSW as address.
+
+Parameters can be passed between Admiral and subroutine via registers. Before calling the specified address 
+Admiral “loads” a, b, c, x, y, z, i and j registers with the words stored at addresses 0xdb78 - 0xdb7f.
+
+If or when the routine at the specified address returns control to Admiral (via an RTS instruction), Admiral 
+immediately saves the contents of the registers back into the 0xdb78 - 0xdb7f memory range: This can be used 
+to transfer results from the machine language routine to Admiral for further processing. 
+  
+<pre>
+a: 0xdb78
+b: 0xdb79
+c: 0xdb7a
+x: 0xdb7b
+y: 0xdb7c
+z: 0xdb7d
+i: 0xdb7e
+j: 0xdb7f
+</pre>
+
+Subroutine can pollute registers a-j, but must return with rts.
+
+<h6>int peek(int address)</h6>
+<h6>str peek(int address, int length)</h6>
+
+Returns the memory contents of the specified address, which must be in the range 0x0000 through 0xffff. 
+The int value returned will be in the range from 0x0000 thru 0xffff. If the address given exceeds the limits 
+of the memory map, Admiral will use the LSW of the address.
+
+The second form with 'length' argument returns a string that contains 'length' words copied from the memory 
+area that starts from the given address. 
+
+<h6>void poke(int address, (int|str) value)</h6>
+
+Changes the content of any memory address, ranging from 0x0000 to 0xffff, to the given byte value in the range 
+0x0000 through 0xffff. If either number is outside these limits, Admiral will use the LSW of the value.
+
+The second form with str value copies the contents of the string to memory area starting at 'address'.
+
+Caution: A misplaced POKE may cause the DCPU to lock up, or garble or delete the program currently in memory. 
+To restore a locked-up DCPU one has to reboot the DCPU, thereby losing any program or data in RAM! 
+
+<h6>int hwn()</h6>
+
+Returns the number of connected hardware devices.
+
+<h6>int hardware_id, int hardware_version, int manufacturer = hwq(int n)</h6>
+
+Returns a tuple containing information about hardware n.
+
+<pre>
+for n in range(hwn()):
+ hw=hwq(n)
+ print hex(hw[0]), hex(hw[1]), hex(hw[2])
+</pre>
+
+<h6>void hwi(int n)</h6>
+
+Sends the interrupt to hardware n.
+
+Parameters can be passed between Admiral and interrupt via registers. Before interrupt Admiral “loads” 
+a, b, c, x, y, z, i and j registers with the words stored at addresses 0xdb78 - 0xdb7f.
+
+If or when the interrupt returns control, Admiral immediately saves the contents of the registers back 
+into the 0xdb78 - 0xdb7f memory range: This can be used to transfer results from the interrupt to 
+Admiral for further processing. 
 
 <h5>DICT API</h5>
 
@@ -958,11 +1033,24 @@ NOTES
    - e.g. "if true or (a+=1):" will increment a with every evaluation
  - INDENT and DEDENT must be exactly one space
 
+ADMIRAL MEMORY LAYOUT
+
+Admiral reserves the whole DCPU memory for its use. Memory is divided into segments:
+
+<table cellpadding="1">
+<tr><th>Segment</th><th>Default size</th><th>Default location</th><th>Description</th></tr>
+<tr><td>Stack</td><td>8.192</td><td>0xe000 - 0xffff</td><td>Admiral call stack to store registers and arguments</td></tr>
+<tr><td>Video Memory</td><td>1.152</td><td>0xdb80 - 0xdfff</td><td>Video memory for LEM</td></tr>
+<tr><td>Floppy Buffer</td><td>512</td><td>0xd980 - 0xdb7f</td><td>Memory buffer used by floppy operations, default memory area for machine language subroutine calls</td></tr>
+<tr><td>Heap</td><td>39.296</td><td>0x4000 - 0xd97f</td><td>Admiral heap for variables and objects</td></tr>
+<tr><td>System</td><td>16.384</td><td>0x0000 - 0x3fff</td><td>Admiral interpreter, data and subroutines</td></tr>
+</table>
+
+The exact location and size of each segment depends on the Admiral build.
+
 SOME EXTRA BITS
 
 ASSIGNMENTS
-
-Admiral currently allows augmented assignments to be chained. I will remove that feature if someone can explain to me why it shouldn't be allowed.
 
 <pre>
 >a = b = 0
