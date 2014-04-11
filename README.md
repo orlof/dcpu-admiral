@@ -98,6 +98,8 @@ b 2
  - Dict implementation with binary search
  - Nice starting set of built-in functions
  - Interactive command prompt with line editing
+ - Functions: poke(), peek() and call() for low level access
+ - Functions: hwn(), hwq() and hwi() for low level hardware access
  
 <h6>Next in development</h6>
  - Feature freeze period
