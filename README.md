@@ -12,7 +12,7 @@
  - Capability is more important than capacity 
  - Users shouldn't be bothered with details that the machine can handle
  - A bug in the user’s Admiral-code should not be allowed to lead to undefined behavior 
-   of the interpreter
+   of the interpreter (except poke() and call())
  - Should there be no limit on the range of numbers, the length of strings, or the size 
    of collections (other than the total memory available)
 
@@ -47,7 +47,7 @@ Hello World
 Hello World                   # function output
 </pre>
 
-Square Root that supports both integers and floats:
+Here is another example of Admiral code. A function that calculates square Root for integers and floats:
 
 <pre>
 >sqrt=edit()                  # start integrated editor
@@ -66,15 +66,13 @@ return x                      # return value
 
 Couple of more examples:
 <pre>
-# variable swap
+# python's variable swap
 >a=1
 >b=2
 >a,b=b,a
-(2,1)
 # dictionary printing
 >d={'a':1,'b':2}
-{'a':1,'b':2}
-for k,v in d: print k, v
+>for k,v in d: print k, v
 a 1
 b 2
 </pre>
@@ -102,17 +100,7 @@ b 2
  - Functions: hwn(), hwq() and hwi() for low level hardware access
  
 <h6>Next in development</h6>
- - Feature freeze period
- - Bug fixing
-
-<h6>Later plans</h6>
- - SPED-3 support
- - Screen library
- - More built-in functions
- - Exception handling
- - Lambda functions
- - Library version of admiral to run on top of DCPU operating systems
- - Trigonometric functions
+ - Github issue tracker contains a list of development items, but development is not currently active.
 
 --
 
@@ -129,36 +117,36 @@ Following sources were proven to be invaluable sources for information:
 
 <h4>INSTALLATION</h4>
 
-Clone git repository from github 
+<h5>Usage</h5>
+
+Easies way to try Admiral is with Admiral-emulator:
+
+    https://github.com/orlof/admiral-emu/releases
+
+<h5>Development</h5>
+
+All source code is available in Github:
 
     https://github.com/orlof/dcpu-admiral
-    
+
 Latest stable release is in /beta_release -directory. If you just want to run the binary, 
 you should download admiral.bin and m35fd.bin if you want to use toolchain floppy. 
-
-Easiest way to run Admiral is with Toolchain dtemu
-
-    dtemu admiral.bin
-
-<h5>Toolchain</h5>
-
+    
 Currently toolchain is the preferred assembler-emulator package. It has no known issues.
-
-Install toolchain from 
     
     http://dcputoolcha.in/
 
-I recommend using the experimental build if stable build is far behind.
-
-The easy way to compile is the following command:
-
-    dtasm --binary admiral.dasm16 -o admiral.bin
-    
-You can run the compiled admiral.bin with the following command:
+Run Admiral with Toolchain dtemu
 
     dtemu admiral.bin
 
-<h5>Organic + Lettuce</h5>
+Compile Admiral with Toolchain dtasm:
+
+    dtasm --binary admiral.dasm16 -o admiral.bin
+
+<h5>Other tools</h5>
+    
+Organic + Lettuce
 
 Organic assembler can also compile Admiral:
 
@@ -169,15 +157,7 @@ Beware, Organic compilation without --long-literals option takes about 15 minute
 You can run admiral.bin with Lettuce (SirCmpwn/Tomato), but international (non-US?) keyboard layouts don't work with
 Lettuce.
 
-<h5>Devkit</h5>
-
-Admiral can be compiled and run with Devkit:
- - Create a new project that contains all the *.dasm16 files except admiral.dasm16
- - Specify interpreter.dasm16 as the execution starting point
- - Devkit 1.7.6 is badly broken and cannot run Admiral
- - Devkit version 1.7.5 can compile and run Admiral, but does not support floppy.
-
-<h5>F1DE</h5>
+F1DE
 
 F1DE (http://fasm.elasticbeanstalk.com/) is currently the only web emulator that has been tested with Admiral. 
 Admiral sources do not compile in F1DE without modifications, as F1DE requires non-Notchian label and define
@@ -190,7 +170,7 @@ NOTE: You may need to split admiral_dat.dasm16 file in two to get F1DE accept it
 <h4>USAGE</h4>
 
 NOTE: Latest Admiral interpreter does not output return value automatically to screen. Instead 'print' statement 
-must be used. This documentation is not yet updated to reflect the change.
+must be used.
 
 When Admiral starts, it will show an interactive prompt '>' and wait for input. It can evaluate one line statements.
 <pre>
