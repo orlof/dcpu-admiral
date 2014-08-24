@@ -42,9 +42,15 @@ Hello World
 
 <pre>
 >output='print text'          # assign string to variable
-'print text'                  # interpreter returns assigned value
->output(text='Hello World')   # call output-string as function
+>output(text='Hello World')   # call 'output' as function
 Hello World                   # function output
+</pre>
+
+In Admiral - ANY and ALL strings can be called as functions! You could even write:
+
+<pre>
+>'print text'(text='Hello World')   # crazy way to call constant string as function
+Hello World                         # function output
 </pre>
 
 Here is another example of Admiral code. A function that calculates square Root for integers and floats:
