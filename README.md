@@ -445,8 +445,8 @@ Current strings do not support escape characters or output formatting. That will
 
 Another useful data type built into Admiral is the dictionary. Dictionaries are sometimes found in other languages 
 as “associative memories” or “associative arrays”. Unlike sequences, which are indexed by a range of numbers, 
-dictionaries are indexed by keys, which can be any immutable type; strings and numbers can always be keys. Tuples 
-can not be used as keys as they can contain mutable types.
+dictionaries are indexed by keys, which can be strings or numbers. Tuples can not be used as keys as they can 
+contain other mutable types.
 
 It is best to think of a dictionary as an unordered set of key: value pairs, with the requirement that the keys are 
 unique (within one dictionary). A pair of braces creates an empty dictionary: {}. 
@@ -472,9 +472,12 @@ The main operations on a dictionary are storing a value with some key and extrac
 supports multiple formats to store key-value pair:
 
 <pre>
+>d={}
 >d[1]=3
 >d.one=1
 >d["two"]=2
+>print d
+{1: 3, 'one':1, 'two': 2}
 </pre>
 
 It is also possible to delete a key:value pair with del. If you store using a key that is already in use, the old 
@@ -482,6 +485,8 @@ value associated with that key is forgotten. It is an error to extract a value u
 
 <pre>
 >del d[1]
+>print d
+>{'one':1, 'two': 2}
 </pre>
 
 <h5>LIST</h5>
