@@ -1,9 +1,34 @@
+;----------------------------------------------------------------
 ; admiral floppy functions
 ;  void format(void)
 ;  item dir(void)
 ;  item load(filename)
 ;  void save(filename, item)
 ;  void del(filename)
+;  void read(sector)
+;  void write(sector)
+;----------------------------------------------------------------
+; SECTOR 0: MBR
+; 
+; SECTOR 0 always contains the following 4 words.
+; 
+; 0x0000 MBR_FREE_HEAD  The first sector in free-sectors-list (1-1439)
+; 0x0001 MBR_FREE_TAIL  The last sector in free-sectors-list (1-1439) 
+; 0x0002 MBR_DIR_HEAD   The first sector in directory-dict (1-1439)
+; 0x0003 MBR_DIR_TAIL   The last sector in directory-dict (1-1439)
+; 
+; SECTOR 1-1439: DATA
+; 
+; 0x0000 SECTOR_NEXT    Next data sector (1-1439)
+; 0x0001-0x01ff DATA    Serialized object data
+; 
+; Serialization Format
+; 
+; 0x0001 ID    (if 0 -> no more items in graph)
+; 0x0002 TYPE
+; 0x0003 SIZE
+;        DATA
+;----------------------------------------------------------------
 
 ;----------------------------------------------------------------
 ; extern void file__format()
@@ -558,15 +583,6 @@
     set push, x
     set push, a
     
-;    set push, c
-;    jsr debug
-;    set push, b
-;    jsr debug
-;    set push, a
-;    jsr debug
-;    set push, x
-;    jsr debug
-
     set pc, floppy__item__deserialize__data
 
 :floppy__item__deserialize__known_item
@@ -726,53 +742,3 @@
     add [floppy__file__position], 1
 
     set pc, pop
-
-:debug
-    set push, 1
-    set push, 0
-    jsr preamble
-
-    set push, x
-    
-    set c, [z+10]
-    shr c, 12
-    and c, 0x000f
-    ifg c, 9
-        add c, 'A'-10
-    ifl c, 10
-        add c, '0'
-    jsr screen_add_char
-    
-    set c, [z+10]
-    shr c, 8
-    and c, 0x000f
-    ifg c, 9
-        add c, 'A'-10
-    ifl c, 10
-        add c, '0'
-    jsr screen_add_char
-    
-    set c, [z+10]
-    shr c, 4
-    and c, 0x000f
-    ifg c, 9
-        add c, 'A'-10
-    ifl c, 10
-        add c, '0'
-    jsr screen_add_char
-    
-    set c, [z+10]
-    shr c, 0
-    and c, 0x000f
-    ifg c, 9
-        add c, 'A'-10
-    ifl c, 10
-        add c, '0'
-    jsr screen_add_char
-
-    set c, ' '
-    jsr screen_add_char
-    
-    set x, pop
-
-    set pc, postamble

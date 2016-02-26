@@ -534,3 +534,37 @@
     set i, pop
     set pc, pop
 
+;----------------------------------------------------------------
+:debug
+;----------------------------------------------------------------
+    set push, 1
+    set push, 0
+    jsr preamble
+
+    set push, x
+
+    set a, 16
+:debug__loop
+    sub a, 4
+    jsr debug__char
+    ifn a, 0
+        set pc, debug_loop
+
+    set c, ' '
+    jsr screen_add_char
+    
+    set x, pop
+
+    set pc, postamble
+
+:debug__char
+    set c, [z+10]
+    shr c, a
+    and c, 0x000f
+    ifg c, 9
+        add c, 'A'-10
+    ifl c, 10
+        add c, '0'
+    jsr screen_add_char
+
+    set pc, pop
