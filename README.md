@@ -443,7 +443,46 @@ Current strings do not support escape characters or output formatting. That will
 
 <h5>DICT</h5>
 
-TODO
+Another useful data type built into Admiral is the dictionary. Dictionaries are sometimes found in other languages 
+as “associative memories” or “associative arrays”. Unlike sequences, which are indexed by a range of numbers, 
+dictionaries are indexed by keys, which can be any immutable type; strings and numbers can always be keys. Tuples 
+can not be used as keys as they can contain mutable types.
+
+It is best to think of a dictionary as an unordered set of key: value pairs, with the requirement that the keys are 
+unique (within one dictionary). A pair of braces creates an empty dictionary: {}. 
+
+<pre>
+>d = {}
+</pre>
+
+Placing a comma-separated list of key:value pairs within the braces adds initial key:value pairs to the dictionary; 
+
+<pre>
+>d = {1: 2, 'Hi': [5,4,3,2,1]}
+</pre>
+
+this is also the way dictionaries are written on output.
+
+<pre>
+>print d
+{1: 2, 'Hi': [5,4,3,2,1]}
+</pre>
+
+The main operations on a dictionary are storing a value with some key and extracting the value given the key. Admiral
+supports multiple formats to store key-value pair:
+
+<pre>
+>d[1]=3
+>d.one=1
+>d["two"]=2
+</pre>
+
+It is also possible to delete a key:value pair with del. If you store using a key that is already in use, the old 
+value associated with that key is forgotten. It is an error to extract a value using a non-existent key.
+
+<pre>
+>del d[1]
+</pre>
 
 <h5>LIST</h5>
 
@@ -686,6 +725,9 @@ HARDWARE FUNCTIONS (CAN CRASH ADMIRAL AND DCPU)
   int hwn()
   int hardware_id, int hardware_version, int manufacturer = hwq(int n)
   void hwi(int n)
+  void read(int sector)
+  void write(int sector)
+
 </pre>
 
 <h5>TYPE CONVERSION FUNCTIONS</h5>
