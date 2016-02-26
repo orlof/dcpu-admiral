@@ -606,6 +606,18 @@ reset_stmt ::=  "reset"
 routine that resets the Admiral interpreter and peripheral devices (as if it were turned off and then 
 on again). This command retains the data that is stored into global scope!
 
+<h6>run</h6>
+<pre>
+run_stmt ::=  "run" [filename [args] ]
+filename ::=  expression
+args ::= expression*
+</pre>
+
+routine that loads Admiral object serialization graph from file and executes it with given arguments. 
+if filename is omitted, "MAIN" is used. Object serialization graph can be either dict or string.
+String object is executed directly and in dict object execution start point is value associated
+with key "main".
+
 <h5>COMPOUND STATEMENTS</h5>
 
 Compound statements contain other statements; they affect or control the execution of those other 
