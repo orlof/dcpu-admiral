@@ -884,6 +884,16 @@ If or when the interrupt returns control, Admiral immediately saves the contents
 into the 0xdb78 - 0xdb7f memory range: This can be used to transfer results from the interrupt to 
 Admiral for further processing. 
 
+<h6>void read(int sector)</h6>
+
+Reads a single sector from floppy and stores it to floppy buffer (0xd980 - 0xdb7f in current build).
+This method is provided for integrating with non-Admiral floppy formats.
+
+<h6>void write(int sector)</h6>
+
+Writes a single sector to floppy from floppy buffer (0xd980 - 0xdb7f in current build).
+This method is provided for integrating with non-Admiral floppy formats.
+
 <h5>DICT API</h5>
 
 <h6>dict.create()</h6>

@@ -3253,6 +3253,38 @@
     set pc, built_in_poke_str_loop
     
 ;----------------------------------------------------------------
+:built_in_read
+;----------------------------------------------------------------
+    set b, 0
+    set pc, built_in_read_and_write
+;----------------------------------------------------------------
+:built_in_write
+;----------------------------------------------------------------
+    set b, 1
+
+:built_in_read_and_write
+    jsr built_in_params
+    ifn i, 1
+        jsr recover
+
+    ; verify that first parameter is int
+    set x, [z-1]
+    ifn [x + HANDLE_TYPE], TYPE_INT
+        jsr recover
+
+    ; push first parameter value to stack
+    set push, x
+    jsr int_to_int16
+    set push, x
+
+    ife b, 0
+        jsr floppy__sector__read
+    ife b, 1
+        jsr floppy__sector__write
+
+    set pc, postamble
+
+;----------------------------------------------------------------
 :built_in_hwn
 ;----------------------------------------------------------------
     jsr built_in_params

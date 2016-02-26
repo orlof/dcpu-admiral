@@ -339,6 +339,7 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 5, "load", built_in_load
     dat 5, "peek", built_in_peek
     dat 5, "poke", built_in_poke
+    dat 5, "read", built_in_read
     dat 5, "repr", built_in_repr
     dat 5, "save", built_in_save
     dat 5, "sort", built_in_sort
@@ -348,6 +349,7 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 6, "range", built_in_range
     dat 6, "float", built_in_float
     dat 6, "input", built_in_input
+    dat 6, "write", built_in_write
     dat 7, "cursor", built_in_cursor
     dat 7, "format", built_in_format
     dat 7, "locals", built_in_locals
