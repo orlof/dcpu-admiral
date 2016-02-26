@@ -110,9 +110,8 @@
     set [z-1], x
 
     ; if it was not str or dict -> error
-    ifn [x + HANDLE_TYPE], TYPE_DICT
-        ifn [x + HANDLE_TYPE], TYPE_STR
-            jsr recover
+    ifc [x + HANDLE_TYPE], TYPE_GROUP_RUNNABLE
+        jsr recover
 
     ; function scope
     set push, 10
@@ -1211,7 +1210,7 @@
     set pc, pop
 
 ;----------------------------------------------------------------
-; struct handle *led_assign(struct handle *left)
+; struct handle *led_is(struct handle *left)
 ;----------------------------------------------------------------
 :led_is
     set push, 1

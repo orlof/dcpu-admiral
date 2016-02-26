@@ -396,7 +396,8 @@
     set c, [a + SUBSCRIPTION_INDEX]
 
     ife [y + HANDLE_TYPE], TYPE_DICT
-        set pc, assign_subscription_dict
+        ifb [c + HANDLE_TYPE], TYPE_GROUP_IMMUTABLE
+            set pc, assign_subscription_dict
     
     ife [y + HANDLE_TYPE], TYPE_LIST
         ife [c + HANDLE_TYPE], TYPE_INT
