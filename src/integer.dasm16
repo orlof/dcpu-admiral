@@ -38,7 +38,7 @@
 
 :uint16_to_int__optimize
     set x, [sp+1]
-    mul x, 4
+    shl x, 2
     add x, INT_TABLE
     set [sp], pop
     set pc ,pop

@@ -33,15 +33,15 @@
     ; (float,float)
     ifb [a], TYPE_FLOAT
         ifb [b], TYPE_FLOAT
-            set pc, float_cmp
+            set pc, float__cmp
     ; (int,float),(bool,float)
     ifb [a], TYPE_BOOL + TYPE_INT
         ifb [b], TYPE_FLOAT
-            set pc, float_cmp__int_float
+            set pc, float__cmp__int_float
     ; (float,int),(float,bool),
     ifb [a], TYPE_FLOAT
         ifb [b], TYPE_BOOL + TYPE_INT
-            set pc, float_cmp__float_int
+            set pc, float__cmp__float_int
 
     ; (str,str),(ident,ident)
     ifb [a], TYPE_STR + TYPE_NAME
@@ -253,7 +253,11 @@
                 set pc, boolean_false
 
     ifb x, TYPE_FLOAT
-        ifb [b + FLOAT_CATEGORY], FLOAT_CATEGORY_PZERO + FLOAT_CATEGORY_NZERO
+        ife [b + FLOAT_TYPE], FLOAT_TYPE_PZERO
+            set pc, boolean_false
+
+    ifb x, TYPE_FLOAT
+        ife [b + FLOAT_TYPE], FLOAT_TYPE_NZERO
             set pc, boolean_false
 
     ifc x, TYPE_INT + TYPE_BOOL + TYPE_FLOAT
@@ -568,14 +572,14 @@
 
 :itof_left
     set push, a
-    jsr float_from_int
+    jsr float__from_int
     set [z-1], x
     set a, x
     set pc, pop
 
 :itof_right
     set push, b
-    jsr float_from_int
+    jsr float__from_int
     set [z-2], x
     set b, x
     set pc, pop
@@ -761,7 +765,7 @@
     ife [x + HANDLE_TYPE], TYPE_INT
         set y, int_to_str
     ife [x + HANDLE_TYPE], TYPE_FLOAT
-        set y, float_to_str
+        set y, float__to_str
     ifb [x + HANDLE_TYPE], TYPE_TUPLE + TYPE_LIST
         set y, list_repr
 
