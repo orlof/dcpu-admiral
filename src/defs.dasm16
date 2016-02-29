@@ -73,26 +73,11 @@
 #define EDIT_BUFFER_SIZE        0x0400
 #define HEAP_GC_TRIGGER         40
 
-#define FLOAT_MANTISSA_WORDS    2
-#define FLOAT_PRECISION            (48 * FLOAT_MANTISSA_WORDS) / 10
-; 2*16=32 bits for mantissa
-
 ;----------------------------------------------------------------
 ; CONSTANTS
 ;----------------------------------------------------------------
 #define TRUE            1
 #define FALSE           0
-
-#define FLOAT_CATEGORY_NAN        0x0000
-#define FLOAT_CATEGORY_PINF        0x0400
-#define FLOAT_CATEGORY_PNUM        0x0200
-#define FLOAT_CATEGORY_PZERO    0x0100
-#define FLOAT_CATEGORY_NINF        0x0004
-#define FLOAT_CATEGORY_NNUM        0x0002
-#define FLOAT_CATEGORY_NZERO    0x0001
-
-#define FLOAT_MASK_POSITIVE     0x0f00
-#define FLOAT_MASK_NEGATIVE     0x000f
 
 #define SCREEN_COLS     32
 #define SCREEN_ROWS     12
@@ -130,6 +115,14 @@
 #define FLOPPY__STATE__READY_WP                0x02
 #define FLOPPY__STATE__BUSY                    0x03
 
+#define FLOAT_TYPE_NAN   0x8000
+#define FLOAT_TYPE_PINF  -3
+#define FLOAT_TYPE_PNUM  -2
+#define FLOAT_TYPE_PZERO -1
+#define FLOAT_TYPE_DBZ    0
+#define FLOAT_TYPE_NZERO  1
+#define FLOAT_TYPE_NNUM   2
+#define FLOAT_TYPE_NINF   3
 ;----------------------------------------------------------------
 ; DATA STRUCTURE DEFINITIONS
 ;----------------------------------------------------------------
@@ -149,15 +142,21 @@
 #define HANDLE_NEXT     3
 
 ; struct float {
-;    uint16 category;
-;   uint16 exponent;
-;   uint16[] mantissa;
+;    uint16 size;
+;    uint16 type;
+;    uint16 exponent;
+;    uint16 mantissa high;
+;    uint16 mantissa low;
 ; }
-#define SIZEOF_FLOAT        FLOAT_PRECISION + 2
 
-#define FLOAT_CATEGORY        0
-#define FLOAT_EXPONENT        1
-#define FLOAT_MANTISSA        2
+; OFFSETS
+#define SIZEOF_FLOAT       4
+#define FLOAT_TYPE         0
+#define FLOAT_EXP          1
+#define FLOAT_HIGH         2
+#define FLOAT_LOW          3
+
+#define FLOAT_EXP_BIAS     0x8000
 
 ; struct int_value {
 ;   uint16 len;

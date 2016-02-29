@@ -18,13 +18,6 @@
     set [global_scope], x
     set [current_scope], x
 
-    set push, 20
-    set push, TYPE_LIST
-    jsr alloc
-    set [z-4], x
-    
-    set [builtin], x
-
     set push, HISTORY_SIZE+1
     set push, TYPE_LIST
     jsr array_create
@@ -32,9 +25,6 @@
 
     ; setup interpreter history
     set [history], x
-
-    ; init fpu
-    jsr float_init    
 
     set push, STR_STARTUP
     jsr print
@@ -537,10 +527,8 @@
 ;----------------------------------------------------------------
 :debug
 ;----------------------------------------------------------------
-    set push, 1
-    set push, 0
-    jsr preamble
-
+    set push, a
+    set push, c
     set push, x
 
     set a, 16
@@ -548,17 +536,19 @@
     sub a, 4
     jsr debug__char
     ifn a, 0
-        set pc, debug_loop
+        set pc, debug__loop
 
     set c, ' '
     jsr screen_add_char
-    
-    set x, pop
 
-    set pc, postamble
+    set x, pop
+    set c, pop
+    set a, pop 
+    set [sp], pop   
+    set pc, pop
 
 :debug__char
-    set c, [z+10]
+    set c, [sp+5]
     shr c, a
     and c, 0x000f
     ifg c, 9

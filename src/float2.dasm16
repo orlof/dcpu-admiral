@@ -1,0 +1,1454 @@
+; THIRD GENERATION FLOAT LIBRARY FOR ADMIRAL
+
+;----------------------------------------------------------------
+; struct handle *float_negate(struct handle *f)
+;----------------------------------------------------------------
+:float__negate
+    set push, 1
+    set push, 0
+    jsr preamble
+    
+:float__negate__abs_merge
+    set push, SIZEOF_FLOAT
+    set push, TYPE_FLOAT
+    jsr alloc
+
+    set i, [z+10]
+    set i, [i]
+
+    set a, [x]
+    set j, a
+
+    sti [j], [i]
+    sti [j], [i]
+    sti [j], [i]
+    sti [j], [i]
+
+    ; negate
+    mli [a + FLOAT_TYPE], -1
+
+    set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *float__abs(struct handle *f)
+;----------------------------------------------------------------
+:float__abs
+    set push, 1
+    set push, 0
+    jsr preamble
+    
+    ; return if positive or nan
+    set x, [z+10]
+    set y, [x]
+    ifu [y + FLOAT_TYPE], 0
+        set pc, postamble
+
+    set pc, float__negate__abs_merge
+
+;----------------------------------------------------------------
+; struct handle *float__cmp__float_int(struct handle *left, struct handle *right)
+;----------------------------------------------------------------
+:float__cmp__float_int
+    set push, 2
+    set push, 1
+    jsr preamble
+
+    set push, [z + 10]
+    jsr float__from_int
+    set [z-1], x
+
+    set push, [z + 11]
+    set push, [z - 1]
+    jsr float__cmp
+
+    set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *float_cmp__int_float(struct handle *left, struct handle *right)
+;----------------------------------------------------------------
+:float__cmp__int_float
+    set push, 2
+    set push, 1
+    jsr preamble
+
+    set push, [z + 11]
+    jsr float__from_int
+    set [z-1], x
+
+    set push, [z - 1]
+    set push, [z + 10]
+    jsr float__cmp
+
+    set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *float__cmp(struct handle *left, struct handle *right)
+;----------------------------------------------------------------
+:float__cmp
+    set push, i                 ; store registers
+    set push, j
+
+	;---------------------------------------
+    ; [sp + 4] left
+    ; [sp + 3] right
+    ; [sp + 2] rts
+    ; [sp + 1] i
+    ; [sp + 0] j
+	;---------------------------------------
+
+	set i, [sp + 4]                ; float *left
+	set i, [i]
+	set j, [sp + 3]                ; float *right
+	set j, [j]
+
+	; compare types
+    set x, 0                       ; zero return value
+
+    ifu [i + FLOAT_TYPE], [j + FLOAT_TYPE]
+        set x, 1
+
+    ifa [i + FLOAT_TYPE], [j + FLOAT_TYPE]
+        set x, -1
+
+    ifn x, 0                       ; different types?
+        set pc, float__cmp__finish 
+
+	; left.type == right.type
+
+	ifn [i + FLOAT_TYPE], FLOAT_TYPE_PNUM       ; special values?
+    	ifn [i + FLOAT_TYPE], FLOAT_TYPE_NNUM
+            set pc, float__cmp__finish 
+
+	; compare two positive or two negative numbers
+    jsr _float_cmp_abs
+
+    ; negate result if arguments are negative
+	ifa [i + FLOAT_TYPE], 0
+		mli x, -1
+
+:float__cmp__finish
+	;---------------------------------------
+	; postamble
+	;---------------------------------------
+    set j, pop
+    set i, pop
+	set [sp], pop				; cleanup right
+	set [sp], pop               ; cleanup left
+	set pc, pop
+
+
+;----------------------------------------------------------------
+; struct handle *float__add(struct handle *f1, struct handle *f2)
+;----------------------------------------------------------------
+:float__add
+    set push, 2
+    set push, 1
+    jsr preamble
+
+    set push, SIZEOF_FLOAT
+    set push, TYPE_FLOAT
+    jsr alloc
+    set [z-1], x
+
+    set i, [z + 11]          ; float *left
+    set i, [i]
+    set j, [z + 10]          ; float *right
+    set j, [j]
+
+    ;---------------------------------------
+    ; check special cases
+    ;---------------------------------------
+    set a, float__add__special_values
+    set pc, _float__special_values
+
+:float__add__num
+    ;---------------------------------------
+    ; i = clone(abs(left) >= abs(right) ? left: right)
+    ; j = abs(left) < abs(right) ? left: right
+    ;---------------------------------------
+
+    jsr _float_cmp_abs
+
+    ; i = max(left, right)
+    ; j = min(left, right)
+    ifn x, -1
+        set pc, float__add__align_exp
+
+    ; variable swap
+    xor i, j
+    xor j, i
+    xor i, j
+
+:float__add__align_exp
+    set x, [z-1]
+
+    ; calculate exponent diff
+    set c, [i + FLOAT_EXP]
+    sub c, [j + FLOAT_EXP]
+    
+    ; quick exit if j is too small
+    ifg c, 31
+        set pc, float__return_i
+
+    ; shift mantissa for calculation
+    set b, [j + FLOAT_LOW]
+    shr b, c
+
+    set a, [j + FLOAT_HIGH]
+    shr a, c
+
+    ; copy max(left, right) to result
+    set c, [x]
+    set [c + FLOAT_TYPE], [i + FLOAT_TYPE]
+    set [c + FLOAT_EXP], [i + FLOAT_EXP]
+    set [c + FLOAT_HIGH], [i + FLOAT_HIGH]
+    set [c + FLOAT_LOW], [i + FLOAT_LOW]
+
+    ; which method to use?
+    ife [i + FLOAT_TYPE], [j + FLOAT_TYPE]     ; sgn(i) == sgn(j)
+        set pc, float__add__op_add
+
+:float__add__op_sub
+    ;bor b, ex
+    
+    sub [c + FLOAT_LOW], b
+    sbx [c + FLOAT_HIGH], a
+
+    ife [c + FLOAT_LOW], 0
+        ife [c + FLOAT_HIGH], 0
+            set pc, float__return_pzero
+    
+    ; normalize result
+    jsr float__nlz32
+    
+    shl [c + FLOAT_HIGH], a
+    shl [c + FLOAT_LOW], a
+    bor [c + FLOAT_HIGH], ex
+    
+    sub [c + FLOAT_EXP], a
+    ife ex, 0
+        set pc, postamble
+        
+    set pc, float__return_zero
+
+:float__add__op_add
+    adx [c + FLOAT_LOW], b
+    adx [c + FLOAT_HIGH], a
+
+    ife [c + FLOAT_LOW], 0
+        ife [c + FLOAT_HIGH], 0
+            ife ex, 0
+                set pc, float__return_pzero
+
+    ife ex, 0                           ; no overflow?
+        set pc, postamble
+
+    ; normalize result
+    shr [c + FLOAT_LOW], 1
+    shr [c + FLOAT_HIGH], 1
+    bor [c + FLOAT_LOW], ex
+    bor [c + FLOAT_HIGH], 0x8000
+
+    add [c + FLOAT_EXP], 1
+    ife ex, 0
+        set pc, postamble
+
+    set pc, float__return_inf
+
+;----------------------------------------------------------------
+; struct handle *float__sub(struct handle *f1, struct handle *f2)
+;----------------------------------------------------------------
+:float__sub
+    set push, 2
+    set push, 1
+    jsr preamble
+
+    set push, [z+10]
+    jsr float__negate
+    set [z-1], x
+
+    set push, [z+11]
+    set push, [z-1]
+    jsr float__add
+
+    set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *float__mul(struct handle *f1, struct handle *f2)
+;----------------------------------------------------------------
+:float__mul
+    set push, 2
+    set push, 1
+    jsr preamble
+
+    set i, [z + 11]          ; float *left
+    set i, [i]
+    set j, [z + 10]          ; float *right
+    set j, [j]
+
+    sub sp, 6
+
+    ;---------------------------------------
+    ; check special cases
+    ;---------------------------------------
+    set a, float__mul__special_values
+    set pc, _float__special_values
+
+:float__mul__nnum
+    set [sp + FLOAT_TYPE], FLOAT_TYPE_NNUM
+    set pc, float__mul__num
+
+:float__mul__pnum
+    set [sp + FLOAT_TYPE], FLOAT_TYPE_PNUM
+
+:float__mul__num
+    ;---------------------------------------
+    ; calculate exponent
+    ;---------------------------------------
+    ; is all this really needed to detect overflow?
+    set a, [i + FLOAT_EXP]
+    sub a, FLOAT_EXP_BIAS           ; remove bias
+
+    set b, [j + FLOAT_EXP]
+    sub b, FLOAT_EXP_BIAS           ; remove bias
+
+    set c, a                        ; calculate sum to c
+    add c, b
+     
+    xor a, c                        ; does arg1.exp and result.exp have different sign
+    xor b, c                        ; does arg2.exp and result.exp have different sign
+    and a, b                        ; both operands have different sign than sum
+
+    ; value for overflow exit
+    set b, float__return_inf        ; assume overflow as default 
+    ifl [i + FLOAT_EXP], FLOAT_EXP_BIAS ; ...unless exp<0 then assume underflow
+        set b, float__return_zero
+
+    ifb a, 0x8000                   ; finally test overflow
+      set pc, b                     ; and act accordingly
+
+    add c, FLOAT_EXP_BIAS + 1       ; restore bias
+    set [sp + FLOAT_EXP], c         ; set exponent
+
+    ;---------------------------------------
+    ; calculate mantissa
+    ;---------------------------------------
+    set [sp + FLOAT_LOW + 2], [j + FLOAT_LOW]
+    mul [sp + FLOAT_LOW + 2], [i + FLOAT_LOW]
+
+    set [sp + FLOAT_LOW + 1], ex
+    
+    set a, [i + FLOAT_HIGH]
+    mul a, [j + FLOAT_LOW]
+    set [sp + FLOAT_LOW], ex
+    add [sp + FLOAT_LOW + 1], a
+    add [sp + FLOAT_LOW], ex
+
+    set a, [i + FLOAT_LOW]
+    mul a, [j + FLOAT_HIGH]
+    add [sp + FLOAT_LOW], ex
+    set [sp + FLOAT_HIGH], ex
+    add [sp + FLOAT_LOW + 1], a
+    add [sp + FLOAT_LOW], ex
+    add [sp + FLOAT_HIGH], ex
+    
+    set a, [i + FLOAT_HIGH]
+    mul a, [j + FLOAT_HIGH]
+    add [sp + FLOAT_HIGH], ex
+    add [sp + FLOAT_LOW], a
+    add [sp + FLOAT_HIGH], ex
+
+    ;---------------------------------------
+    ; normalize result
+    ;---------------------------------------
+    ifb [sp + FLOAT_HIGH], 0x8000
+        set pc, float__mul__no_normalize
+
+    shl [sp + FLOAT_HIGH], 1
+    shl [sp + FLOAT_LOW], 1
+    bor [sp + FLOAT_HIGH], ex
+    ifb [sp + FLOAT_LOW + 1], 0x8000
+        bor [sp + FLOAT_LOW], 0x0001
+
+    sub [sp + FLOAT_EXP], 1
+    
+:float__mul__no_normalize
+    set push, SIZEOF_FLOAT
+    set push, TYPE_FLOAT
+    jsr alloc
+
+    set i, sp
+    set pc, float__return_i
+
+;----------------------------------------------------------------
+; struct handle *float__div(struct handle *f1, struct handle *f2)
+;----------------------------------------------------------------
+:float__div
+    set push, 2
+    set push, 3
+    jsr preamble
+
+    set i, [z + 11]          ; float *left
+    set i, [i]
+    set j, [z + 10]          ; float *right
+    set j, [j]
+
+    set push, i
+    jsr rintti
+
+    set push, j
+    jsr rintti
+
+    ; copy divident mantissa to stack
+    set push, [i + FLOAT_LOW]
+    set push, [i + FLOAT_HIGH]
+    
+    ; allocate space for quotient
+    sub sp, 4
+
+    ; [sp + 5] divident.low
+    ; [sp + 4] divident.high
+    ; [sp + 3] quotient.low
+    ; [sp + 2] quotient.high
+    ; [sp + 1] quotient.exp
+    ; [sp + 0] quotient.type
+
+    ; check special cases
+    set a, float__div__special_values
+    set pc, _float__special_values
+
+    ;---------------------------------------
+:float__div__nnum
+    set [sp + FLOAT_TYPE], FLOAT_TYPE_NNUM
+    set pc, float__div__num
+
+:float__div__pnum
+    set [sp + FLOAT_TYPE], FLOAT_TYPE_PNUM
+
+:float__div__num
+    ;---------------------------------------
+    ; calculate exponent
+    ;---------------------------------------
+    ; is all this really needed to detect overflow?
+    set a, [i + FLOAT_EXP]          ; divident exponent
+    sub a, FLOAT_EXP_BIAS           ; remove bias
+
+    set b, [j + FLOAT_EXP]          ; divisor exponent
+    sub b, FLOAT_EXP_BIAS           ; remove bias
+
+    set c, a                        ; quotient.exp = divident.exp - divisor.exp
+    sub c, b
+     
+    ; signed arithmetic overflow test
+    ; c = a + b -> "((a ^ c) & (b ^ c)) < 0"
+    xor a, c                        ; does arg1.exp and result.exp have different sign
+    xor b, c                        ; does arg2.exp and result.exp have different sign
+    and a, b                        ; both operands have different sign than sum
+
+    ; value for overflow exit
+    set b, float__return_inf        ; assume overflow as default 
+    ifl [i + FLOAT_EXP], FLOAT_EXP_BIAS ; ...unless exp<0 then assume underflow
+        set b, float__return_zero
+
+    ifb a, 0x8000                   ; test overflow
+      set pc, b                     ; ...and return
+
+    add c, FLOAT_EXP_BIAS           ; restore bias
+    set [sp + FLOAT_EXP], c         ; set exponent
+
+    ; [sp + 5] divident.low
+    ; [sp + 4] divident.high
+    ; [sp + 0] quotient
+    ; [j]      divisor
+    ; a        current quotient word
+    ; b        temp
+    ; c        current quotient word number
+
+    set a, 1 ; set sentinel
+    set c, 0 ; current word number
+
+:float__div__cmp
+    ; see if divisor can be subtracted from divident
+    ; b=1 can, b=0 cannot
+    set b, 1
+
+    ife [sp + 4], [j + FLOAT_HIGH]
+        ifl [sp + 5], [j + FLOAT_LOW]
+            set b, 0
+    
+    ifl [sp + 4], [j + FLOAT_HIGH]
+        set b, 0
+
+:float__div__next_bit
+    ; shift quotient
+    shl a, 1
+    bor a, b
+
+    ife 0, ex                       ; no sentinel out
+        set pc, float__div__no_word
+
+    ifn c, 0                        ; all words completed?
+        set pc, float__div__normalize
+
+    set c, 1
+    set [sp + FLOAT_HIGH], a        ; store high word
+    set a, 1                        ; restart sentinel
+
+:float__div__no_word
+    ife b, 0                        ; do subtract if possible
+        set pc, float__div__shift_divident
+
+    ; subtract
+    sub [sp + 5], [j + FLOAT_LOW]
+    sbx [sp + 4], [j + FLOAT_HIGH]
+
+:float__div__shift_divident
+    shl [sp + 4], 1
+    set b, ex
+    shl [sp + 5], 1
+    bor [sp + 4], ex
+
+    ife b, 1
+        set pc, float__div__next_bit
+
+;   optional optimization
+;   ifc [sp + 4], 0x8000
+;       set pc, float__div__next_bit
+
+    set pc, float__div__cmp     
+
+:float__div__normalize
+    set [sp + FLOAT_LOW], a
+
+    set c, sp
+    jsr float__nlz32
+    
+    shl [c + FLOAT_HIGH], a
+    shl [c + FLOAT_LOW], a
+    bor [c + FLOAT_HIGH], ex
+    
+    sub [c + FLOAT_EXP], a
+
+    set x, sp
+    ifn ex, 0
+        set pc, float__return_zero
+        
+    set push, SIZEOF_FLOAT
+    set push, TYPE_FLOAT
+    jsr alloc
+
+    set i, sp
+
+    set push, i
+    jsr rintti
+
+    set pc, float__return_i
+
+;----------------------------------------------------------------
+; struct handle *float__from_int(struct handle *int)
+;----------------------------------------------------------------
+:float__from_int
+    set push, 1
+    set push, 2
+    jsr preamble
+
+    ;---------------------------------------
+    ; shortcut if int is 0
+    ;---------------------------------------
+    set a, [z+10]
+    set a, [a]
+
+    ife [a], 1
+        ife [a+1], 0
+            set pc, float__return_pzero
+
+    ;---------------------------------------
+    ; abs(int)
+    ;---------------------------------------
+    set push, [z+10]
+    jsr int_abs
+    set [z-2], x
+    set i, x
+
+    ;---------------------------------------
+    ; reserve space for new float
+    ;---------------------------------------
+    set push, SIZEOF_FLOAT
+    set push, TYPE_FLOAT
+    jsr alloc
+    set [z-1], x
+    set j, x
+
+    ;---------------------------------------
+    ; get value pointers
+    ;---------------------------------------
+    set i, [i]
+    set j, [j]
+
+    ;---------------------------------------
+    ; set sign
+    ;---------------------------------------
+    set [j + FLOAT_TYPE], FLOAT_TYPE_PNUM
+    ifn [z+10], [z-2]
+        set [j + FLOAT_TYPE], FLOAT_TYPE_NNUM
+        
+    ;---------------------------------------
+    ; calculate exp
+    ;---------------------------------------
+    set c, [i]          ; int size
+
+    ; every word of int contributes 16 bits for exp
+    shl c, 4            ; x16
+    add c, 0x7fff
+
+    ; get amount of bit shifting for normalization
+    set b, [i+1]     ; msw
+    jsr float__nlz16
+
+    ; calculate final exp
+    sub c, a
+    set [j + FLOAT_EXP], c
+
+    ;---------------------------------------
+    ; shift mantissa 22 cycles
+    ;---------------------------------------
+    set [j + FLOAT_HIGH], [i + INT_DATA]
+    shl [j + FLOAT_HIGH], a
+
+    set [j + FLOAT_LOW], 0
+    ifg [i], 1
+        set [j + FLOAT_LOW], [i + INT_DATA + 1]
+
+    shl [j + FLOAT_LOW], a
+    bor [j + FLOAT_HIGH], ex
+
+    set b, 0
+    ifg [i], 2
+        set b, [i + INT_DATA + 2]
+
+    shl b, a
+    bor [j + FLOAT_LOW], ex
+
+    set x, [z-1]
+    set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *float__to_int(struct handle *f)
+;----------------------------------------------------------------
+:float__to_int
+    set push, 1
+    set push, 1
+    jsr preamble
+
+    ;---------------------------------------
+    ; special cases
+    ;---------------------------------------
+    set y, [z+10]                ; struct handle *float
+    set y, [y]                    ; struct float *
+
+    ife [y + FLOAT_TYPE], FLOAT_TYPE_NAN
+        jsr recover
+        ; :ERROR_DEF: cannot convert NaN to integer
+    ife [y + FLOAT_TYPE], FLOAT_TYPE_PINF
+        jsr recover
+        ; :ERROR_DEF: cannot convert Inf to integer
+    ife [y + FLOAT_TYPE], FLOAT_TYPE_NINF
+        jsr recover
+        ; :ERROR_DEF: cannot convert -Inf to integer
+
+    set x, INT_0
+    ife [y + FLOAT_TYPE], FLOAT_TYPE_PZERO
+        set pc, postamble
+    ife [y + FLOAT_TYPE], FLOAT_TYPE_NZERO
+        set pc, postamble        ; -0 is just 0
+
+    set a, [y + FLOAT_EXP]       ; a = float.exp
+    ifg 0x8000, a                ; if float < 1
+        set pc, postamble        ;   return 0
+
+    ;---------------------------------------
+    ; calculate space requirement for int
+    ;---------------------------------------
+    sub a, 0x8000
+    shr a, 4                    ; div a by 16
+    add a, 1                    ; a = number of words required for int representation
+
+    ;---------------------------------------
+    ; allocate space for int
+    ;---------------------------------------
+    set push, a
+    set push, TYPE_INT
+    jsr array_create
+    set [z-1], x
+
+    ;---------------------------------------
+    ; get value pointers
+    ;---------------------------------------
+    set i, [z+10]
+    set i, [i]
+
+    set j, [x]
+
+    ;---------------------------------------
+    ; calculate amount of bit shifting
+    ;---------------------------------------
+    set b, a                    ; b = amount of bit shifting required
+    shl b, 4                    ; mul a, 16
+    add b, 0x7fff
+    sub b, [i + FLOAT_EXP]      ; shift amount
+
+    set [j + INT_DATA], [i + FLOAT_HIGH]
+    shr [j + INT_DATA], b
+
+    ife [j], 1
+        set pc, float__to_int__finish
+ 
+    set y, ex
+    set [j + INT_DATA + 1], [i + FLOAT_LOW]
+    shr [j + INT_DATA + 1], b
+    bor [j + INT_DATA + 1], y
+
+:float__to_int__finish
+    ifu [i], 0
+        set pc, postamble
+        
+    set push, x
+    jsr int_negate
+    
+    set pc, postamble
+
+;----------------------------------------------------------------
+; uint float__to_uint(struct handle *float)
+;----------------------------------------------------------------
+:float__to_uint
+    set push, 1
+    set push, 1
+    jsr preamble
+
+    set push, [z+10]
+    jsr float__to_int
+    set [z-1], x
+    
+    set push, x
+    jsr int_to_int16    ;int_to_uint
+    
+    set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *float__from_uint(uint i)
+;----------------------------------------------------------------
+:float__from_uint
+    set push, 1
+    set push, 1
+    jsr preamble
+    
+    set push, [z+10]
+    jsr uint16_to_int    ;int_from_uint
+    set [z-1], x
+    
+    set push, [z-1]
+    jsr float__from_int
+    
+    set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *float__random(struct handle *min, struct handle *max)
+;----------------------------------------------------------------
+:float__random
+    set push, 2
+    set push, 2
+    jsr preamble
+    
+    set push, SIZEOF_FLOAT
+    set push, TYPE_FLOAT
+    jsr alloc
+    set [z-1], x
+
+    set i, [x]
+    set [i + FLOAT_TYPE], FLOAT_TYPE_PNUM
+    set [i + FLOAT_EXP], 0x8000
+
+    jsr int_rnd_lfsr
+    bor x, 0x8000
+    set [i + FLOAT_HIGH], x
+
+    jsr int_rnd_lfsr
+    set [i + FLOAT_LOW], x
+
+    ; transpose 1.0-2.0 to 0.0-1.0    
+    set push, [z-1]
+    set push, FLOAT_1
+    jsr float__sub
+    set [z-1], x
+
+    ; scaling factor
+    set push, [z+10]
+    set push, [z+11]
+    jsr float__sub
+    set [z-2], x
+
+    ; scale
+    set push, [z-1]
+    set push, [z-2]
+    jsr float__mul
+    set [z-1], x
+
+    ; transpose
+    set push, [z-1]
+    set push, [z+11]
+    jsr float__add
+
+    set pc, postamble
+
+;----------------------------------------------------------------
+; uint float__pow(struct handle *float, struct handle *int)
+;----------------------------------------------------------------
+:float__pow
+    set push, 2
+    set push, 2
+    jsr preamble
+
+    set a, TRUE        ; positive
+
+    set push, [z+10]
+    jsr int_to_int16
+    set c, x
+
+    set x, FLOAT_1
+    ife c, 0
+        set pc, postamble
+
+    ifc c, 0x8000
+        set pc, float__pow__calc
+
+    xor c, 0xffff
+    add c, 1
+    set a, FALSE
+
+:float__pow__calc
+    set [z-1], [z+11]             ; p
+    set [z-2], FLOAT_1            ; r
+    
+:float__pow__loop
+    ife c, 0
+        set pc, float__pow__break
+
+    ifc c, 1
+        set pc, float__pow__skip
+        
+    set push, [z-2]
+    set push, [z-1]
+    jsr float__mul
+    set [z-2], x
+    
+:float__pow__skip
+    set push, [z-1]
+    set push, [z-1]
+    jsr float__mul
+    set [z-1], x
+
+    shr c, 1                ; c / 2
+    set pc, float__pow__loop
+
+:float__pow__break
+    set x, [z-2]
+
+    ife a, TRUE
+        set pc, postamble    
+
+    set push, FLOAT_1
+    set push, x
+    jsr float__div
+
+    set pc, postamble    
+
+;----------------------------------------------------------------
+; struct handle *float__from_str(struct handle *str)
+;----------------------------------------------------------------
+#define FP_STATE_START            1
+#define FP_STATE_SIGN            2
+#define FP_STATE_DIGIT_WHOLE    4
+#define FP_STATE_DECIMAL_POINT    8
+#define FP_STATE_DIGIT_DECIMAL    16
+#define FP_STATE_E                32
+#define FP_STATE_EXPONENT_SIGN    64
+#define FP_STATE_EXPONENT_DIGIT    128
+
+#define FPV_EXPONENT_NEGATIVE    -2
+#define FPV_EXPONENT            -3
+#define FPV_EXPONENT_MODIFIER    -4
+#define FPV_STATE                -5
+
+:float__from_str
+    set push, 1            ; sizeof(args)
+    set push, 1            ; sizeof(refs)
+    jsr preamble
+
+    set a, [z+10]        ; struct handle *str
+
+    ;---------------------------------------
+    ; handle nan and infinities
+    ;---------------------------------------
+    set b, [a]            ; struct string *
+    set c, [b]            ; str.len
+    
+    ifg c, 2
+        ife [b+1], 'i'
+            ife [b+2], 'n'
+                ife [b+3], 'f'
+                    set pc, float__return_pinf
+
+    ifg c, 2
+        ife [b+1], 'n'
+            ife [b+2], 'a'
+                ife [b+3], 'n'
+                    set pc, float__return_nan
+
+    ifg c, 3
+        ife [b+1], '-'
+            ife [b+2], 'i'
+                ife [b+3], 'n'
+                    ife [b+4], 'f'
+                        set pc, float__return_ninf                
+
+    ifg c, 3
+        ife [b+1], '+'
+            ife [b+2], 'i'
+                ife [b+3], 'n'
+                    ife [b+4], 'f'
+                        set pc, float__return_pinf
+
+    ;---------------------------------------
+    ; handle numbers
+    ;---------------------------------------
+    set [z-1], FLOAT_0
+
+    set push, FALSE                ; FPV_EXPONENT_NEGATIVE
+    set push, 0                    ; FPV_EXPONENT
+    set push, 0                    ; FPV_EXPONENT_MODIFIER
+    set push, FP_STATE_START    ; FPV_STATE
+
+    set b, 0                    ; index in str
+
+:ffs_loop
+    jsr array__get
+    add b, 1
+    set c, x
+
+    ife c, '+'
+        set pc, ffs_plus
+    ife c, '-'
+        set pc, ffs_minus
+    ife c, 'e'
+        set pc, ffs_exponent
+    ife c, 'E'
+        set pc, ffs_exponent
+    ife c, '.'
+        set pc, ffs_decimal_point
+
+    ifg c, '9'                        ; not a number?
+        set pc, ffs_end
+    ifl c, '0'                        ; not a number?
+        set pc, ffs_end
+
+    sub c, '0'                        ; convert char to int
+
+    ifb [z + FPV_STATE], FP_STATE_E + FP_STATE_EXPONENT_SIGN
+        set pc, ffs_exponent_number
+    ifb [z + FPV_STATE], FP_STATE_DIGIT_DECIMAL + FP_STATE_DECIMAL_POINT    ; if in fraction part
+        set pc, ffs_fraction
+    ifb [z + FPV_STATE], FP_STATE_START + FP_STATE_SIGN + FP_STATE_DIGIT_WHOLE    ; if in whole number part
+        set pc, ffs_whole_number
+
+    set pc, ffs_end                ; wrong state for a number
+
+:ffs_fraction
+    ; parse digit to fraction
+    set [z + FPV_STATE], FP_STATE_DIGIT_DECIMAL                        ; set state
+    
+;    ife [z + FPV_NUM_SIGNIFICANTS], 5        ; ignore non-significant decimals 
+;        set pc, ffs_loop
+    
+    sub [z + FPV_EXPONENT_MODIFIER], 1
+    set pc, ffs_add_significant
+
+:ffs_whole_number
+    set [z + FPV_STATE], FP_STATE_DIGIT_WHOLE                            ; set state
+
+    ; ignore leading zeros
+;    ife c, 0                                    ; curchar = '0'
+;        ife [z + FPV_NUM_SIGNIFICANTS], 0
+;            set pc, ffs_loop
+
+;    ife [z + FPV_NUM_SIGNIFICANTS], 5
+;        set pc, ffs_significant_full
+
+:ffs_add_significant
+    set push, [z-1]
+    set push, FLOAT_10
+    jsr float__mul
+    set [z-1], x
+
+    set push, [z-1]
+    set push, [FLOAT_TABLE + c]
+    jsr float__add
+    set [z-1], x
+
+    set pc, ffs_loop
+
+:ffs_exponent_number
+    set [z + FPV_STATE], FP_STATE_EXPONENT_DIGIT    ; set state
+
+    mul [z + FPV_EXPONENT], 10
+    ifn ex, 0
+        set pc, ffs_overflow
+        
+    add [z + FPV_EXPONENT], c
+    ifn ex, 0
+        set pc, ffs_overflow
+
+    set pc, ffs_loop
+
+:ffs_overflow
+    set x, [z-1]
+    ife [z + FPV_EXPONENT_NEGATIVE], TRUE
+        set pc, float__return_zero
+    set pc, float__return_inf
+
+:ffs_minus
+    ifb [z + FPV_STATE], FP_STATE_START
+        set pc, ffs_mantissa_minus
+    ifb [z + FPV_STATE], FP_STATE_E
+        set pc, ffs_exponent_minus
+    set pc, ffs_end
+:ffs_mantissa_minus
+    ; handle leading minus
+    set [z + FPV_STATE], FP_STATE_SIGN
+    
+    set push, [z-1]
+    jsr float__negate
+    set [z-1], x
+
+    set pc, ffs_loop
+:ffs_exponent_minus
+    set [z + FPV_STATE], FP_STATE_EXPONENT_SIGN
+    set [z + FPV_EXPONENT_NEGATIVE], TRUE
+    set pc, ffs_loop
+    
+:ffs_plus
+    ifb [z + FPV_STATE], FP_STATE_START
+        set [z + FPV_STATE], FP_STATE_SIGN
+    ifb [z + FPV_STATE], FP_STATE_E
+        set [z + FPV_STATE], FP_STATE_EXPONENT_SIGN
+    set pc, ffs_end
+    
+:ffs_decimal_point
+    ifc [z + FPV_STATE], FP_STATE_START + FP_STATE_SIGN + FP_STATE_DIGIT_WHOLE
+        set pc, ffs_end
+
+    set [z + FPV_STATE], FP_STATE_DECIMAL_POINT
+    set pc, ffs_loop
+    
+:ffs_exponent
+    ifc [z + FPV_STATE], FP_STATE_START + FP_STATE_SIGN + FP_STATE_DIGIT_WHOLE + FP_STATE_DIGIT_DECIMAL
+        set pc, ffs_end
+    set [z + FPV_STATE], FP_STATE_E
+    set pc, ffs_loop
+
+:ffs_end
+    ifb [z + FPV_STATE], FP_STATE_START + FP_STATE_SIGN + FP_STATE_E + FP_STATE_EXPONENT_SIGN
+        jsr recover
+        ; :ERROR_DEF: invalid number format
+
+    set ex, 0
+    ife [z + FPV_EXPONENT_NEGATIVE], FALSE
+        add [z + FPV_EXPONENT], 0x8000
+
+    ifn ex, 0
+        set pc, ffs_overflow
+
+    add [z + FPV_EXPONENT], [z + FPV_EXPONENT_MODIFIER]
+    ifb [z + FPV_EXPONENT_MODIFIER], 0x8000
+        ife ex, 0
+            set pc, ffs_overflow
+    ifc [z + FPV_EXPONENT_MODIFIER], 0x8000
+        ifn ex, 0
+            set pc, ffs_overflow
+    
+    set x, [z-1]
+
+    set a, float__mul
+    set b, -1
+    ifg [z + FPV_EXPONENT], 0x8000
+        set pc, ffs_scale_loop
+        
+    set a, float__div
+    set b, 1
+
+:ffs_scale_loop
+    ife [z + FPV_EXPONENT], 0x8000
+        set pc, postamble
+
+    set push, x
+    set push, FLOAT_10
+    jsr a
+    set [z-1], x
+
+    add [z + FPV_EXPONENT], b
+    set pc, ffs_scale_loop
+
+:rintti
+    set push, x
+    set x, [sp+2]
+    set push, [x]
+    jsr debug
+    set push, [x+1]
+    jsr debug
+    set push, [x+2]
+    jsr debug
+    set push, [x+3]
+    jsr debug
+    set x, pop
+    set [sp], pop
+    set pc, pop
+
+;----------------------------------------------------------------
+; struct handle *float__to_str(struct handle *f)
+;----------------------------------------------------------------
+:float__to_str
+    set push, 1            ; number of arguments
+    set push, 2            ; amount of local variable space
+    jsr preamble
+
+    set i, [z+10]
+    set i, [i]
+
+    set x, 0
+    ife [i + FLOAT_TYPE], FLOAT_TYPE_NAN
+        set x, STR_NAN
+    ife [i + FLOAT_TYPE], FLOAT_TYPE_PINF
+        set x, STR_PINF
+    ife [i + FLOAT_TYPE], FLOAT_TYPE_NINF
+        set x, STR_NINF
+    ife [i + FLOAT_TYPE], FLOAT_TYPE_NZERO
+        set x, STR_NZERO
+    ife [i + FLOAT_TYPE], FLOAT_TYPE_PZERO
+        set x, STR_PZERO
+    ifn x, 0
+        set pc, postamble
+
+    set push, 13
+    set push, TYPE_STR
+    jsr alloc
+    set [z-1], x
+
+    set push, [z+10]
+    jsr float__abs
+    set [z-2], x
+
+    set a, 1        ; a: magnitude
+    set b, 0        ; b: significants
+    
+    ife [z+10], [z-2]
+        set pc, fts_scale_down
+
+    set push, [z-1]
+    set push, '-'
+    jsr array__append
+    
+:fts_scale_down
+    set push, [z-2]
+    set push, FLOAT_10
+    jsr float__cmp
+
+    ife x, -1
+        set pc, fts_print
+
+    set push, [z-2]
+    set push, FLOAT_10
+    jsr float__div
+    set [z-2], x
+    
+    add a, 1
+    set pc, fts_scale_down
+
+:fts_print
+    set push, [z-2]
+    jsr float__to_uint
+
+    set c, x
+    add x, '0'            ; change number to character
+
+    set push, [z-1]        ; add character to string
+    set push, x
+    jsr array__append
+
+    set push, [z-2]
+    set push, [FLOAT_TABLE + c]
+    jsr float__sub
+    set [z-2], x
+
+;    ife [MASK+i], MASK_ZERO
+;        set pc, ftoa_fill_with_zero
+
+    bor c, b
+    ife c, 0
+        set pc, fts_scale_up
+
+    add b, 1
+    ife b, 9
+        set pc, fts_fill_with_zero
+
+:fts_scale_up
+    set push, [z-2]
+    set push, FLOAT_10
+    jsr float__mul
+    set [z-2], x
+    
+    sub a, 1
+    ifn a, 0
+        set pc, fts_print
+
+    set push, [z-1]        ; add character to string
+    set push, '.'
+    jsr array__append
+    
+    set pc, fts_print
+
+:fts_fill_with_zero
+    sub a, 1
+    ife a, 0
+        set pc, fts_finish
+    ifb a, 0x8000
+        set pc, fts_finish
+        
+    set push, [z-1]        ; add character to string
+    set push, '0'
+    jsr array__append
+    
+    set pc, fts_fill_with_zero
+
+:fts_finish
+    set x, [z-1]
+    set pc, postamble
+
+;----------------------------------------------------------------
+:float__nlz32
+; fastcall
+;  c: float *f
+; return
+;  a: number of leading zeroes
+;  b: garbage
+; cycles: 43
+;----------------------------------------------------------------
+    set a, 0
+    set b, [c + FLOAT_HIGH]
+    ifn b, 0
+        set pc, _float__nlz16
+
+    set a, 16
+    set b, [c + FLOAT_LOW]
+    set pc, _float__nlz16
+
+;----------------------------------------------------------------
+:float__nlz16
+; fastcall
+;  b: input word
+; return
+;  a: number of leading zeroes
+;  b: garbage
+; cycles: 43
+;----------------------------------------------------------------
+    set a, 0
+    ifn b, 0
+        set pc, _float__nlz16
+    set a, 16
+    set pc, pop
+
+:_float__nlz16
+    ifb b, 0xff00
+        set pc, float__nlz8
+
+    add a, 8
+    shl b, 8
+    
+:float__nlz8
+    ifb b, 0xf000
+        set pc, float__nlz4
+
+    add a, 4
+    shl b, 4
+
+:float__nlz4
+    ifb b, 0xc000
+        set pc, float__nlz2
+
+    add a, 2
+    shl b, 2
+
+:float__nlz2
+    ifb b, 0x8000
+        set pc, pop
+
+    add a, 1
+
+    ifb b, 0x4000
+        set pc, pop
+    
+    set a, 32
+    set pc, pop
+
+;----------------------------------------------------------------
+:_float_cmp_abs
+; fastcall
+;  i: *left  [size, type, exp, high, low]
+;  j: *right [size, type, exp, high, low]
+; return
+;  x: 
+;    1 if abs(left) > abs(right)
+;    0 if abs(left) == abs(right)
+;   -1 if abs(left) < abs(right)
+; cycles: 26
+;----------------------------------------------------------------
+    set x, 0
+
+    ; compare low
+	ifg [i + FLOAT_LOW], [j + FLOAT_LOW]
+        set x, 1
+	ifl [i + FLOAT_LOW], [j + FLOAT_LOW]
+        set x, -1
+
+    ; compare high
+	ifg [i + FLOAT_HIGH], [j + FLOAT_HIGH]
+        set x, 1
+	ifl [i + FLOAT_HIGH], [j + FLOAT_HIGH]
+        set x, -1
+
+    ; compare exp
+	ifg [i + FLOAT_EXP], [j + FLOAT_EXP]
+        set x, 1
+	ifl [i + FLOAT_EXP], [j + FLOAT_EXP]
+        set x, -1
+
+    set pc, pop
+
+;----------------------------------------------------------------
+:_float__special_values
+; fastcall
+;   a        pointer to special value table
+;   i        float *f1
+;   j        float *f2
+; cycles: 27
+; clobbers: b
+;----------------------------------------------------------------
+    ife [i + FLOAT_TYPE], FLOAT_TYPE_NAN
+        set pc, float__return_nan
+    ife [j + FLOAT_TYPE], FLOAT_TYPE_NAN
+        set pc, float__return_nan
+
+    set b, [j + FLOAT_TYPE]
+    mli b, 6
+
+    add b, 21
+    ifa [j + FLOAT_TYPE], 0
+        sub b, 6
+    
+    add b, [i + FLOAT_TYPE]
+    ifa [i + FLOAT_TYPE], 0
+        sub b, 1
+
+    add b, a
+    ife [b], recover
+        jsr [b]
+        ; :ERROR_DEF: division by zero
+    set pc, [b]
+
+:float__add__special_values
+    ;   inf,                num,                0.0,                 -0.0,                -num,              -inf
+    dat float__return_pinf, float__return_pinf, float__return_pinf,  float__return_pinf,  float__return_pinf, float__return_nan  ; inf
+    dat float__return_pinf, float__add__num,    float__return_j,     float__return_j,     float__add__num,    float__return_ninf ; num
+    dat float__return_pinf, float__return_i,    float__return_pzero, float__return_pzero, float__return_i,    float__return_ninf ; 0.0
+    dat float__return_pinf, float__return_i,    float__return_pzero, float__return_nzero, float__return_i,    float__return_ninf ; -0.0
+    dat float__return_pinf, float__add__num,    float__return_j,     float__return_j,     float__add__num,    float__return_ninf ; -num
+    dat float__return_nan,  float__return_ninf, float__return_ninf,  float__return_ninf,  float__return_ninf, float__return_ninf ; -inf
+
+:float__mul__special_values
+    ;   inf,                num,                 0.0,                 -0.0,                -num,                -inf
+    dat float__return_pinf, float__return_pinf,  float__return_nan,   float__return_nan,   float__return_ninf,  float__return_ninf ; inf
+    dat float__return_pinf, float__mul__pnum,    float__return_pzero, float__return_nzero, float__mul__nnum,    float__return_ninf ; num
+    dat float__return_nan,  float__return_pzero, float__return_pzero, float__return_nzero, float__return_nzero, float__return_nan  ; 0.0
+    dat float__return_nan,  float__return_nzero, float__return_nzero, float__return_pzero, float__return_pzero, float__return_nan  ; -0.0
+    dat float__return_ninf, float__mul__nnum,    float__return_nzero, float__return_pzero, float__mul__pnum,    float__return_pinf ; -num
+    dat float__return_ninf, float__return_ninf,  float__return_nan,   float__return_nan,   float__return_pinf,  float__return_pinf ; -inf
+
+:float__div__special_values
+    ;   inf,                num,                 0.0,                 -0.0,                -num,                -inf
+    dat float__return_nan,  float__return_pzero, float__return_pzero, float__return_nzero, float__return_nzero, float__return_nan  ; inf
+    dat float__return_pinf, float__div__pnum,    float__return_pzero, float__return_nzero, float__div__nnum,    float__return_ninf ; num
+    dat recover,            recover,             recover,             recover,             recover,             recover            ; 0.0
+    dat recover,            recover,             recover,             recover,             recover,             recover            ; -0.0
+    dat float__return_ninf, float__div__nnum,    float__return_nzero, float__return_pzero, float__div__pnum,    float__return_pinf ; -num
+    dat float__return_nan,  float__return_nzero, float__return_nzero, float__return_pzero, float__return_pzero, float__return_nan  ; -inf
+
+;----------------------------------------------------------------
+:float__return_nan
+    set x, FLOAT_NAN
+    set pc, postamble
+;----------------------------------------------------------------
+:float__return_inf
+    set a, [x]
+    ifa [a], 0
+        set pc, float__return_ninf
+;----------------------------------------------------------------
+:float__return_pinf
+    set x, FLOAT_PINF
+    set pc, postamble
+;----------------------------------------------------------------
+:float__return_ninf
+    set x, FLOAT_NINF
+    set pc, postamble
+;----------------------------------------------------------------
+:float__return_zero
+    set a, [x]
+    ifa [a], 0
+        set pc, float__return_nzero
+;----------------------------------------------------------------
+:float__return_pzero
+    set x, FLOAT_PZERO
+    set pc, postamble
+;----------------------------------------------------------------
+:float__return_nzero
+    set x, FLOAT_NZERO
+    set pc, postamble
+;----------------------------------------------------------------
+:float__return_i
+    set j, [x]
+
+    sti [j], [i]
+    sti [j], [i]
+    sti [j], [i]
+    sti [j], [i]
+
+    set pc, postamble
+;----------------------------------------------------------------
+:float__return_j
+    set i, [x]
+
+    sti [i], [j]
+    sti [i], [j]
+    sti [i], [j]
+    sti [i], [j]
+
+    set pc, postamble
+;----------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+

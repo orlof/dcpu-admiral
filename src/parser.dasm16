@@ -850,7 +850,7 @@
     set pc, nud_generic
 
 :nud_float
-    set a, float_from_str
+    set a, float__from_str
     set pc, nud_generic
 
 :nud_int
@@ -1077,7 +1077,7 @@
     ifb [x + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
         set y, int_negate
     ife [x + HANDLE_TYPE], TYPE_FLOAT
-        set y, float_negate
+        set y, float__negate
 
     ife y, 0
         jsr recover
@@ -1489,7 +1489,7 @@
     ifc c, TYPE_GROUP_NON_INTEGER
         set y, int_add
     ife c, TYPE_FLOAT
-        set y, float_add
+        set y, float__add
     ife c, TYPE_STR
         set y, array_merge
     ife c, TYPE_LIST
@@ -1526,7 +1526,7 @@
     ifc c, TYPE_GROUP_NON_INTEGER
         set y, int_sub
     ife c, TYPE_FLOAT
-        set y, float_sub
+        set y, float__sub
 
     set pc, led_operation_tailer
 
@@ -1552,7 +1552,7 @@
     ifc c, TYPE_GROUP_NON_INTEGER
         set y, int_mul
     ife c, TYPE_FLOAT
-        set y, float_mul
+        set y, float__mul
     ife c, TYPE_STR + TYPE_INT
         set y, array_repeat
     ife c, TYPE_TUPLE + TYPE_INT
@@ -1593,7 +1593,7 @@
         
     ife [a + HANDLE_TYPE], TYPE_FLOAT
         ife [b + HANDLE_TYPE], TYPE_INT
-            set y, float_pow
+            set y, float__pow
 
     set pc, led_operation_tailer
 
@@ -1735,7 +1735,7 @@
     ifc c, TYPE_GROUP_NON_INTEGER
         set y, int_div
     ife c, TYPE_FLOAT
-        set y, float_div
+        set y, float__div
 
     set pc, led_operation_tailer
 
@@ -2653,7 +2653,7 @@
 
     set y, int_random
     ife [a + HANDLE_TYPE], TYPE_FLOAT
-        set y, float_random
+        set y, float__random
 
     set push, a
     set push, b
@@ -2675,7 +2675,7 @@
     ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
         set y, int_abs
     ifb [a + HANDLE_TYPE], TYPE_FLOAT
-        set y, float_abs
+        set y, float__abs
 
     ife y, 0
         jsr recover
@@ -2827,7 +2827,7 @@
 
 :built_in_int_float
     set push, a
-    jsr float_to_int
+    jsr float__to_int
     set pc, postamble
 
 ;----------------------------------------------------------------
@@ -2852,7 +2852,7 @@
 
 :built_in_float_int
     set push, a
-    jsr float_from_int
+    jsr float__from_int
     set pc, postamble
 
 :built_in_float_bool
@@ -2864,7 +2864,7 @@
 
 :built_in_float_string
     set push, a
-    jsr float_from_str
+    jsr float__from_str
     set pc, postamble
 
 :built_in_float_float

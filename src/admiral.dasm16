@@ -2,7 +2,7 @@
 #include "interpreter.dasm16"
 #include "data.dasm16"
 #include "parser.dasm16"
-#include "float.dasm16"
+#include "float2.dasm16"
 #include "lexer2.dasm16"
 #include "stdlib.dasm16"
 #include "memory.dasm16"
