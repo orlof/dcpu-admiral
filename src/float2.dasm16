@@ -393,12 +393,6 @@
     set j, [z + 10]          ; float *right
     set j, [j]
 
-    set push, i
-    jsr rintti
-
-    set push, j
-    jsr rintti
-
     ; copy divident mantissa to stack
     set push, [i + FLOAT_LOW]
     set push, [i + FLOAT_HIGH]
@@ -538,9 +532,6 @@
     jsr alloc
 
     set i, sp
-
-    set push, i
-    jsr rintti
 
     set pc, float__return_i
 
@@ -1096,21 +1087,6 @@
 
     add [z + FPV_EXPONENT], b
     set pc, ffs_scale_loop
-
-:rintti
-    set push, x
-    set x, [sp+2]
-    set push, [x]
-    jsr debug
-    set push, [x+1]
-    jsr debug
-    set push, [x+2]
-    jsr debug
-    set push, [x+3]
-    jsr debug
-    set x, pop
-    set [sp], pop
-    set pc, pop
 
 ;----------------------------------------------------------------
 ; struct handle *float__to_str(struct handle *f)
