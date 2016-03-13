@@ -434,18 +434,19 @@
     sub c, b
      
     ; signed arithmetic overflow test
-    ; c = a + b -> "((a ^ c) & (b ^ c)) < 0"
-    xor a, c                        ; does arg1.exp and result.exp have different sign
+    ; c = a - b -> "((a ^ b) & !(b ^ c)) < 0"
+    xor a, b                        ; does arg1.exp and arg2.exp have different sign
     xor b, c                        ; does arg2.exp and result.exp have different sign
-    and a, b                        ; both operands have different sign than sum
+    xor b, 0xffff                   ; does arg2.exp and result.exp have same sign
+    and a, b                        ; !sgn(arg1.exp, arg2.exp) and sgn(arg2.exp, result.exp)
 
     ; value for overflow exit
     set b, float__return_inf        ; assume overflow as default 
-    ifl [i + FLOAT_EXP], FLOAT_EXP_BIAS ; ...unless exp<0 then assume underflow
+    ifc c, 0x8000
         set b, float__return_zero
 
-    ifb a, 0x8000                   ; test overflow
-      set pc, b                     ; ...and return
+    ifb a, 0x8000                   ; finally test overflow
+      set pc, b                     ; and act accordingly
 
     add c, FLOAT_EXP_BIAS           ; restore bias
     set [sp + FLOAT_EXP], c         ; set exponent
