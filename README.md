@@ -119,7 +119,7 @@ Following sources were proven to be invaluable sources for information:
  - The Art of Assembly Language Programming, by Randall Hyde: http://cs.smith.edu/~thiebaut/ArtOfAssembly/artofasm.html
  - Data Structures and Algorithms with Object-Oriented Design Patterns in Java, by Bruno R. Preiss: http://www.brpreiss.com/books/opus5/html/book.html
 
-<h4>Other in-game DCPU projects</h4
+<h4>Other in-game DCPU projects</h4>
 
 There are dozens of advanced compilers that compile DCPU assembler from multitude of different source languages 
 e.g. java, c, c++, ...
