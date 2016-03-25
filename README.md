@@ -1093,11 +1093,11 @@ Admiral reserves the whole DCPU memory for its use. Memory is divided into segme
 
 <table cellpadding="1">
 <tr><th>Segment</th><th>Default size</th><th>Default location</th><th>Description</th></tr>
-<tr><td>Stack</td><td>8.192</td><td>0xe000 - 0xffff</td><td>Admiral call stack to store registers and arguments</td></tr>
-<tr><td>Video Memory</td><td>1.152</td><td>0xdb80 - 0xdfff</td><td>Video memory for LEM</td></tr>
-<tr><td>Floppy Buffer</td><td>512</td><td>0xd980 - 0xdb7f</td><td>Memory buffer used by floppy operations, default memory area for machine language subroutine calls</td></tr>
-<tr><td>Heap</td><td>39.296</td><td>0x4000 - 0xd97f</td><td>Admiral heap for variables and objects</td></tr>
-<tr><td>System</td><td>16.384</td><td>0x0000 - 0x3fff</td><td>Admiral interpreter, data and subroutines</td></tr>
+<tr><td>Stack</td><td>4.096</td><td>0xf000 - 0xffff</td><td>Admiral call stack to store registers and arguments</td></tr>
+<tr><td>Video Memory</td><td>1.152</td><td>0xeb80 - 0xefff</td><td>Video memory for LEM</td></tr>
+<tr><td>Floppy Buffer</td><td>512</td><td>0xe980 - 0xeb7f</td><td>Memory buffer used by floppy operations, default memory area for machine language subroutine calls</td></tr>
+<tr><td>Heap</td><td>46.207</td><td>0x3500 - 0xe97f</td><td>Admiral heap for variables and objects</td></tr>
+<tr><td>System</td><td>13.568</td><td>0x0000 - 0x34ff</td><td>Admiral interpreter, data and subroutines</td></tr>
 </table>
 
 The exact location and size of each segment depends on the Admiral build.
