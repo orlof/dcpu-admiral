@@ -4,6 +4,7 @@
 
 # Windows image file caches
 Thumbs.db
+.DS_Store
 
 # Folder config file
 Desktop.ini
