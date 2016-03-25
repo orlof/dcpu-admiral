@@ -498,7 +498,9 @@
     set push, i
     set push, j
 
-    set x, built_in_stmts
+    set x, built_in_stmts_high
+    ifl b, 4
+        set x, built_in_stmts_low
     jsr built_in_matcher
     
     set j, pop
