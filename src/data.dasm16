@@ -315,7 +315,7 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
 ; length+1, function_name, function_impl_ptr
 ; last line is the default if nothing matches
 ;----------------------------------------------------------------
-:built_in_functions
+:built_in_functions_2
     dat 3, "id", built_in_id
     dat 3, "rm", built_in_rm
     dat 4, "dir", built_in_dir
@@ -333,6 +333,9 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 4, "chr", built_in_chr
     dat 4, "cmp", built_in_cmp
     dat 4, "key", built_in_key
+    dat 1, led_lparen_user_defined
+
+:built_in_functions_4
     dat 5, "bool", built_in_bool
     dat 5, "call", built_in_call
     dat 5, "edit", built_in_edit
@@ -348,6 +351,9 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 5, "type", built_in_type
     dat 5, "wget", built_in_win_get
     dat 5, "wset", built_in_win_set
+    dat 1, led_lparen_user_defined
+
+:built_in_functions_5
     dat 6, "range", built_in_range
     dat 6, "float", built_in_float
     dat 6, "input", built_in_input
@@ -387,23 +393,26 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
 ; length+1, reserved word, token
 ; last line is the default if nothing matches
 ;----------------------------------------------------------------
-:built_in_stmts
+:built_in_stmts_low
     dat 3, "if", token_if
     dat 3, "or", token_or
     dat 3, "is", token_is
     dat 3, "in", token_in
-    dat 4, "cls", token_cls
     dat 4, "and", token_and
     dat 4, "not", token_not
-    dat 4, "del", token_del
     dat 4, "for", token_for
+    dat 4, "cls", token_cls
+    dat 4, "del", token_del
     dat 4, "inf", token_float
     dat 4, "nan", token_float
     dat 4, "run", token_run
-    dat 5, "true", token_true
-    dat 5, "none", token_none
+    dat 1, token_name
+
+:built_in_stmts_high
     dat 5, "elif", token_elif
     dat 5, "else", token_else
+    dat 5, "true", token_true
+    dat 5, "none", token_none
     dat 5, "pass", token_pass
     dat 6, "false", token_false
     dat 6, "print", token_print

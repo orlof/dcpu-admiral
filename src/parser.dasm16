@@ -2342,7 +2342,12 @@
     set b, [a]
     add a, 1
     
-    set x, built_in_functions
+    set x, built_in_functions_5
+    ifl b, 5
+        set x, built_in_functions_4
+    ifl b, 4
+        set x, built_in_functions_2
+
     jsr built_in_matcher
     set pc, c
 
