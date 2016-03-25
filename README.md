@@ -139,53 +139,41 @@ language *inside* DCPU.
 
 <h5>Usage</h5>
 
-Easies way to try Admiral is with Admiral-emulator:
+The latest version of Admiral release is available from github:
+
+    https://github.com/orlof/dcpu-admiral/releases
+
+The admiral.bin is the precompiled binary file that should run in emulators.
+
+However, if you only want a quick peek at the Admiral, the easies way to try it is with Admiral Emulator:
 
     https://github.com/orlof/admiral-emu/releases
-
+    
 <h5>Development</h5>
 
 All source code is available in Github:
 
     https://github.com/orlof/dcpu-admiral
 
-Latest stable release is in /beta_release -directory. If you just want to run the binary, 
-you should download admiral.bin and m35fd.bin if you want to use toolchain floppy. 
-    
-Currently toolchain is the preferred assembler-emulator package. It has no known issues.
-    
-    http://dcputoolcha.in/
+Since 0x10c collapse, most of the DCPU development tools have been abandoned. Admiral used to work with
+all the major DCPU tools e.g.
 
-Run Admiral with Toolchain dtemu
+ - DCPU toolchain
+   - http://dcputoolcha.in/
+ - Organic, Lettuce
+ - F1DE
+   - http://fasm.elasticbeanstalk.com/
 
-    dtemu admiral.bin
+Today I use my self-made assembler and debugger to run Admiral:
 
-Compile Admiral with Toolchain dtasm:
+ - dcpu-compiler
+   - https://github.com/orlof/dcpu-compiler
+   - Python 2.7, Notchian syntax
+ - dcpu-debugger
+   - https://github.com/orlof/dcpu-debugger
+   - Java 1.8, graphical ui
 
-    dtasm --binary admiral.dasm16 -o admiral.bin
-
-<h5>Other tools</h5>
-    
-Organic + Lettuce
-
-Organic assembler can also compile Admiral:
-
-    organic.exe admiral.dasm16 admiral.bin
-
-Beware, Organic compilation without --long-literals option takes about 15 minutes.
-
-You can run admiral.bin with Lettuce (SirCmpwn/Tomato), but international (non-US?) keyboard layouts don't work with
-Lettuce.
-
-F1DE
-
-F1DE (http://fasm.elasticbeanstalk.com/) is currently the only web emulator that has been tested with Admiral. 
-Admiral sources do not compile in F1DE without modifications, as F1DE requires non-Notchian label and define
-syntax.
-
-To use F1DE you should download admiral_dat.dasm16 and use it to run Admiral.
-
-NOTE: You may need to split admiral_dat.dasm16 file in two to get F1DE accept it.
+--
 
 <h4>USAGE</h4>
 
