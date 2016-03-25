@@ -119,6 +119,20 @@ Following sources were proven to be invaluable sources for information:
  - The Art of Assembly Language Programming, by Randall Hyde: http://cs.smith.edu/~thiebaut/ArtOfAssembly/artofasm.html
  - Data Structures and Algorithms with Object-Oriented Design Patterns in Java, by Bruno R. Preiss: http://www.brpreiss.com/books/opus5/html/book.html
 
+<h4>Other in-game DCPU projects</h4
+
+There are dozens of advanced compilers that compile DCPU assembler from multitude of different source languages 
+e.g. java, c, c++, ...
+
+However, these compilers run IRL and emit outside processing power to in-game universe :) That is agains the
+Admiral´s philosophy and I present here only the projects that interpret or compile some higher level
+language *inside* DCPU.
+
+ - umbibium´s CBM64 Basic: https://github.com/unbibium/dcpu-cbmbasic
+   - Amazing port of Commodore 64 BASIC and KERNAL to the DCPU-16
+ - hellige´s goforth: https://github.com/hellige/dcpu
+   - I know nothing about forth, so the DCPU role in this project is a mystery for me :)
+
 --
 
 <h4>INSTALLATION</h4>
@@ -1156,11 +1170,4 @@ PYTHON FEATURES MISSING (INCOMPLETE LIST)
  - 'yield'
  - 'try' - 'except' exception handling
  - lot of built-in functions
-
-
-OTHER DCPU LANGUAGE PROJECTS
-
-rs5s77 : goforth
-CBM64 Basic
-
 
