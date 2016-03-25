@@ -1081,36 +1081,38 @@
     set push, [z+11]
     jsr int_abs
     set [z-1], x
-    set a, [x]
 
     ; divisor = abs(divisor)
     set push, [z+10]
     jsr int_abs
     set [z-2], x
+
     set b, [x]
+
+    set a, [z-1]
+    set a, [a]
 
     ; max len
-    set c, [a]
+    set y, [a]
     ifg [b], [a]
-        set c, [b]
+        set y, [b]
 
     set push, [z-1]
-    set push, c
+    set push, y
     jsr int_extend
     set [z-1], x    ; quotient
-    set a, [x]
 
-    set push, [z-2]
-    set push, c
-    jsr int_extend
-    set [z-2], x    ; divisor
-    set b, [x]
-
-    set push, c
+    set push, y
     set push, TYPE_INT
     jsr array_create
     set [z-3], x    ; remainder
     set c, [x]
+
+    set a, [z-1]
+    set a, [a]
+
+    set b, [z-2]
+    set b, [b]
 
     ife [a], 1
         ife [b], 1
@@ -1119,6 +1121,18 @@
     ife [b], 1
         ifc [b+1], 0xff00
             set pc, division__nbit_8bit
+
+    set push, [z-2]
+    set push, y
+    jsr int_extend
+    set [z-2], x    ; divisor
+    set b, [x]
+
+    set a, [z-1]
+    set a, [a]
+
+    set c, [z-3]
+    set c, [c]
 
     ; here starts long division
     set y, [a]    ; y: bits left
