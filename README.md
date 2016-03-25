@@ -19,9 +19,9 @@
 <h6>Implementation Principles</h6>
  - "First make it work. Then make it right. Then make it fast."
  - Memory allocation targets:
-   - 40960 words for heap
-   - 8 192 words for stack
-   - 16 384 words for admiral core (including static memory buffers)
+   - 46.207 words for heap
+   - 4.096 words for stack
+   - 13.568 words for admiral core (including static memory buffers)
  - Memory is conserved by using direct one-pass interpreter
  - Pratt’s algorithm for efficient expression parsing
  - Mark and sweep garbage collector for memory conservation and detecting trash even with reference loops
