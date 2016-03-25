@@ -1,9 +1,0 @@
-#!/bin/bash
-
-cd src
-dtasm --binary -o ../../admiral-emu/src/admiral.bin admiral.dasm16
-cd ../../admiral-emu/
-ant jar
-java -jar admiral-emu.jar
-cd ../dcpu-admiral
-
