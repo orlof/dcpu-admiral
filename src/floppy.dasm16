@@ -43,6 +43,7 @@
     ;set b, FLOPPY__STATE__READY
     ifn b, FLOPPY__STATE__READY
         jsr recover
+        #doc Floppy is not ready error
     
     ;---------------------------------------
     ; initialize mbr
@@ -179,6 +180,7 @@
     
     ife x, 0
         jsr recover
+        #doc File not found error
 
     set push, x
     set push, floppy__item__read
@@ -210,6 +212,7 @@
 
     ife x, 0
         jsr recover
+        #doc File not found error
 
     ; free item
     set push, x

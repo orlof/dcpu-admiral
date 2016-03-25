@@ -98,6 +98,7 @@
     set x, pop
     ifn [lexer_token], pop
         jsr recover
+        #doc Unexpected token error
     
     set push, x
     jsr lexer_next
@@ -129,6 +130,7 @@
 
     ifg x, 127
         jsr recover
+        #doc Illegal symbol (>127) in token stream error
 
     set pc, [x + lexer_table]
 
@@ -518,8 +520,10 @@
 
     ife x, 0
         jsr recover
+        #doc Missing quotation mark error
     ife [x + lexer_table], lexer_char_newline
         jsr recover
+        #doc Missing quotation mark error
 
     ifn x, y
         set pc, lexer_literal_string_loop
@@ -598,6 +602,7 @@
 :lexer_float_finish
     ifb c, FP_STATE_START + FP_STATE_SIGN + FP_STATE_E + FP_STATE_EXPONENT_SIGN
         jsr recover
+        #doc Number format error
 
     sub b, 1
     set [lexer_end], b            ; lexer.data1    
@@ -625,4 +630,4 @@
 
 :lexer_char_whitespace
     jsr recover
-
+    #doc Unknown error in lexer

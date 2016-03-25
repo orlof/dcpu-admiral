@@ -640,13 +640,13 @@
 
     ife [y + FLOAT_TYPE], FLOAT_TYPE_NAN
         jsr recover
-        ; :ERROR_DEF: cannot convert NaN to integer
+        #doc Cannot convert NaN to integer
     ife [y + FLOAT_TYPE], FLOAT_TYPE_PINF
         jsr recover
-        ; :ERROR_DEF: cannot convert Inf to integer
+        #doc Cannot convert inf to integer
     ife [y + FLOAT_TYPE], FLOAT_TYPE_NINF
         jsr recover
-        ; :ERROR_DEF: cannot convert -Inf to integer
+        #doc Cannot convert -inf to integer
 
     set x, INT_0
     ife [y + FLOAT_TYPE], FLOAT_TYPE_PZERO
@@ -1050,7 +1050,7 @@
 :ffs_end
     ifb [z + FPV_STATE], FP_STATE_START + FP_STATE_SIGN + FP_STATE_E + FP_STATE_EXPONENT_SIGN
         jsr recover
-        ; :ERROR_DEF: invalid number format
+        #doc Invalid number format
 
     set ex, 0
     ife [z + FPV_EXPONENT_NEGATIVE], FALSE
@@ -1337,7 +1337,7 @@
     add b, a
     ife [b], recover
         jsr [b]
-        ; :ERROR_DEF: division by zero
+        #doc Division by zero error
     set pc, [b]
 
 :float__add__special_values

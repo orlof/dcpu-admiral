@@ -46,6 +46,7 @@
     set a, [z+11]        ; struct handle *list
     ifc [a + HANDLE_TYPE], TYPE_LIST
         jsr recover
+        #doc Cannot delete, not a container
 
     set push, [z+10]    ; struct handle *int
     jsr int_to_int16
