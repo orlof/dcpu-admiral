@@ -155,15 +155,18 @@ All source code is available in Github:
 
     https://github.com/orlof/dcpu-admiral
 
-Since 0x10c collapse, most of the DCPU development tools have been abandoned. Admiral used to work with
-all the major DCPU tools e.g. DCPU toolchain, Organic & Lettuce, F1DE...
+Since the collapse of 0x10c, most of the DCPU development tools have been abandoned. Admiral used to work with
+all the major tools e.g. DevCPU, DCPU toolchain, Organic & Lettuce, F1DE...
 
-Today I use my self-made assembler and debugger to run Admiral:
+Today I use my self-made assembler and debugger:
 
  - https://github.com/orlof/dcpu-compiler
    - Python 2.7, Notchian syntax
  - https://github.com/orlof/dcpu-debugger
    - Java 1.8, graphical ui
+
+Those are pretty sophisticated and field proven tools, but will lack proper releases and packaging until
+someone other than me starts using them ;)
 
 --
 
