@@ -133,6 +133,7 @@
     
     ife x, 0
         jsr recover
+        #doc Unknown variable error
         
     set push, x
     set push, [z + 10]

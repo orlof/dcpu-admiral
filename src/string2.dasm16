@@ -128,6 +128,7 @@
 
     ifn i, 0
         jsr recover
+        #doc Wrong number of arguments for str.isalpha()
 
     set i, [a]
 
@@ -157,6 +158,7 @@
 
     ifn i, 0
         jsr recover
+        #doc Wrong number of arguments for str.isdigit()
 
     set i, [a]
     
@@ -182,6 +184,7 @@
 
     ifn i, 0
         jsr recover
+        #doc Wrong number of arguments for str.lower()
 
     set push, a
     jsr array_clone
@@ -208,6 +211,7 @@
 
     ifn i, 0
         jsr recover
+        #doc Wrong number of arguments for str.upper()
 
     set push, a
     jsr array_clone
@@ -235,13 +239,16 @@
 
     ife i, 0
         jsr recover
+        #doc Wrong number of arguments for str.find()
         
     ifg i, 3
         jsr recover
+        #doc Wrong number of arguments for str.find()
 
     set x, [z-1]
     ifn [x + HANDLE_TYPE], TYPE_STR
         jsr recover
+        #doc Illegal argument type for str.find()
 
     set push, x
         
@@ -251,6 +258,7 @@
     set x, [z-2]
     ifn [x + HANDLE_TYPE], TYPE_INT
         jsr recover
+        #doc Illegal argument type for str.find()
         
     set push, x
     jsr int_to_int16
@@ -262,6 +270,7 @@
     set x, [z-3]
     ifn [x + HANDLE_TYPE], TYPE_INT
         jsr recover
+        #doc Illegal argument type for str.find()
         
     set push, x
     jsr int_to_int16
@@ -302,6 +311,7 @@
     
     ifn i, 1
         jsr recover
+        #doc Wrong number of arguments for str.startswith() or str.endswith()
     
     set b, [z-1]
     ifb [b + HANDLE_TYPE], TYPE_STR
@@ -311,6 +321,7 @@
         set pc, built_in__str_xwith__array
 
     jsr recover
+    #doc Illegal argument type for str.startswith() or str.endswith()
 
 :built_in__str_xwith__array
     set c, [b]
@@ -324,6 +335,7 @@
     set b, [i]
     ifn [b + HANDLE_TYPE], TYPE_STR
         jsr recover
+        #doc Illegal argument type for str.startswith() or str.endswith()
         
     jsr y
 
@@ -372,7 +384,8 @@
     
     ifn i, 1
         jsr recover
-    
+        #doc Wrong number of arguments for str.decrypt()
+
     set push, a
     jsr array_clone
     set [z-2], x
@@ -388,6 +401,7 @@
     
     ifn i, 1
         jsr recover
+        #doc Wrong number of arguments for str.encrypt()
     
     set push, a
     jsr array_clone
@@ -431,6 +445,7 @@
     
     ifn [b], 8
         jsr recover
+        #doc Illegal argument length for str.encrypt()
         
     add b, 1            ; key[0]
     
@@ -451,10 +466,12 @@
     jsr built_in__object_method__init
     ifn i, 2
         jsr recover
+        #doc Wrong number of arguments for str.replace()
 
     set x, [z-1]            ; search str
     ifc [x + HANDLE_TYPE], TYPE_STR
         jsr recover
+        #doc Illegal argument type for str.replace()
 
     set c, [x]
     set c, [c]
@@ -462,6 +479,7 @@
     set x, [z-2]            ; replace str
     ifc [x + HANDLE_TYPE], TYPE_STR
         jsr recover
+        #doc Illegal argument type for str.replace()
         
     set [z-3], a            ; src str
 
@@ -534,11 +552,13 @@
         set pc, built_in__str_split__ws
     ifn i, 1
         jsr recover
+        #doc Wrong number of arguments for str.split()
 
     ; str split with defined separator
     set x, [z-1]            ; sep str
     ifc [x + HANDLE_TYPE], TYPE_STR
         jsr recover
+        #doc Illegal argument type for str.split()
 
     set c, [x]
     set c, [c]                ; sep.len

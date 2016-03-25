@@ -45,6 +45,7 @@
     
     ife x, 0
         jsr recover
+        #doc Cannot set value, array index is out of bounds
     
     set [x], c
 
@@ -60,6 +61,7 @@
     
     ife x, 0
         jsr recover
+        #doc Cannot delete value, array index is out of bounds
 
     set push, i
     set push, j

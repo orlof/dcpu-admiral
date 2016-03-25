@@ -166,6 +166,7 @@
 
     ifl x, a                        ; if available space < required space
         jsr recover
+        #doc Out of memory error
 
     set pc, pop
     
@@ -191,6 +192,7 @@
     ifl j, i                    ; is it pointing to static data?
 ;        set pc, compact_loop
         jsr recover
+        #doc Internal memory handling error, dynamic reference is pointing to static data
 
     set b, i            ; calculate end pointer
     add b, [a + HANDLE_SIZE]

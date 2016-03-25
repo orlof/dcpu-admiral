@@ -24,10 +24,13 @@
     set c, [lexer_token]
     ife c, token_while
         jsr recover
+        #doc "while" was used in place of simple statement
     ife c, token_if
         jsr recover
+        #doc "if" was used in place of simple statement
     ife c, token_for
         jsr recover
+        #doc "for" was used in place of simple statement
 
     set y, [lexer_token]
     set pc, [y + PROTOTYPE_STD]
@@ -51,6 +54,7 @@
 ; These should never occur outside compund statements
 ;----------------------------------------------------------------
     jsr recover
+    #doc Illegal indent change error
 
 ;----------------------------------------------------------------
 :std_cls
@@ -96,6 +100,7 @@
     ; filename is required to be str
     ifc [x + HANDLE_TYPE], TYPE_STR
         jsr recover
+        #doc File name must be a string error
 
     set pc, std_run_load
 
@@ -112,6 +117,7 @@
     ; if it was not str or dict -> error
     ifc [x + HANDLE_TYPE], TYPE_GROUP_RUNNABLE
         jsr recover
+        #doc Illegal content type error, only string and dict are runnable
 
     ; function scope
     set push, 10
@@ -187,9 +193,11 @@
 
     ife x, 0
         jsr recover
+        #doc Missing main function
 
     ifn [x + HANDLE_TYPE], TYPE_STR
         jsr recover
+        #doc main is not callable (string)
 
 :std_run_init_lexer
     jsr lexer_init
@@ -216,6 +224,7 @@
     set a, [x]
     ifn [a + CONTROL_SIGNAL], token_return
         jsr recover            ; break and continue
+        #doc Illegal return type
 
     set push, [a + CONTROL_VALUE]
     jsr eval
@@ -334,6 +343,7 @@
     ifn [lexer_token], token_newline
         ifn [lexer_token], token_eof
             jsr recover
+            #doc break and continue must end line error
 
     jsr lexer_next                    ; advance newline or eof
 
@@ -355,6 +365,7 @@
     ifn [lexer_token], token_newline
         ifn [lexer_token], token_eof
             jsr recover
+            #doc pass must end line error
 
     set x, VOID
         set pc, postamble
@@ -451,6 +462,7 @@
         set pc, std_for_control_return
 
     jsr recover
+    #doc for loop not terminated by continue, break or return -error
 
 :std_for_control_break
     jsr lexer_restore
@@ -629,6 +641,7 @@
         set pc, std_while_control_return
 
     jsr recover
+    #doc while loop not terminated by continue, break or return -error
 
 :std_while_control_break
     jsr lexer_restore
@@ -802,6 +815,7 @@
 
     ife y, 0
         jsr recover
+        #doc Illegal list definition error
         
     jsr y
     set [z-1], x       ; struct handle *left
@@ -1081,6 +1095,7 @@
 
     ife y, 0
         jsr recover
+        #doc Only number types can be used in subtract operation
 
     set push, x
     jsr y
@@ -1109,6 +1124,7 @@
         set pc, nud_tilde_int
         
     jsr recover
+        #doc Only integer and boolean types can be used in negate operation
 
 :nud_tilde_int
     set push, x
@@ -1308,6 +1324,7 @@
         set pc, led_in_list
 
     jsr recover
+    #doc Right side of "in" is not container or string error
 
 :led_in_string
     set push, x
@@ -1959,7 +1976,8 @@
 :parse_testlist_item_assign
     ; f(a=1)
     ifn [x + HANDLE_TYPE], TYPE_NAME
-        jsr recover    
+        jsr recover
+        #doc Invalid name for function call parameter error
 
     jsr lexer_next    ; skip '='
 
@@ -1990,7 +2008,8 @@
     set [z-2], x
     
     ifn [x + HANDLE_TYPE], TYPE_STR
-        jsr recover    
+        jsr recover   
+        #doc Only strings are callable error 
 
     set push, [current_scope]
     set [current_scope], [z-1]
@@ -2022,6 +2041,7 @@
     set a, [x]
     ifn [a + CONTROL_SIGNAL], token_return
         jsr recover            ; break and continue
+        #doc Illegal exit from function (break or continue)
 
     set push, [a + CONTROL_VALUE]
     jsr eval
@@ -2054,6 +2074,7 @@
 
     ifc [x + HANDLE_TYPE], TYPE_STR + TYPE_TUPLE + TYPE_LIST
         jsr recover
+        #doc Element subscription is available only for dict, string, tuple and list 
 
     ; handle str, tuple, list
     ifn [lexer_token], token_colon
@@ -2130,8 +2151,9 @@
     jsr eval
     set [z-2], x
 
-    ifc [x + HANDLE_TYPE], TYPE_STR + TYPE_TUPLE + TYPE_INT + TYPE_BOOL + TYPE_FLOAT + TYPE_NONE
+    ifc [x + HANDLE_TYPE], TYPE_STR + TYPE_INT + TYPE_BOOL + TYPE_FLOAT + TYPE_NONE
         jsr recover
+        #doc dict key is not recursively immutable error
 
 :led_lbrack_finish
     set push, token_rbrack
@@ -2168,6 +2190,7 @@
 
     ifc [x + HANDLE_TYPE], TYPE_GROUP_CAN_REFERENCE
         jsr recover
+        #doc Illegal reference from non string, list or dict error
 
     set a, [z-1]
     set a, [a]
@@ -2177,6 +2200,7 @@
 
     ifn [lexer_token], token_name
         jsr recover
+        #doc Illegal reference name
 
     jsr lexer_get_token_as_string
 ;    set [x + HANDLE_TYPE], TYPE_STR
@@ -2340,6 +2364,7 @@
 
     ifn i, 0
         jsr recover
+        #doc Wrong number of arguments for dict constructor (>0)
 
     set push, 5
     set push, TYPE_DICT
@@ -2362,6 +2387,7 @@
 
     ifn i, 1
         jsr recover
+        #doc Wrong number of arguments for list append (1)
 
     set push, a
     set push, [z-1]
@@ -2376,6 +2402,7 @@
     jsr built_in__object_method__init
     ifn i, 2
         jsr recover
+        #doc Wrong number of arguments for list insert (2)
 
     set push, [z-1]        ; struct handle *index
     jsr int_to_int16
@@ -2394,6 +2421,7 @@
     jsr built_in_params
     ifn i, 1
         jsr recover
+        #doc Wrong number of arguments for id (1)
         
     set push, [z-1]
     jsr uint16_to_int
@@ -2407,6 +2435,7 @@
 
     ifg i, 1
         jsr recover
+        #doc Wrong number of arguments for input()
 
     set push, [z-1]
     jsr raw_input
@@ -2428,6 +2457,7 @@
 
     ife i, 0
         jsr recover
+        #doc range() needs at least one argument
 
     ifg i, 1
         set pc, built_in_range_2
@@ -2444,12 +2474,14 @@
 :built_in_range_3
     ifg i, 3
         jsr recover
+        #doc Too many arguments for range()
 
     set push, [z-1]
     bor [sp], [z-2]
     bor [sp], [z-3]
     ifc TYPE_GROUP_NON_INTEGER, pop
         jsr recover
+        #doc range() arguments are not integers error
 
     set push, [z-3]
     jsr int_sgn
@@ -2491,6 +2523,7 @@
     jsr built_in_params
     ifn i, 0
         jsr recover
+        #doc Wrong number of arguments for mem()
 
     jsr mark
     jsr compact
@@ -2515,6 +2548,7 @@
     jsr built_in_params
     ifn i, 0
         jsr recover
+        #doc Wrong number of arguments for locals()
 
     set x, [current_scope]
     set pc, postamble    
@@ -2525,6 +2559,7 @@
     jsr built_in_params
     ifn i, 0
         jsr recover
+        #doc Wrong number of arguments for globals()
 
     set x, [global_scope]
     set pc, postamble    
@@ -2535,6 +2570,7 @@
     jsr built_in_params
     ifn i, 2
         jsr recover
+        #doc Wrong number of arguments for cmp(a, b)
 
     set push, [z-1]
     set push, [z-2]
@@ -2555,10 +2591,12 @@
     jsr built_in_params
     ifn i, 1
         jsr recover
+        #doc Wrong number of arguments for chr(a)
 
     set a, [z-1]
     ifc [a + HANDLE_TYPE], TYPE_GROUP_INTEGER
         jsr recover
+        #doc Illegal parameter type for chr(), must be integer
 
     set a, [a]
     add a, [a]
@@ -2578,14 +2616,17 @@
     jsr built_in_params
     ifn i, 1
         jsr recover
+        #doc Wrong number of arguments for ord(a)
 
     set a, [z-1]
     ifn [a + HANDLE_TYPE], TYPE_STR
         jsr recover
+        #doc Illegal parameter type for ord(), must be string
 
     set a, [a]
     ifn [a], 1
         jsr recover
+        #doc ord() can only be used for single character, not strings
 
     set push, [a+1]
     jsr uint16_to_int
@@ -2598,6 +2639,7 @@
     jsr built_in_params
     ifg i, 1
         jsr recover
+        #doc Too many parameters for edit([str])
 
     set a, [z-1]
     ife i, 0
@@ -2605,6 +2647,7 @@
 
     ifn [a + HANDLE_TYPE], TYPE_STR
         jsr recover
+        #doc Illegal parameter type for edit(str)
 
     set push, a
     jsr edit_main
@@ -2632,6 +2675,7 @@
 
     ifc c, TYPE_INT + TYPE_FLOAT + TYPE_BOOL
         jsr recover
+        #doc rnd() parameter not numeric
 
     set a, INT_0
     ife c, TYPE_FLOAT
@@ -2645,8 +2689,10 @@
 
     ifc [a + HANDLE_TYPE], TYPE_FLOAT + TYPE_INT + TYPE_BOOL
         jsr recover
+        #doc rnd() parameter not numeric
     ifc [b + HANDLE_TYPE], TYPE_FLOAT + TYPE_INT + TYPE_BOOL
         jsr recover
+        #doc rnd() parameter not numeric
 
 :built_in_rnd_finish
     jsr cast_common_number_type
@@ -2667,6 +2713,7 @@
     jsr built_in_params
     ifn i, 1
         jsr recover
+        #doc Wrong number of arguments for abs(a)
 
     set a, [z-1]
 
@@ -2679,6 +2726,7 @@
 
     ife y, 0
         jsr recover
+        #doc Illegal parameter type for abc(a), must be numeric
 
     set push, a
     jsr y
@@ -2691,10 +2739,12 @@
     jsr built_in_params
     ifn i, 1
         jsr recover
+        #doc Wrong number of arguments for len(a)
 
     set a, [z-1]
     ifc [a + HANDLE_TYPE], TYPE_NAME + TYPE_STR + TYPE_TUPLE + TYPE_DICT + TYPE_LIST
         jsr recover
+        #doc Illegal parameter type for len(a)
 
     set a, [a]
 
@@ -2709,6 +2759,7 @@
     jsr built_in_params
     ifn i, 1
         jsr recover
+        #doc Illegal number of arguments for type(a)
 
     set x, [z-1]
     set push, [x + HANDLE_TYPE]
@@ -2722,6 +2773,7 @@
     jsr built_in_params
     ifn i, 0
         jsr recover
+        #doc Too many arguments for dir()
 
     jsr floppy__dir__read
 
@@ -2733,6 +2785,7 @@
     jsr built_in_params
     ifn i, 0
         jsr recover
+        #doc Too many arguments for format()
 
     jsr floppy__format
 
@@ -2745,10 +2798,12 @@
     jsr built_in_params
     ifn i, 1
         jsr recover
+        #doc Wrong number of arguments for load(str)
 
     set a, [z-1]
     ifc [a + HANDLE_TYPE], TYPE_STR
         jsr recover
+        #doc Illegal argument type for load(str)
 
     set push, a
     jsr floppy__file__read
@@ -2761,10 +2816,12 @@
     jsr built_in_params
     ifn i, 2
         jsr recover
+        #doc Wrong number of arguments for save(name, item)
 
     set a, [z-1]
     ifc [a + HANDLE_TYPE], TYPE_STR
         jsr recover
+        #doc Illegal argument type for save(name, item)
 
     set push, a
     set push, [z-2]
@@ -2779,10 +2836,12 @@
     jsr built_in_params
     ifn i, 1
         jsr recover
+        #doc Wrong number of arguments for rm(str)
 
     set a, [z-1]
     ifc [a + HANDLE_TYPE], TYPE_STR
         jsr recover
+        #doc Illegal argument type for rm(str)
 
     set push, a
     jsr floppy__file__delete
@@ -2795,6 +2854,7 @@
     jsr built_in_params
     ifn i, 1
         jsr recover
+        #doc Wrong number of arguments for int(a)
 
     set a, [z-1]
 
@@ -2808,6 +2868,7 @@
         set pc, built_in_int_float
 
     jsr recover
+    #doc Illegal argument type for int(a)
 
 :built_in_int_int
     set x, a
@@ -2836,6 +2897,7 @@
     jsr built_in_params
     ifn i, 1
         jsr recover
+        #doc Wrong number of arguments for float(a)
 
     set a, [z-1]
 
@@ -2849,6 +2911,7 @@
         set pc, built_in_float_float
 
     jsr recover
+    #doc Illegal argument type for float(a)
 
 :built_in_float_int
     set push, a
@@ -2877,6 +2940,7 @@
     jsr built_in_params
     ifn i, 1
         jsr recover
+        #doc Wrong number of arguments for repr(a)
 
     set push, [z-1]
     jsr repr
@@ -2890,11 +2954,13 @@
     jsr built_in_params
     ifn i, 1
         jsr recover
+        #doc Wrong number of arguments for hex(a)
 
     set x, [z-1]
 
     ifn [x + HANDLE_TYPE], TYPE_INT
         jsr recover
+        #doc Illegal argument type for hex(int)
 
     set push, x
     jsr int_to_hex
@@ -2907,6 +2973,7 @@
     jsr built_in_params
     ifn i, 1
         jsr recover
+        #doc Wrong number of arguments for str(a)
 
     set x, [z-1]
 
@@ -2924,6 +2991,7 @@
     jsr built_in_params
     ifn i, 1
         jsr recover
+        #doc Wrong number of arguments for bool(a)
 
     set push, [z-1]
     jsr boolean
@@ -2936,6 +3004,7 @@
     jsr built_in_params
     ifn i, 0
         jsr recover
+        #doc Wrong number of arguments for getchar()
 
 :built_in_getchar_loop
     set a, 1              ; store next key mode
@@ -2962,6 +3031,7 @@
     
     ifn i, 0
         jsr recover
+        #doc Wrong number of arguments for key()
 
     set a, 1              ; store next key mode
     hwi [keyboard]
@@ -2982,10 +3052,12 @@
         
     ifn [a + HANDLE_TYPE], TYPE_STR
         jsr recover
+        #doc Wrong argument type for key(a)
         
     set a, [a]
     ifn [a], 1
         jsr recover
+        #doc key(a) argument is string, not a char error
 
     set b, [a + 1]
     set pc, built_in_key_1_key
@@ -3021,6 +3093,7 @@
 :built_in_sort_2
     ifg i, 2
         jsr recover
+        #doc Wrong number of arguments for sort()
     
     set push, [z-1]
     set push, [z-2]
@@ -3036,6 +3109,7 @@
         set pc, built_in_cursor_coords
     ifn i, 2
         jsr recover
+        #doc Wrong number of arguments for cursor([x, y])
 
     jsr screen__get_x
     set push, x
@@ -3054,6 +3128,7 @@
     set x, [z-1]
     ifc [x + HANDLE_TYPE], TYPE_GROUP_INTEGER
         jsr recover
+        #doc Illegal argument type for cursor([x, y])
         
     set push, x
     jsr int_to_int16
@@ -3069,6 +3144,7 @@
     set x, [z-2]
     ifc [x + HANDLE_TYPE], TYPE_GROUP_INTEGER
         jsr recover
+        #doc Illegal argument type for cursor([x, y])
         
     set push, x
     jsr int_to_int16
@@ -3086,6 +3162,7 @@
     jsr built_in_params
     ifn i, 2
         jsr recover
+        #doc Wrong number of arguments for win_get(x, y)
 
     jsr screen__get_x
     set push, x
@@ -3111,6 +3188,7 @@
     jsr built_in_params
     ifn i, 3
         jsr recover
+        #doc Wrong number of arguments for win_set(x, y, v)
 
     jsr screen__get_x
     set push, x
@@ -3138,10 +3216,12 @@
     
     ifn i, 1
         jsr recover
+        #doc Wrong number of arguments for call(a)
 
     set x, [z-1]
     ifn [x + HANDLE_TYPE], TYPE_INT
         jsr recover
+        #doc Illegal argument type for call(addr)
 
     set push, x
     jsr int_to_int16
@@ -3168,6 +3248,7 @@
     set x, [z-1]
     ifn [x + HANDLE_TYPE], TYPE_INT
         jsr recover
+        #doc Illegal argument type for peek(start[, end])
 
     set push, x
     jsr int_to_int16
@@ -3177,6 +3258,7 @@
         
     ifn i, 1
         jsr recover
+        #doc Wrong number of arguments for peek(start[, end])
 
     set push, [x]
     jsr uint16_to_int
@@ -3190,6 +3272,7 @@
     set x, [z-2]
     ifn [x + HANDLE_TYPE], TYPE_INT
         jsr recover
+        #doc Illegal argument type for peek(start[, end])
 
     set push, x
     jsr int_to_int16
@@ -3215,10 +3298,12 @@
     jsr built_in_params
     ifn i, 2
         jsr recover
+        #doc Wrong number of arguments for poke(addr, val)
 
     set x, [z-1]
     ifn [x + HANDLE_TYPE], TYPE_INT
         jsr recover
+        #doc Illegal argument type for poke(addr, val)
 
     set push, x
     jsr int_to_int16
@@ -3230,6 +3315,7 @@
 
     ifn [x + HANDLE_TYPE], TYPE_INT
         jsr recover
+        #doc Illegal argument type for poke(addr, val)
 
     set push, x
     jsr int_to_int16
@@ -3265,11 +3351,13 @@
     jsr built_in_params
     ifn i, 1
         jsr recover
+        #doc Wrong number of arguments for read / write
 
     ; verify that first parameter is int
     set x, [z-1]
     ifn [x + HANDLE_TYPE], TYPE_INT
         jsr recover
+        #doc Illegal argument type for read / write
 
     ; push first parameter value to stack
     set push, x
@@ -3289,6 +3377,7 @@
     jsr built_in_params
     ifn i, 0
         jsr recover
+        #doc Wrong number of arguments for hwn()
 
     hwn x
 
@@ -3305,11 +3394,13 @@
     ; verify two parameters
     ifn i, 1
         jsr recover
+        #doc Wrong number of arguments for hwi(a)
 
     ; verify that first parameter is int
     set x, [z-1]
     ifn [x + HANDLE_TYPE], TYPE_INT
         jsr recover
+        #doc Illegal argument type for hwi(a)
 
     ; push first parameter value to stack
     set push, x
@@ -3330,10 +3421,12 @@
     jsr built_in_params
     ifn i, 1
         jsr recover
+        #doc Wrong number of arguments for hwq(a)
 
     set x, [z-1]
     ifn [x + HANDLE_TYPE], TYPE_INT
         jsr recover
+        #doc Illegal argument type for hwq(a)
 
     set push, [z-1]
     jsr int_to_int16
@@ -3400,10 +3493,12 @@
     jsr built_in_params
     ifn i, 2
         jsr recover
+        #doc Wrong number of arguments for scroll(x, y)
 
     set x, [z-1]
     ifc [x + HANDLE_TYPE], TYPE_GROUP_INTEGER
         jsr recover
+        #doc Illegal argument type for scroll(x, y)
         
     set push, x
     jsr int_to_int16
@@ -3412,6 +3507,7 @@
     set x, [z-2]
     ifc [x + HANDLE_TYPE], TYPE_GROUP_INTEGER
         jsr recover
+        #doc Illegal argument type for scroll(x, y)
         
     set push, x
     jsr int_to_int16
