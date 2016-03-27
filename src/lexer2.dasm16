@@ -493,19 +493,25 @@
     set a, [a]
     add a, [lexer_start]
     sub b, [lexer_start]
-    add a, 1
+
+    set c, token_name
+    ifl b, 2
+        set pc, lexer_name_loop_finish
+    ifg b, 8
+        set pc, lexer_name_loop_finish
 
     set push, i
     set push, j
 
-    set x, built_in_stmts_high
-    ifl b, 4
-        set x, built_in_stmts_low
+    add a, 1
+
+    set x, [built_in_stmts_by_len + b - 2]
     jsr built_in_matcher
     
     set j, pop
     set i, pop
-    
+
+:lexer_name_loop_finish
     set [lexer_token], c
     
     set pc, lexer__exit
