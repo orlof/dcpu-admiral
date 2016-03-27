@@ -690,11 +690,11 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
 
 <table border="1" bgcolor="#dddddd">
 <tr>
-  <td>abs()</td>
-  <td>[bool()][bool(x)]</td>
-  <td>call()</td>
-  <td>chr()</td>
-  <td>cmp()</td>
+  <td width="20%">abs()</td>
+  <td width="20%">[bool()][bool(x)]</td>
+  <td width="20%">call()</td>
+  <td width="20%">chr()</td>
+  <td width="20%">cmp()</td>
 <tr>
 </tr>
   <td>dir()</td>
