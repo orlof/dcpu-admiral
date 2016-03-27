@@ -393,11 +393,22 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
 ; length+1, reserved word, token
 ; last line is the default if nothing matches
 ;----------------------------------------------------------------
-:built_in_stmts_low
+:built_in_stmts_by_len
+    dat built_in_stmts_2
+    dat built_in_stmts_3
+    dat built_in_stmts_4
+    dat built_in_stmts_5
+    dat built_in_stmts_6
+    dat built_in_stmts_7
+    dat built_in_stmts_8
+
+:built_in_stmts_2
     dat 3, "if", token_if
     dat 3, "or", token_or
     dat 3, "is", token_is
     dat 3, "in", token_in
+    dat 1, token_name
+:built_in_stmts_3
     dat 4, "and", token_and
     dat 4, "not", token_not
     dat 4, "for", token_for
@@ -407,19 +418,25 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 4, "nan", token_float
     dat 4, "run", token_run
     dat 1, token_name
-
-:built_in_stmts_high
+:built_in_stmts_4
     dat 5, "elif", token_elif
     dat 5, "else", token_else
     dat 5, "true", token_true
     dat 5, "none", token_none
     dat 5, "pass", token_pass
+    dat 1, token_name
+:built_in_stmts_5
     dat 6, "false", token_false
     dat 6, "print", token_print
     dat 6, "while", token_while
     dat 6, "reset", token_reset
     dat 6, "break", token_break
+    dat 1, token_name
+:built_in_stmts_6
     dat 7, "return", token_return
+:built_in_stmts_7
+    dat 1, token_name
+:built_in_stmts_8
     dat 9, "continue", token_continue
     dat 1, token_name
 
