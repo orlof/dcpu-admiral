@@ -4,8 +4,50 @@
 <h5><i>"PURE INTERPRETED LANGUAGE FOR THE FRINGE COLONIES"</i></h5>
 
 ---
+<h4>Table of contents</h4>
+<ul>
+  <li><a href="#1">Background</a>
+    <ul>
+      <li><a href="#1.1">Summary</a></li>
+      <li><a href="#1.2">Development Status</a></li>
+      <li><a href="#1.3">Special Thanks</a></li>
+      <li><a href="#1.4">Other in-game DCPU projects</a></li>
+    </ul>
+  </li>
+  <li><a href="#2">Getting started</a>
+    <ul>
+      <li><a href="#2.1">Download</a></li>
+      <li><a href="#2.2">Development</a></li>
+      <li><a href="#2.3">Usage</a></li>
+    </ul>
+  </li>
+  <li><a href="#4">Data types</a>
+    <ul>
+      <li><a href="#4.1">Numbers</a></li>
+      <li><a href="#4.2">String</a></li>
+      <li><a href="#4.3">Dictionary</a></li>
+      <li><a href="#4.4">List</a></li>
+      <li><a href="#4.5">Tuple</a></li>
+      <li><a href="#4.6">Boolean</a></li>
+      <li><a href="#4.7">None</a></li>
+    </ul>
+  </li>
+  <li><a href="#5">Statements</a>
+    <ul>
+      <li><a href="#5.1">Simple statements</a></li>
+      <li><a href="#5.2">Compound statements</a></li>
+    </ul>
+  </li>
+  <li><a href="#6">Global functions</a>
+  </li>
+  <li><a href="#7">Appendixes</a>
+  </li>
+</ul>
 
-<h4>Summary</h4>
+---
+<h4 id="1">Background</h4>
+
+<h5 id="1.1">Summary</h5>
 
 <h6>Design Philosophy</h6>
  - DCPU must provide a self sufficient environment for developing and running software
@@ -85,7 +127,7 @@ b 2
 
 --
 
-<h4>Development status</h4>
+<h5 id="1.2">Development status</h5>
 
 <h6>Current features</h6>
  - Pure interpreted language
@@ -106,11 +148,11 @@ b 2
  - Functions: hwn(), hwq() and hwi() for low level hardware access
  
 <h6>Next in development</h6>
- - Github issue tracker contains a list of development items, but development is not currently active.
+ - Github issue tracker contains a list of development items.
 
 --
 
-<h4>Special Thanks</h4>
+<h5 id="1.3">Special Thanks</h5>
 
 Following sources were proven to be invaluable sources for information:
  - Let's Build a Compiler, by Jack Crenshaw: http://compilers.iecc.com/crenshaw/
@@ -119,7 +161,9 @@ Following sources were proven to be invaluable sources for information:
  - The Art of Assembly Language Programming, by Randall Hyde: http://cs.smith.edu/~thiebaut/ArtOfAssembly/artofasm.html
  - Data Structures and Algorithms with Object-Oriented Design Patterns in Java, by Bruno R. Preiss: http://www.brpreiss.com/books/opus5/html/book.html
 
-<h4>Other in-game DCPU projects</h4>
+--
+
+<h5 id="1.4">Other in-game DCPU projects</h5>
 
 There are dozens of advanced compilers that compile DCPU assembler from multitude of different source languages 
 e.g. java, c, c++, ...
@@ -135,9 +179,9 @@ language *inside* DCPU.
 
 --
 
-<h4>INSTALLATION</h4>
+<h4 id="2">Getting started</h4>
 
-<h5>Usage</h5>
+<h5 id="2.1">Download</h5>
 
 The latest version of Admiral release is available from github:
 
@@ -149,7 +193,9 @@ However, if you only want a quick peek at the Admiral, the easies way to try it 
 
     https://github.com/orlof/admiral-emu/releases
     
-<h5>Development</h5>
+--
+
+<h5 id="2.2">Development</h5>
 
 All source code is available in Github:
 
@@ -170,7 +216,7 @@ someone other than me starts using them ;)
 
 --
 
-<h4>USAGE</h4>
+<h5 id="2.3">Usage</h5>
 
 NOTE: Latest Admiral interpreter does not output return value automatically to screen. Instead 'print' statement 
 must be used.
@@ -265,11 +311,13 @@ Hello
 Hello
 </pre>
 
-<h4>DATA TYPES</h4>
+--
+
+<h4 id="4">Data types</h4>
 
 Admiral provides some built-in data types i.e. dict, list, tuple, str, int, float and boolean.
 
-<h5>NUMBERS</h5>
+<h5 id="4.1">Numbers</h5>
 
 The Admiral interpreter acts as a simple calculator: you can type 'print' and an expression at it and it 
 will write the value. Expression syntax is straightforward: the operators +, -, * and / work just like 
@@ -333,7 +381,7 @@ Floating point precision can be set during compilation time in defs.dasm16 file:
 
 Recommended values are in range 1-4. NOTE currently only value 2 has been tested.
 
-<h5>STR</h5>
+<h5 id="4.2">String</h5>
 
 Besides numbers, Admiral can also manipulate strings, which can be expressed in several ways. They can be 
 enclosed in single quotes or double quotes:
@@ -438,7 +486,140 @@ The built-in function len() returns the length of a string:
 
 Current strings do not support escape characters or output formatting. That will be fixed to future releases.
 
-<h5>DICT</h5>
+<h6>STRING API</h6>
+
+<dl>
+  <dt>str.encrypt(key)</dt>
+  <dd>
+    <p>
+      Encrypts the string with given key using hummingbird2 codec.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt>str.decrypt(key)</dt>
+  <dd>
+    <p>
+      Decrypts encrypted string with given key and hummingbird2 codec.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt>str.lower()</dt>
+  <dd>
+    <p>
+      Return a copy of the string with all the cased characters converted to lowercase.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt>str.upper()</dt>
+  <dd>
+    <p>
+      Return a copy of the string with all the cased characters converted to uppercase.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt>str.find(sub[, start[, end]])</dt>
+  <dd>
+    <p>
+      Return the lowest index in the string where substring sub is found, such that sub is contained in the slice 
+      s[start:end]. Optional arguments start and end are interpreted as in slice notation. Return -1 if sub is not found.
+    </p>
+    <p>
+      The find() method should be used only if you need to know the position of sub. To check if sub is a substring 
+      or not, use the in operator:
+      <pre>
+          >"mi" in "Admiral"
+          True
+      </pre>
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt>str.replace(old, new)</dt>
+  <dd>
+    <p>
+      Return a copy of the string with all occurrences of substring old replaced by new.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt>str.split([sep])</dt>
+  <dd>
+    <p>
+      Return a list of the words in the string, using sep as the delimiter string. Consecutive delimiters are not 
+      grouped together and are deemed to delimit empty strings:
+      <pre>
+          >'1,,2'.split(',')
+          ['1','','2'])
+      </pre>
+      The sep argument may consist of multiple characters
+      <pre>
+          >'1<>2<>3'.split('<>')
+          ['1','2','3']). 
+      </pre>
+      Splitting an empty string with a specified separator returns [''].
+    </p>
+    <p>
+      If sep is not specified, a different splitting algorithm is applied: runs of consecutive whitespace are regarded 
+      as a single separator, and the result will contain no empty strings at the start or end if the string has leading 
+      or trailing whitespace. Consequently, splitting an empty string or a string consisting of just whitespace with 
+      a None separator returns [].
+      <pre>
+          >' 1  2   3  '.split()
+          ['1','2','3']
+      </pre>
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt>str.endswith(suffix)</dt>
+  <dd>
+    <p>
+      Return True if the string ends with the specified suffix, otherwise return False. suffix can also be a tuple 
+      of suffixes to look for.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt>str.startswith(prefix)</dt>
+  <dd>
+    <p>
+      Return True if string starts with the prefix, otherwise return False. prefix can also be a tuple of prefixes to 
+      look for.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt>str.isalpha()</dt>
+  <dd>
+    <p>
+      Return true if all characters in the string are alphabetic and there is at least one character, false otherwise.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt>str.isdigit()</dt>
+  <dd>
+    <p>
+      Return true if all characters in the string are digits and there is at least one character, false otherwise.
+    </p>
+  </dd>
+</dl>
+
+<h5 id="4.3">Dictionary</h5>
 
 Another useful data type built into Admiral is the dictionary. Dictionaries are sometimes found in other languages 
 as “associative memories” or “associative arrays”. Unlike sequences, which are indexed by a range of numbers, 
@@ -486,27 +667,61 @@ value associated with that key is forgotten. It is an error to extract a value u
 >{'one':1, 'two': 2}
 </pre>
 
-<h5>LIST</h5>
+<h6>DICT API</h6>
+
+<dl>
+  <dt>dict.create()</dt>
+  <dd>
+    <p>
+      Return a new dict object that has the object set as prototype.
+    </p>
+  </dd>
+</dl>
+
+<h5 id="4.4">List</h5>
 
 TODO
 
-<h5>TUPLE</h5>
+<h6>LIST API</h6>
+
+<dl>
+  <dt>list.append(x)</dt>
+  <dd>
+    <p>
+      Add an item to the end of the list.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt>list.insert(int, obj)</dt>
+  <dd>
+    <p>
+      Insert an item at a given position. The first argument is the index of the element before which to insert, 
+      so a.insert(0, x) inserts at the front of the list, and a.insert(len(a), x) is equivalent to a.append(x).
+    </p>
+  </dd>
+</dl>
+
+<h5 id="4.5">Tuple</h5>
 
 TODO
 
-<h5>BOOLEAN</h5>
+<h5 id="4.6">Boolean</h5>
 
 TODO
 
-<h5>NONE</h5>
+<h5 id="4.7">None</h5>
 
 TODO
 
-<h4>STATEMENTS</h4>
+--
+
+<h4 id="5">Statements</h4>
 
 Here is a complete list of all the Admiral's statements.
 
-<h5>SIMPLE STATEMENTS</h5>
+<h5 id="5.1">Simple statements</h5>
 
 Simple statements are comprised within a single line.
 
@@ -615,7 +830,7 @@ if filename is omitted, "MAIN" is used. Object serialization graph can be either
 String object is executed directly and in dict object execution start point is value associated
 with key "main".
 
-<h5>COMPOUND STATEMENTS</h5>
+<h5 id="5.2">Compound statements</h5>
 
 Compound statements contain other statements; they affect or control the execution of those other 
 statements in some way. In general, compound statements span multiple lines, although in simple 
@@ -686,419 +901,492 @@ The suite may assign to the variable(s) in the target list; this does not affect
 Hint: the built-in function range() returns a sequence of integers suitable to emulate the effect of Pascal’s 
 for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
 
-<h4>GLOBAL FUNCTIONS</h4>
+--
 
-<table border="1" bgcolor="#dddddd">
-<tr>
-  <td width="20%">abs()</td>
-  <td width="20%">[bool()][bool(x)]</td>
-  <td width="20%">call()</td>
-  <td width="20%">chr()</td>
-  <td width="20%">cmp()</td>
-<tr>
-</tr>
-  <td>dir()</td>
-  <td>edit()</td>
-  <td>float()</td>
-  <td>format()</td>
-  <td>getc()</td>
-<tr>
-</tr>
-  <td>globals()</td>
-  <td>hwi()</td>
-  <td>hwn()</td>
-  <td>hwq()</td>
-  <td>id()</td>
-<tr>
-</tr>
-  <td>input()</td>
-  <td>int()</td>
-  <td>key()</td>
-  <td>len()</td>
-  <td>load()</td>
-<tr>
-</tr>
-  <td>locals()</td>
-  <td>mem()</td>
-  <td>ord()</td>
-  <td>peek()</td>
-  <td>poke()</td>
-<tr>
-</tr>
-  <td>range()</td>
-  <td>read()</td>
-  <td>repr()</td>
-  <td>rm()</td>
-  <td>rnd()</td>
-<tr>
-</tr>
-  <td>save()</td>
-  <td>sort()</td>
-  <td>str()</td>
-  <td>write()</td>
-</tr>
-</table>
+<h4 id="6">Global functions</h4>
 
-<pre>
-GENERIC FUNTIONS
-  int id(obj)
-  int cmp(obj, obj)
-  int len(list | tuple | dict | str)
-
-MEMO
-  int mem()
-  {} locals()
-  {} globals()
-  exit()
-
-TYPE CONVERSION FUNCTIONS
-  bool bool(bool | int | float | str)
-  int int(bool | int | float | str)
-  float float(bool | int | float | str)
-  str str(bool | int | float | str)
-
-FLOPPY FUNCTIONS
-  {} dir()
-  object load(string filename)
-  void save(string filename, object root)
-  void rm(string filename)
-  void format()
-
-NUMERICAL FUNCTIONS
-  int abs(int)
-  float abs(float)
-  float rnd([float[, float]])    start inclusive, end exclusive in all rnd functions, negative values are not allowed
-  int rnd([int[, int]])          start inclusive, end exclusive in all rnd functions, negative values are not allowed
-
-USER INPUT / OUTPUT FUNCTIONS
-  str input([str])
-  str edit([str])
-  str repr(list | tuple | dict | int | bool | str | float)
-
-CHARACTER FUNCTIONS
-  int ord(str)
-  str chr(int)
-  str getc()                     blocking get next typed key 
-  int key()                      non-blocking which key is down
-  bool key(int)                  non-blocking is key down
-
-STRING FUNCTIONS
-  str sort(str)
-
-LIST FUNCTIONS
-  list sort(list sort)           list is sorted 'in place'! return value is only for convenience.
-  list range(int end)
-  list range(int start, int end[, int step])
-
-HARDWARE FUNCTIONS (CAN CRASH ADMIRAL AND DCPU)
-  void call([int address])
-  int peek(int address)
-  str peek(int address, int length)
-  void poke(int address, (int|str) value)
-  int hwn()
-  int hardware_id, int hardware_version, int manufacturer = hwq(int n)
-  void hwi(int n)
-  void read(int sector)
-  void write(int sector)
-
-</pre>
-
-<h5>TYPE CONVERSION FUNCTIONS</h5>
-
-<h6>bool(x)</h6>
-Convert a value to a Boolean, using the standard truth testing procedure.
-
-The following values are interpreted as false: false, numeric zero of all types, 
-and empty strings and containers (including tuples, lists and dictionaries). All 
-other values are interpreted as true.
-
-<h6>int(x)</h6>
-Convert a number or string x to an integer. If x is a number, it can be a boolean, 
-a plain integer, or a floating point number. If x is floating point, the conversion 
-truncates towards zero.
-
-<h6>float(x)</h6>
-Convert a string or a number to floating point. If the argument is a string, it must 
-contain a possibly signed decimal or floating point number. The argument may also be 
-[+|-]nan or [+|-]inf. Otherwise, the argument may be a plain integer or a floating 
-point number, and a floating point number with the same value is returned.
-
-<h6>str(x)</h6>
-Return a string containing an object representation of an object. For strings, this 
-returns the string itself.
+<ul>
+  <li>Generic functions
+    <ul>
+      <li><a href="#cmp">cmp()</a></li>
+      <li><a href="#len">len()</a></li>
+      <li><a href="#range">range()</a></li>
+      <li><a href="#sort">sort()</a></li>
+    </ul>
+  </li>
+  <li>Numeric functions
+    <ul>
+      <li><a href="#abs">abs()</a></li>
+      <li><a href="#rnd">rnd()</a></li>
+    </ul>
+  </li>
+  <li>Character functions
+    <ul>
+      <li><a href="#ord">ord()</a></li>
+      <li><a href="#chr">chr()</a></li>
+      <li><a href="#getc">getc()</a></li>
+      <li><a href="#key">key()</a></li>
+    </ul>
+  </li>
+  <li>User input / output functions
+    <ul>
+      <li><a href="#input">input()</a></li>
+      <li><a href="#edit">edit()</a></li>
+      <li><a href="#repr">repr()</a></li>
+    </ul>
+  </li>
+  <li>Memory functions
+    <ul>
+      <li><a href="#id">id()</a></li>
+      <li><a href="#mem">mem()</a></li>
+      <li><a href="#locals">locals()</a></li>
+      <li><a href="#globals">globals()</a></li>
+    </ul>
+  </li>
+  <li>Type conversion functions
+    <ul>
+      <li><a href="#bool">bool()</a></li>
+      <li><a href="#float">float()</a></li>
+      <li><a href="#int">int()</a></li>
+      <li><a href="#str">str()</a></li>
+    </ul>
+  </li>
+  <li>Floppy functions
+    <ul>
+      <li><a href="#format">format()</a></li>
+      <li><a href="#dir">dir()</a></li>
+      <li><a href="#load">load()</a></li>
+      <li><a href="#save">save()</a></li>
+      <li><a href="#rm">rm()</a></li>
+    </ul>
+  </li>
+  <li>Hardware functions
+    <ul>
+      <li><a href="#call">call()</a></li>
+      <li><a href="#peek">peek()</a></li>
+      <li><a href="#poke">poke()</a></li>
+      <li><a href="#hwn">hwn()</a></li>
+      <li><a href="#hwq">hwq()</a></li>
+      <li><a href="#hwi">hwi()</a></li>
+      <li><a href="#read">read()</a></li>
+      <li><a href="#write">write()</a></li>
+    </ul>
+  </li>
+</ul>
 
 <h5>GENERIC FUNCTIONS</h5>
 
-<h6>id(object)</h6>
-Return the “identity” of an object. This is an integer which is guaranteed to be unique and constant for this object during its lifetime. Two objects with non-overlapping lifetimes may have the same id() value.
+<dl>
+  <dt id="cmp">cmp(x, y)</dt>
+  <dd>
+    <p>
+      Compare the two objects x and y and return an integer according to the outcome. The return value is negative if x < y, zero if x == y and strictly positive if x > y.
 
-<h6>len(S)</h6>
-Return the length (the number of items) of an object. The argument may be a sequence (string, tuple or list) or a mapping (dictionary).
+      <ul>
+        <li>Numbers are compared arithmetically</li>
+        <li>Strings are compared lexicographically using the numeric equivalents (the result of the built-in function ord()) of their characters.</li>
+        <li>Tuples and lists are compared lexicographically using comparison of corresponding elements. This means that to compare equal, each element must compare equal and the two sequences must be of the same type and have the same length.</li>
+        <li>If not equal, the sequences are ordered the same as their first differing elements. For example, cmp([1,2,x], [1,2,y]) returns the same as cmp(x,y). If the corresponding element does not exist, the shorter sequence is ordered first (for example, [1,2] < [1,2,3]).</li>
+        <li>Other objects of built-in types compare unequal unless they are the same object; the choice whether one object is considered smaller or larger than another one is made arbitrarily but consistently within one execution of a program.</li>
+       </ul>
+   </p>
+  </dd>
+</dl>
 
-<h6>mem()</h6>
-Runs the garbage collector and returns the amount of free heap space in words.
+<dl>
+  <dt id="len">len(S)</dt>
+  <dd>
+    <p>
+      Return the length (the number of items) of an object. The argument may be a sequence (string, tuple or list) or a mapping (dictionary).
+    </p>
+  </dd>
+</dl>
 
-Calling the gc method makes Admiral expend effort to recycling unused objects in order to make the memory they currently occupy available for quick reuse. When control returns from the method call, the Admiral has made a best effort to reclaim space from all discarded objects.
+<dl>
+  <dt id="range">range(end)</dt>
+  <dt id="range">range(start, end[, step])</dt>
+  <dd>
+    <p>
+      This is a versatile function to create lists containing arithmetic progressions. It is most often used in for loops. 
+      The arguments must be plain integers. If the step argument is omitted, it defaults to 1. If the start argument is 
+      omitted, it defaults to 0. The full form returns a list of plain integers [start, start + step, start + 2 * step, ...]. 
+      If step is positive, the last element is the largest start + i * step less than stop; if step is negative, the last 
+      element is the smallest start + i * step greater than stop. step must not be zero.
+    </p>
+  </dd>
+</dl>
 
-<h6>globals()</h6>
-Return a dictionary representing the current global symbol table.
+<dl>
+  <dt id="sort">sort(S[, reverse])</dt>
+  <dd>
+    <p>
+      Return a sorted version from the items in iterable. Strings and tuples are sorted by creating a new sorted iterable and lists are sorted in place. Reverse is a boolean value. If set to True, then the list elements are sorted as if each comparison were reversed.
+    </p>
+  </dd>
+</dl>
 
-<h6>locals()</h6>
-Return a dictionary representing the current local symbol table.
+<h5>NUMERIC FUNCTIONS</h5>
 
-<h5>FLOPPY FUNCTIONS</h5>
+<dl>
+  <dt id="abs">abs(x)</dt>
+  <dd>
+    <p>
+      Return the absolute value of a number. The argument may be a plain integer or a floating point number.
+    </p>
+  </dd>
+</dl>
 
-<h6>format()</h6>
-Format is used to initialize a DCPU M35FD floppy for use. It erases all information off the floppy.
-
-<h6>dir()</h6>
-The dir command returns a dictionary containing the available files in DCPU M35FD floppy.
-
-<h6>load(filename)</h6>
-The load command returns the object stored in DCPU M35FD floppy with the given filename.
-
-<h6>save(filename, object)</h6>
-The save command serializes the defined with given filename to DCPU M35FD floppy.
-
-<h6>rm(filename)</h6>
-Removes serialized object with given filename from DCPU M35FD floppy and frees the reserved disk space.
-
-<h5>NUMERICAL FUNCTIONS</h5>
-
-<h6>abs(x)</h6>
-Return the absolute value of a number. The argument may be a plain integer or a floating point number.
-
-<h6>rnd([[start, ]end])</h6>
-Return the next pseudorandom number. TODO
-
-<h6>cmp(x, y)</h6>
-Compare the two objects x and y and return an integer according to the outcome. The return value is negative if x < y, zero if x == y and strictly positive if x > y.
-
- - Numbers are compared arithmetically.
- - Strings are compared lexicographically using the numeric equivalents (the result of the built-in function ord()) of their characters.
- - Tuples and lists are compared lexicographically using comparison of corresponding elements. This means that to compare equal, each element must compare equal and the two sequences must be of the same type and have the same length.
- - If not equal, the sequences are ordered the same as their first differing elements. For example, cmp([1,2,x], [1,2,y]) returns the same as cmp(x,y). If the corresponding element does not exist, the shorter sequence is ordered first (for example, [1,2] < [1,2,3]).
- - Other objects of built-in types compare unequal unless they are the same object; the choice whether one object is considered smaller or larger than another one is made arbitrarily but consistently within one execution of a program.
-
-<h6>range(stop) or range(start, stop[, step])</h6>
-This is a versatile function to create lists containing arithmetic progressions. It is most often used in for loops. 
-The arguments must be plain integers. If the step argument is omitted, it defaults to 1. If the start argument is 
-omitted, it defaults to 0. The full form returns a list of plain integers [start, start + step, start + 2 * step, ...]. 
-If step is positive, the last element is the largest start + i * step less than stop; if step is negative, the last 
-element is the smallest start + i * step greater than stop. step must not be zero.
+<dl>
+  <dt id="rnd">rnd([start[, end]])</dt>
+  <dd>
+    <p>
+      Return the next pseudorandom number. TODO
+    </p>
+  </dd>
+</dl>
 
 <h5>CHARACTER FUNCTIONS</h5>
 
-<h6>ord(c)</h6>
-Given a string of length one, return the value of the byte. For example, ord('a') returns the integer 97. This is the
-inverse of chr().
+<dl>
+  <dt id="ord">ord(char)</dt>
+  <dd>
+    <p>
+      Given a string of length one, return the value of the byte. For example, ord('a') returns the integer 97. This is the
+      inverse of chr().
+    </p>
+  </dd>
+</dl>
 
-<h6>chr(i)</h6>
-Return a string of one character whose ASCII code is the integer i. For example, chr(97) returns the string 'a'. This is the inverse of ord().
+<dl>
+  <dt id="chr">chr(i)</dt>
+  <dd>
+    <p>
+      Return a string of one character whose ASCII code is the integer i. For example, chr(97) returns the string 'a'. 
+      This is the inverse of ord().
+    </p>
+  </dd>
+</dl>
 
-<h6>getc()</h6>
-Blocks until user types a key and return the key typed as a string of one character.
+<dl>
+  <dt id="getc">getc()</dt>
+  <dd>
+    <p>
+      Blocks until user types a key and return the key typed as a string of one character.
+    </p>
+  </dd>
+</dl>
 
-<h6>key([i])</h6>
-Without argument return immediately the next key typed from keyboard buffer, or 0 if the buffer is empty. If i is
-specified return true if the specified key is down or false otherwise.
+<dl>
+  <dt id="key">key([int])</dt>
+  <dd>
+    <p>
+      Without argument return immediately the next key typed from keyboard buffer, or 0 if the buffer is empty. If int is
+      specified return true if the specified key is down or false otherwise.
+    </p>
+  </dd>
+</dl>
 
-<h6>input([prompt])</h6>
-If the prompt argument is present, it is written to standard output without a trailing newline. The function 
-then reads a line from input, converts it to a string (stripping a trailing newline), and returns that.
+<h5>USER INPUT / OUTPUT FUNCTIONS</h5>
 
-<h6>edit([input])</h6>
-Function opens a text editor. If the input argument is present, editor is initialized with input string.
-Editor can be used to modify the contents. Editing can be canceled by typing (press and release) CTRL followed
-by typing 'c', or confirmed by typing CTRL and 'x'. The function then converts editor contents (confirm) or the
-original input string (cancel) to a string, and returns that.
+<dl>
+  <dt id="input">input([str])</dt>
+  <dd>
+    <p>
+      If str argument is present, it is written to standard output without a trailing newline. The function 
+      then reads a line from input, converts it to a string (stripping a trailing newline), and returns that.
+    </p>
+  </dd>
+</dl>
 
-<h6>repr(object)</h6>
-Return a string containing a printable representation of an object. This is similar to str funtion, but surrounds
-string type values in quotes.
+<dl>
+  <dt id="edit">edit([str])</dt>
+  <dd>
+    <p>
+      Opens interactive text editor. If the input argument is present, editor is initialized with input string.
+      Editor can be used to modify the contents. Editing can be canceled by typing (press and release) CTRL followed
+      by typing 'c', or confirmed by typing CTRL and 'x'. The function then converts editor contents (confirm) or the
+      original input string (cancel) to a string, and returns that.
+    </p>
+  </dd>
+</dl>
 
-<h6>sort(iterable[, reverse])</h6>
-Return a sorted version from the items in iterable. 
+<dl>
+  <dt id="repr">repr(obj)</dt>
+  <dd>
+    <p>
+      Return a string containing a printable representation of an object. This is similar to str funtion, but surrounds
+      string type values in quotes.
+    </p>
+  </dd>
+</dl>
 
-Strings and tuples are sorted by creating a new sorted iterable and lists are sorted in place.
+<h5>MEMORY FUNCTIONS</h5>
 
-Reverse is a boolean value. If set to True, then the list elements are sorted as if each comparison were reversed.
+<dl>
+  <dt id="id">id(x)</dt>
+  <dd>
+    <p>
+      Return the “identity” of an object. This is an integer which is guaranteed to be unique and constant for this object during its lifetime. Two objects with non-overlapping lifetimes may have the same id() value.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="mem">mem()</dt>
+  <dd>
+    <p>
+      Runs the garbage collector and returns the amount of free heap space in words.
+
+      Calling the gc method makes Admiral expend effort to recycling unused objects in order to make the memory they currently occupy available for quick reuse. When control returns from the method call, the Admiral has made a best effort to reclaim space from all discarded objects.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="locals">locals()</dt>
+  <dd>
+    <p>
+      Return a dictionary representing the current local symbol table.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="globals">globals()</dt>
+  <dd>
+    <p>
+      Return a dictionary representing the current global symbol table.
+    </p>
+  </dd>
+</dl>
+
+<h5>TYPE CONVERSION FUNCTIONS</h5>
+
+<dl>
+  <dt id="bool">bool(x)</dt>
+  <dd>
+    <p>
+      Convert a value to a Boolean, using the standard truth testing procedure.
+    </p>
+    <p>
+      The following values are interpreted as false: false, numeric zero of all types, 
+      and empty strings and containers (including tuples, lists and dictionaries). All 
+      other values are interpreted as true.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="int">int(x)</dt>
+  <dd>
+    <p>
+      Convert a number or string x to an integer. If x is a number, it can be a boolean, 
+      a plain integer, or a floating point number. If x is floating point, the conversion 
+      truncates towards zero.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="float">float(x)</dt>
+  <dd>
+    <p>
+      Convert a string or a number to floating point. If the argument is a string, it must 
+      contain a possibly signed decimal or floating point number. The argument may also be 
+      [+|-]nan or [+|-]inf. Otherwise, the argument may be a plain integer or a floating 
+      point number, and a floating point number with the same value is returned.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="str">str(x)</dt>
+  <dd>
+    <p>
+      Return a string containing an object representation of obj. For strings, this 
+      returns the string itself.
+    </p>
+  </dd>
+</dl>
+
+<h5>FLOPPY FUNCTIONS</h5>
+
+<dl>
+  <dt id="format">format()</dt>
+  <dd>
+    <p>
+      Format is used to initialize a DCPU M35FD floppy for use. It erases all information off the floppy.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="dir">dir()</dt>
+  <dd>
+    <p>
+      The dir command returns a dictionary containing the available files in DCPU M35FD floppy.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="load">load(str)</dt>
+  <dd>
+    <p>
+      The load command returns the object stored in DCPU M35FD floppy with filename str.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="save">save(str, obj)</dt>
+  <dd>
+    <p>
+      The save command serializes the defined obj with filename str to DCPU M35FD floppy.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="rm">rm(str)</dt>
+  <dd>
+    <p>
+      Removes serialized object with filename str from DCPU M35FD floppy and frees the reserved disk space.
+    </p>
+  </dd>
+</dl>
 
 <h5>HARDWARE FUNCTIONS</h5>
 
-<h6>void call([int address])</h6>
-Hands the CPU over to a the machine language subroutine at a specific address. If address is not specified then 
-start of the floppy drive buffer is used as a default. Floppy drive buffer provides 512 words of space that is
-used only when Admiral executes floppy commands. Floppy commands will overwrite the buffer area completely.
+<dl>
+  <dt id="call">call(addr)</dt>
+  <dd>
+    <p>
+      Hands the CPU over to a the machine language subroutine at a specific address. If address is not specified then 
+      start of the floppy drive buffer is used as a default. Floppy drive buffer provides 512 words of space that is
+      used only when Admiral executes floppy commands. Floppy commands will overwrite the buffer area completely.
+    </p>
+    <p>
+      Given address should be in the range 0 thru 65535, or $0000 thru $FFFF. If the given address is outside these 
+      limits, Admiral will use LSW as address.
+    </p>
+    <p>
+      Parameters can be passed between Admiral and subroutine via registers. Before calling the specified address 
+      Admiral “loads” a, b, c, x, y, z, i and j registers with the words stored at addresses 0xdb78 - 0xdb7f.
+    </p>
+    <p>
+      If or when the routine at the specified address returns control to Admiral (via an RTS instruction), Admiral 
+      immediately saves the contents of the registers back into the 0xdb78 - 0xdb7f memory range: This can be used 
+      to transfer results from the machine language routine to Admiral for further processing. 
+      <pre>
+      a: 0xdb78
+      b: 0xdb79
+      c: 0xdb7a
+      x: 0xdb7b
+      y: 0xdb7c
+      z: 0xdb7d
+      i: 0xdb7e
+      j: 0xdb7f
+      </pre>
 
-Given address should be in the range 0 thru 65535, or $0000 thru $FFFF. If the given address is outside these 
-limits, Admiral will use LSW as address.
+      Subroutine can pollute registers a-j, but must return with rts.
+    </p>
+  </dd>
+</dl>
 
-Parameters can be passed between Admiral and subroutine via registers. Before calling the specified address 
-Admiral “loads” a, b, c, x, y, z, i and j registers with the words stored at addresses 0xdb78 - 0xdb7f.
+<dl>
+  <dt id="peek">peek(addr[, len])</dt>
+  <dd>
+    <p>
+      Returns the memory contents of the specified address, which must be in the range 0x0000 through 0xffff. 
+      The int value returned will be in the range from 0x0000 thru 0xffff. If the address given exceeds the limits 
+      of the memory map, Admiral will use the LSW of the address.
+    </p>
+    <p>
+      The second form with 'length' argument returns a string that contains 'length' words copied from the memory 
+      area that starts from the given address. 
+    </p>
+  </dd>
+</dl>
 
-If or when the routine at the specified address returns control to Admiral (via an RTS instruction), Admiral 
-immediately saves the contents of the registers back into the 0xdb78 - 0xdb7f memory range: This can be used 
-to transfer results from the machine language routine to Admiral for further processing. 
-  
-<pre>
-a: 0xdb78
-b: 0xdb79
-c: 0xdb7a
-x: 0xdb7b
-y: 0xdb7c
-z: 0xdb7d
-i: 0xdb7e
-j: 0xdb7f
-</pre>
+<dl>
+  <dt id="poke">poke(addr, val)</dt>
+  <dd>
+    <p>
+      Changes the content of the memory. New value can be specified either as an integer or string. Integer form
+      stores LSW to given addr and str form copies the str starting from the given addr.
+    </p>
+    <p>
+      Caution: A misplaced POKE may cause the DCPU to lock up, or garble or delete the program currently in memory. 
+      To restore a locked-up DCPU one has to reboot the DCPU, thereby losing any program or data in RAM! 
+    </p>
+  </dd>
+</dl>
 
-Subroutine can pollute registers a-j, but must return with rts.
+<dl>
+  <dt id="hwn">hwn()</dt>
+  <dd>
+    <p>
+      Returns the number of connected hardware devices.
+    </p>
+  </dd>
+</dl>
 
-<h6>int peek(int address)</h6>
-<h6>str peek(int address, int length)</h6>
+<dl>
+  <dt id="hwq">hwq(int)</dt>
+  <dd>
+    <p>
+      Returns tuple containing three integers (hardware_id, hardware_version, manufacturer).
+      <pre>
+      for n in range(hwn()):
+       hw=hwq(n)
+       print hex(hw[0]), hex(hw[1]), hex(hw[2])
+      </pre>
+    </p>
+  </dd>
+</dl>
 
-Returns the memory contents of the specified address, which must be in the range 0x0000 through 0xffff. 
-The int value returned will be in the range from 0x0000 thru 0xffff. If the address given exceeds the limits 
-of the memory map, Admiral will use the LSW of the address.
+<dl>
+  <dt id="hwi">hwi(int)</dt>
+  <dd>
+    <p>
+      Sends the interrupt to hardware n.
+    </p>
+    <p>
+      Parameters can be passed between Admiral and interrupt via registers. Before interrupt Admiral “loads” 
+      a, b, c, x, y, z, i and j registers with the words stored at addresses 0xdb78 - 0xdb7f.
+    </p>
+    <p>
+      If or when the interrupt returns control, Admiral immediately saves the contents of the registers back 
+      into the 0xdb78 - 0xdb7f memory range: This can be used to transfer results from the interrupt to 
+      Admiral for further processing. 
+    </p>
+  </dd>
+</dl>
 
-The second form with 'length' argument returns a string that contains 'length' words copied from the memory 
-area that starts from the given address. 
+<dl>
+  <dt id="read">read(int)</dt>
+  <dd>
+    <p>
+      Reads a single sector from floppy and stores it to floppy buffer (0xd980 - 0xdb7f in current build).
+      This method is provided for integrating with non-Admiral floppy formats.
+    </p>
+  </dd>
+</dl>
 
-<h6>void poke(int address, (int|str) value)</h6>
+<dl>
+  <dt id="write">write(int)</dt>
+  <dd>
+    <p>
+      Writes a single sector to floppy from floppy buffer (0xd980 - 0xdb7f in current build).
+      This method is provided for integrating with non-Admiral floppy formats.
+    </p>
+  </dd>
+</dl>
 
-Changes the content of any memory address, ranging from 0x0000 to 0xffff, to the given byte value in the range 
-0x0000 through 0xffff. If either number is outside these limits, Admiral will use the LSW of the value.
+<h4 id="7">Appendixes</h4>
 
-The second form with str value copies the contents of the string to memory area starting at 'address'.
-
-Caution: A misplaced POKE may cause the DCPU to lock up, or garble or delete the program currently in memory. 
-To restore a locked-up DCPU one has to reboot the DCPU, thereby losing any program or data in RAM! 
-
-<h6>int hwn()</h6>
-
-Returns the number of connected hardware devices.
-
-<h6>int hardware_id, int hardware_version, int manufacturer = hwq(int n)</h6>
-
-Returns a tuple containing information about hardware n.
-
-<pre>
-for n in range(hwn()):
- hw=hwq(n)
- print hex(hw[0]), hex(hw[1]), hex(hw[2])
-</pre>
-
-<h6>void hwi(int n)</h6>
-
-Sends the interrupt to hardware n.
-
-Parameters can be passed between Admiral and interrupt via registers. Before interrupt Admiral “loads” 
-a, b, c, x, y, z, i and j registers with the words stored at addresses 0xdb78 - 0xdb7f.
-
-If or when the interrupt returns control, Admiral immediately saves the contents of the registers back 
-into the 0xdb78 - 0xdb7f memory range: This can be used to transfer results from the interrupt to 
-Admiral for further processing. 
-
-<h6>void read(int sector)</h6>
-
-Reads a single sector from floppy and stores it to floppy buffer (0xd980 - 0xdb7f in current build).
-This method is provided for integrating with non-Admiral floppy formats.
-
-<h6>void write(int sector)</h6>
-
-Writes a single sector to floppy from floppy buffer (0xd980 - 0xdb7f in current build).
-This method is provided for integrating with non-Admiral floppy formats.
-
-<h5>DICT API</h5>
-
-<h6>dict.create()</h6>
-
-Return a new dict object that has the object set as prototype.
-
-<h5>LIST API</h5>
-
-<h6>list.append(x)</h6>
-
-Add an item to the end of the list.
-
-<h6>list.insert(i, x)</h6>
-
-Insert an item at a given position. The first argument is the index of the element before which to insert, 
-so a.insert(0, x) inserts at the front of the list, and a.insert(len(a), x) is equivalent to a.append(x).
-
-<h5>STRING API</h5>
-
-<h6>str.encrypt(key)</h6>
-
-Encrypts the string with given key using hummingbird2 codec.
-
-<h6>str.decrypt(key)</h6>
-
-Decrypts encrypted string with given key and hummingbird2 codec.
-
-<h6>str.lower()</h6>
-
-Return a copy of the string with all the cased characters converted to lowercase.
-
-<h6>str.upper()</h6>
-
-Return a copy of the string with all the cased characters converted to uppercase.
-
-<h6>str.find(sub[, start[, end]])</h6>
-
-Return the lowest index in the string where substring sub is found, such that sub is contained in the slice 
-s[start:end]. Optional arguments start and end are interpreted as in slice notation. Return -1 if sub is not found.
-
-The find() method should be used only if you need to know the position of sub. To check if sub is a substring 
-or not, use the in operator:
-
-    >"mi" in "Admiral"
-    True
-
-<h6>str.replace(old, new)</h6>
-
-Return a copy of the string with all occurrences of substring old replaced by new.
-
-<h6>str.split([sep])</h6>
-
-Return a list of the words in the string, using sep as the delimiter string. Consecutive delimiters are not 
-grouped together and are deemed to delimit empty strings:
-    >'1,,2'.split(',')
-    ['1','','2'])
-
-The sep argument may consist of multiple characters
-    >'1<>2<>3'.split('<>')
-    ['1','2','3']). 
-
-Splitting an empty string with a specified separator returns [''].
-
-If sep is not specified, a different splitting algorithm is applied: runs of consecutive whitespace are regarded 
-as a single separator, and the result will contain no empty strings at the start or end if the string has leading 
-or trailing whitespace. Consequently, splitting an empty string or a string consisting of just whitespace with 
-a None separator returns [].
-
-    >' 1  2   3  '.split()
-    ['1','2','3']
-
-<h6>str.endswith(suffix)</h6>
-
-Return True if the string ends with the specified suffix, otherwise return False. suffix can also be a tuple 
-of suffixes to look for.
-
-<h6>str.startswith(prefix)</h6>
-
-Return True if string starts with the prefix, otherwise return False. prefix can also be a tuple of prefixes to 
-look for.
-
-<h6>str.isalpha()</h6>
-
-Return true if all characters in the string are alphabetic and there is at least one character, false otherwise.
-
-<h6>str.isdigit()</h6>
-
-Return true if all characters in the string are digits and there is at least one character, false otherwise.
-
-<h4>EXPRESSION PRECEDENCE TABLE</h4>
+<h5>EXPRESSION PRECEDENCE TABLE</h5>
 <table cellpadding="1">
 <tr><th>OPERATOR</th><th>DESCRIPTION</th><th>ASSOCIATIVITY</th></tr>
 <tr><td>=, +=, -=, *=, /=, %=, **=, &gt;&gt;=, &lt;&lt;=, &=, ^=, %=, ?=, :=</td><td>Assignment, augmented assignments, conditional assignment, prototype</td><td>Right</td></tr>
