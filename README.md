@@ -686,32 +686,94 @@ The suite may assign to the variable(s) in the target list; this does not affect
 Hint: the built-in function range() returns a sequence of integers suitable to emulate the effect of Pascal’s 
 for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
 
-<h4>BUILT-IN FUNCTIONS</h4>
+<h4>GLOBAL FUNCTIONS</h4>
+
+<table border="1" bgcolor="#dddddd">
+<tr>
+  <td>abs()</td>
+  <td>[bool()][bool(x)]</td>
+  <td>call()</td>
+  <td>chr()</td>
+  <td>cmp()</td>
+<tr>
+</tr>
+  <td>dir()</td>
+  <td>edit()</td>
+  <td>float()</td>
+  <td>format()</td>
+  <td>getc()</td>
+<tr>
+</tr>
+  <td>globals()</td>
+  <td>hwi()</td>
+  <td>hwn()</td>
+  <td>hwq()</td>
+  <td>id()</td>
+<tr>
+</tr>
+  <td>input()</td>
+  <td>int()</td>
+  <td>key()</td>
+  <td>len()</td>
+  <td>load()</td>
+<tr>
+</tr>
+  <td>locals()</td>
+  <td>mem()</td>
+  <td>ord()</td>
+  <td>peek()</td>
+  <td>poke()</td>
+<tr>
+</tr>
+  <td>range()</td>
+  <td>read()</td>
+  <td>repr()</td>
+  <td>rm()</td>
+  <td>rnd()</td>
+<tr>
+</tr>
+  <td>save()</td>
+  <td>sort()</td>
+  <td>str()</td>
+  <td>write()</td>
+</tr>
+</table>
+
 <pre>
+GENERIC FUNTIONS
+  int id(obj)
+  int cmp(obj, obj)
+  int len(list | tuple | dict | str)
+
+MEMO
+  int mem()
+  {} locals()
+  {} globals()
+  exit()
+
 TYPE CONVERSION FUNCTIONS
   bool bool(bool | int | float | str)
   int int(bool | int | float | str)
   float float(bool | int | float | str)
   str str(bool | int | float | str)
 
-GENERIC FUNTIONS
-  int id(list | tuple | dict | int | bool | str | float)
-  int len(list | tuple | dict | str | int)
-  int mem()
-
 FLOPPY FUNCTIONS
-  void format()
   {} dir()
-  void save(string filename, object root)
   object load(string filename)
+  void save(string filename, object root)
   void rm(string filename)
+  void format()
 
 NUMERICAL FUNCTIONS
   int abs(int)
   float abs(float)
-  int cmp(item, item)
   float rnd([float[, float]])    start inclusive, end exclusive in all rnd functions, negative values are not allowed
   int rnd([int[, int]])          start inclusive, end exclusive in all rnd functions, negative values are not allowed
+
+USER INPUT / OUTPUT FUNCTIONS
+  str input([str])
+  str edit([str])
+  str repr(list | tuple | dict | int | bool | str | float)
 
 CHARACTER FUNCTIONS
   int ord(str)
@@ -719,17 +781,14 @@ CHARACTER FUNCTIONS
   str getc()                     blocking get next typed key 
   int key()                      non-blocking which key is down
   bool key(int)                  non-blocking is key down
-  str input([str])
-  str edit([str])
-  str repr(list | tuple | dict | int | bool | str | float)
+
+STRING FUNCTIONS
   str sort(str)
 
-CONTAINER FUNCTIONS
-  list sort(list sort)             list is sorted 'in place'! return value is only for convenience.
+LIST FUNCTIONS
+  list sort(list sort)           list is sorted 'in place'! return value is only for convenience.
   list range(int end)
   list range(int start, int end[, int step])
-  {} locals()
-  {} globals()
 
 HARDWARE FUNCTIONS (CAN CRASH ADMIRAL AND DCPU)
   void call([int address])
