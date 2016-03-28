@@ -382,7 +382,7 @@
 ; operator and for separator.
 ;----------------------------------------------------------------
     jsr lexer_next                ; advance 'for'
-    jsr parser_fork_scope
+    ;jsr parser_fork_scope
 
     ; get the testlist (left side)
     set push, 0x0000
@@ -473,7 +473,7 @@
     set x, VOID
 
 :std_for_control_return
-    set [current_scope], [z-1]
+    ;set [current_scope], [z-1]
     set pc, postamble
 
 ;----------------------------------------------------------------
@@ -602,7 +602,7 @@
 ;----------------------------------------------------------------
     jsr lexer_next                ; advance 'while'
 
-    jsr parser_fork_scope
+    ;jsr parser_fork_scope
 
     jsr lexer_store                ; store lexer position
 
@@ -657,7 +657,7 @@
     set x, VOID
 
 :std_while_control_return
-    set [current_scope], [z-1]
+    ;set [current_scope], [z-1]
     set pc, postamble
 
 ;----------------------------------------------------------------
@@ -1260,14 +1260,14 @@
         set pc, led_is_not
 
     set x, BOOL_FALSE
-    ife x, [z-1]
+    ife [z-2], [z-1]
         set x, BOOL_TRUE
 
     set pc, postamble
 
 :led_is_not
     set x, BOOL_TRUE
-    ife x, [z-1]
+    ife [z-2], [z-1]
         set x, BOOL_FALSE
 
     set pc, postamble
