@@ -576,6 +576,9 @@
     ifn [j], 0
         set pc, floppy__item__deserialize__known_item
 
+    ifb b, TYPE_NONE
+        set pc, floppy__item__deserialize__none
+
     ; create item
     set push, c
     set push, b
@@ -586,6 +589,12 @@
     set push, x
     set push, a
     
+    set pc, floppy__item__deserialize__data
+
+:floppy__item__deserialize__none
+    set x, NONE
+    ife [z-1], 0
+        set [z-1], x
     set pc, floppy__item__deserialize__data
 
 :floppy__item__deserialize__known_item

@@ -134,8 +134,8 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
 ;----------------------------------------------------------------
 ; CONSTANT DATA VALUES
 ;----------------------------------------------------------------
-:NONE       dat 0, TYPE_NONE
-:VOID       dat 0, TYPE_VOID
+:NONE       dat NONE + 2, TYPE_NONE, 0x0000
+:VOID       dat VOID + 2, TYPE_VOID, 0x0000
 
 :INT_N1     dat INT_N1 + 2, TYPE_INT, 0x0001, 0xFFFF
 :INT_TABLE
