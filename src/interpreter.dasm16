@@ -87,30 +87,29 @@
 ; return value from scope or any of the ancestor scopes
 ;----------------------------------------------------------------
 :scope_get
-    set push, 2
-    set push, 0
-    jsr preamble
-    
-    set push, [z+11]
-    set push, [z+10]
+    set push, [sp+2]
+    set push, [sp+2]
     jsr dict_get
-    
+
     ifn x, 0
-        jsr postamble
-        
-    set push, [z+11]
+        set pc, scope_get__finish
+
+    set push, [sp+2]
     set push, STR_UNDERSCORE
     jsr dict_get
     
     ife x, 0
-        jsr postamble
-        
+        set pc, scope_get__finish
+
     set push, x
-    set push, [z+10]
+    set push, [sp+2]
     jsr scope_get
     
-    jsr postamble
-    
+:scope_get__finish
+    set [sp], pop
+    set [sp], pop
+    set pc, pop
+
 ;----------------------------------------------------------------
 ; void scope_del(struct handle *dict, struct handle *key)
 ; delete value from scope or closest ancestor scope
