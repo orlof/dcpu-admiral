@@ -1165,38 +1165,9 @@
 ;----------------------------------------------------------------
 :led_and
     set push, 1
-    set push, 2
-    jsr preamble
-
-    jsr boolean_operator
-
-    set x, BOOL_TRUE
-    ife [z-1], BOOL_FALSE   
-        set x, BOOL_FALSE
-    ife [z-2], BOOL_FALSE   
-        set x, BOOL_FALSE
-            
-    set pc, postamble
-
-;----------------------------------------------------------------
-; struct handle *led_or(struct handle *left)
-;----------------------------------------------------------------
-:led_or
     set push, 1
-    set push, 2
     jsr preamble
 
-    jsr boolean_operator
-
-    set x, BOOL_FALSE
-    ife [z-1], BOOL_TRUE    
-        set x, BOOL_TRUE
-    ife [z-2], BOOL_TRUE    
-        set x, BOOL_TRUE
-            
-    set pc, postamble
-
-:boolean_operator
     jsr lexer_next
 
     ; evaluate left side
@@ -1209,21 +1180,66 @@
     set [z-1], x
 
     ; right side
-    set c, [lexer_token]
-    set push, [c + PROTOTYPE_LBP]        ; push for expression call
+    set x, [lexer_token]
+    set push, [x + PROTOTYPE_LBP]        ; push for expression call
     jsr expression
-    set [z-2], x
+
+    ife [z-1], BOOL_FALSE
+        set pc, led_and__finish
+
+    set [z-1], x
 
     ; evaluate right side
-    set push, [z-2]
+    set push, x
     jsr eval
-    set [z-2], x
+    set [z-1], x
     
+    set push, x
+    jsr boolean
+    set [z-1], x
+
+:led_and__finish
+    set x, [z-1]
+            
+    set pc, postamble
+
+;----------------------------------------------------------------
+; struct handle *led_or(struct handle *left)
+;----------------------------------------------------------------
+:led_or
+    set push, 1
+    set push, 2
+    jsr preamble
+
+    jsr lexer_next
+
+    ; evaluate left side
+    set push, [z+10]
+    jsr eval
+    set [z-1], x
+
     set push, x
     jsr boolean
     set [z-2], x
 
-    set pc, pop
+    ; right side
+    set x, [lexer_token]
+    set push, [x + PROTOTYPE_LBP]        ; push for expression call
+    jsr expression
+
+    ife [z-2], BOOL_TRUE
+        set pc, led_or__finish
+
+    set [z-2], x
+
+    ; evaluate right side
+    set push, x
+    jsr eval
+    set [z-1], x
+
+:led_or__finish
+    set x, [z-1]
+    set pc, postamble
 
 ;----------------------------------------------------------------
 ; struct handle *led_is(struct handle *left)
