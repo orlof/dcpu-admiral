@@ -144,7 +144,7 @@
     ; calculate midpoint
     set c, j
     sub c, i
-    div c, 2
+    shr c, 1
     add c, i
 
     set y, [c]                        ; struct handle *tuple
