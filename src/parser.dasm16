@@ -661,7 +661,7 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
-; void parser_skip_suite()
+; void parser_skip_until_token()
 ;----------------------------------------------------------------
 :parser_skip_until_token
     ife [lexer_token], [sp + 1]
@@ -680,12 +680,12 @@
 ; void parser_skip_suite()
 ;----------------------------------------------------------------
 :parser_skip_suite
-    set push, 0
-    set push, 0
-    jsr preamble
+;    set push, 0
+;    set push, 0
+;    jsr preamble
 
     ife [lexer_token], token_newline
-        jsr parser_skip_suite_block
+        set pc, parser_skip_suite_block
 
 :parser_skip_suite_simple_stmt
     set push, token_newline
@@ -693,7 +693,7 @@
 
 :parser_skip_suite_simple_stmt_finish
     jsr lexer_next        ; skip newline
-    set pc, postamble
+    set pc, pop
 
 :parser_skip_suite_block
     jsr lexer_next        ; skip newline
@@ -701,20 +701,23 @@
     set push, token_indent    ; verify indent
     jsr lexer_advance
 
-    set a, 1
+    set push, 1
 
 :parser_skip_suite_block_loop
     ife [lexer_token], token_indent
-        add a, 1
+        add [sp], 1
     ife [lexer_token], token_dedent
-        sub a, 1        
+        sub [sp], 1        
 
     jsr lexer_next
 
-    ife a, 0
-        set pc, postamble
+    ifn [sp], 0
+        set pc, parser_skip_suite_block_loop
 
-    set pc, parser_skip_suite_block_loop
+;    add sp, 1
+    set ex, pop
+    set pc, pop
+
 
 ;----------------------------------------------------------------
 ; void parser_suite()
@@ -970,7 +973,7 @@
     set [z-2], x
 
     set a, [x]
-    set    [a], 1
+    set [a], 1
     set [a+1], [z-1]
     set pc, nud_lbrack_continue
     
