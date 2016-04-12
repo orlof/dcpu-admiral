@@ -1271,18 +1271,20 @@ and can operate asynchronously of one another. Admiral supports only 2 octet dat
 
 <dl>
   <dt id="hicsel">int hicsel()</dt>
+  <dt>bool hicsel(int port)</dt>
   <dd>
     <p>
       HIC select returns the lowest port which has data available or -1 if no data is available.
+      If port number is specified hicsel returns true if data is available in the port, false otherwise.
     </p>
   </dd>
 </dl>
 
 <dl>
-  <dt id="hicst">(int port, bool is_connected, str name) hicst(int port)</dt>
+  <dt id="hicst">(bool is_connected, str name) hicst(int port)</dt>
   <dd>
     <p>
-      HIC status returns information tuple for given port.
+      HIC status returns information tuple for given port. name is None if port is invalid.
     </p>
   </dd>
 </dl>
