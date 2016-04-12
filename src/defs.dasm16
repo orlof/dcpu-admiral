@@ -3,7 +3,7 @@
 ; 29440 bytes is the maximum file size for admiral.bin
 ; the optimal value for MEM_CODE_SIZE is len(admiral.bin)/2
 ;----------------------------------------------------------------
-#define MEM_CODE_SIZE          0x3500
+#define MEM_CODE_SIZE          0x3600
 #define MEM_FLOPPY_SIZE        0x200
 #define MEM_SCREEN_SIZE        0x480
 #define MEM_STACK_SIZE         0x1000
@@ -20,11 +20,14 @@
 #define MEM_HEAP_START         MEM_CODE_SIZE
 #define MEM_HEAP_END           MEM_FLOPPY_START
 
-#define REGISTER_A             MEM_FLOPPY_END - 5
-#define REGISTER_B             MEM_FLOPPY_END - 4
-#define REGISTER_C             MEM_FLOPPY_END - 3
-#define REGISTER_X             MEM_FLOPPY_END - 2
-#define REGISTER_Y             MEM_FLOPPY_END - 1
+#define REGISTER_A             MEM_FLOPPY_END - 8
+#define REGISTER_B             MEM_FLOPPY_END - 7
+#define REGISTER_C             MEM_FLOPPY_END - 6
+#define REGISTER_X             MEM_FLOPPY_END - 5
+#define REGISTER_Y             MEM_FLOPPY_END - 4
+#define REGISTER_Z             MEM_FLOPPY_END - 3
+#define REGISTER_I             MEM_FLOPPY_END - 2
+#define REGISTER_J             MEM_FLOPPY_END - 1
 
 ;----------------------------------------------------------------
 ; DATA TYPES
