@@ -960,6 +960,14 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
       <li><a href="#rm">rm()</a></li>
     </ul>
   </li>
+  <li>HIC functions
+    <ul>
+      <li><a href="#hicsel">hicsel()</a></li>
+      <li><a href="#hicst">hicst()</a></li>
+      <li><a href="#hicrd">hicrd()</a></li>
+      <li><a href="#hicwr">hicwr()</a></li>
+    </ul>
+  </li>
   <li>Hardware functions
     <ul>
       <li><a href="#call">call()</a></li>
@@ -1256,6 +1264,44 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
   </dd>
 </dl>
 
+<h5>HIC FUNCTIONS</h5>
+
+<dl>
+  <dt id="hicsel">hicsel()</dt>
+  <dd>
+    <p>
+      Return lowest port which has data available (or -1 if no data is available).
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="hicst">hicst(int)</dt>
+  <dd>
+    <p>
+      Return port information for specified port. Port information is a tuple containing (port_id, is_connected, name).
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="hicrd">hicrd(int)</dt>
+  <dd>
+    <p>
+      Returns integer containing a word of data received from specified port. 
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="hicwr">hicwr(int port, int data)</dt>
+  <dd>
+    <p>
+      Write word of data to specified port. 
+    </p>
+  </dd>
+</dl>
+
 <h5>HARDWARE FUNCTIONS</h5>
 
 <dl>
@@ -1272,21 +1318,21 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
     </p>
     <p>
       Parameters can be passed between Admiral and subroutine via registers. Before calling the specified address 
-      Admiral “loads” a, b, c, x, y, z, i and j registers with the words stored at addresses 0xdb78 - 0xdb7f.
+      Admiral “loads” a, b, c, x, y, z, i and j registers with the words stored at addresses 0xeb78 - 0xeb7f.
     </p>
     <p>
       If or when the routine at the specified address returns control to Admiral (via an RTS instruction), Admiral 
-      immediately saves the contents of the registers back into the 0xdb78 - 0xdb7f memory range: This can be used 
+      immediately saves the contents of the registers back into the 0xeb78 - 0xeb7f memory range: This can be used 
       to transfer results from the machine language routine to Admiral for further processing. 
       <pre>
-      a: 0xdb78
-      b: 0xdb79
-      c: 0xdb7a
-      x: 0xdb7b
-      y: 0xdb7c
-      z: 0xdb7d
-      i: 0xdb7e
-      j: 0xdb7f
+      a: 0xeb78
+      b: 0xeb79
+      c: 0xeb7a
+      x: 0xeb7b
+      y: 0xeb7c
+      z: 0xeb7d
+      i: 0xeb7e
+      j: 0xeb7f
       </pre>
 
       Subroutine can pollute registers a-j, but must return with rts.

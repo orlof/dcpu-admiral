@@ -853,6 +853,9 @@
     ife a, 0x24c5
         ife b, 0x4fd5
             set [floppy], i
+    ife a, 0x9088
+        ife b, 0xe023
+            set [hic], i
     set pc, detect_hardware__loop
           
 ;----------------------------------------------------------------

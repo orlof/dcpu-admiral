@@ -3396,6 +3396,192 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
+:built_in_hicsel
+;----------------------------------------------------------------
+    jsr built_in_params
+    ifn i, 0
+        jsr recover
+        #doc Wrong number of arguments for hicsel()
+
+    set a, 0
+    hwi [hic]
+
+    ife c, 0xffff
+        set pc, built_in_hicsel_no_data
+
+    set push, c
+    jsr uint16_to_int
+    set pc, postamble
+
+:built_in_hicsel_no_data
+    set x, INT_N1
+    set pc, postamble
+
+;----------------------------------------------------------------
+:built_in_hicst
+;----------------------------------------------------------------
+    jsr built_in_params
+    ifn i, 1
+        jsr recover
+        #doc Wrong number of arguments for hicst(port)
+
+    ; verify that first parameter is int
+    set x, [z-1]
+    ifn [x + HANDLE_TYPE], TYPE_INT
+        jsr recover
+        #doc Illegal argument type for hicrd(port)
+
+    set push, x
+    jsr int_to_int16
+    set push, x
+
+    set push, 3
+    set push, TYPE_TUPLE
+    jsr array_create
+    set [z-1], x
+
+    ; -------------
+    ; Get port info
+    ; -------------
+    set a, 0x0006
+    set b, [sp]
+    hwi [hic]
+    ifn c, 0x0000
+        jsr recover
+        #doc Port number out of bounds for hicst
+
+    ; Port ID
+    set push, a
+    jsr uint16_to_int
+
+    set a, [z-1]
+    set a, [a]
+    set [a+1], x
+
+    ; Connected?
+    ifb b, 0x0001
+        set [a+2], BOOL_TRUE
+    ifc b, 0x0001
+        set [a+2], BOOL_FALSE
+
+    ; -------------
+    ; Get port name
+    ; -------------
+    set push, 26
+    set push, TYPE_STR
+    jsr array_create
+    set [a+3], x
+
+    set a, 0x0007
+    set b, [sp]
+    set c, [x]
+    add c, 1
+    hwi [hic]
+    ifn c, 0x0000
+        jsr recover
+        #doc Port number out of bounds for hicst
+
+    set b, [x]
+    add b, 1
+:built_in_hicst_len_loop
+    ife [b], 0
+        set pc, built_in_hicst_len_finish
+
+    add b, 1
+    set pc, built_in_hicst_len_loop
+
+:built_in_hicst_len_finish
+    set a, [x]
+    sub b, a
+
+    set push, x
+    set push, b
+    jsr realloc
+
+    sub b, 1
+
+    set [a], b
+
+    set x, [z-1]
+    set pc, postamble
+
+;----------------------------------------------------------------
+:built_in_hicrd
+;----------------------------------------------------------------
+    jsr built_in_params
+    ifn i, 1
+        jsr recover
+        #doc Wrong number of arguments for hicrd(port)
+
+    ; verify that first parameter is int
+    set x, [z-1]
+    ifn [x + HANDLE_TYPE], TYPE_INT
+        jsr recover
+        #doc Illegal argument type for hicrd(port)
+
+    set push, x
+    jsr int_to_int16
+    set b, x
+
+    set a, 0x0008
+    hwi [hic]
+    ifn c, 0x0000
+        jsr recover
+        #doc Port number out of bounds for hicrd    
+
+    set a, 0x0002
+    hwi [hic]
+
+    ifn c, 0x0000
+        jsr recover
+        #doc hicrd error
+
+    set push, a
+    jsr uint16_to_int
+
+    set pc, postamble
+
+;----------------------------------------------------------------
+:built_in_hicwr
+;----------------------------------------------------------------
+    jsr built_in_params
+    ifn i, 2
+        jsr recover
+        #doc Wrong number of arguments for hicwr(port, data)
+
+    ; verify that first parameter is int
+    set x, [z-1]
+    ifn [x + HANDLE_TYPE], TYPE_INT
+        jsr recover
+        #doc Illegal argument type for hicwr(port, data)
+
+    set push, x
+    jsr int_to_int16
+    set b, x
+
+    set a, 0x0008
+    hwi [hic]
+    ifn c, 0x0000
+        jsr recover
+        #doc Port number out of bounds for hicwr
+
+    set push, [z-2]
+    jsr int_to_int16
+    set b, x
+
+    set a, 0x0003
+    hwi [hic]
+
+    ife c, 0x0001
+        jsr recover
+        #doc Transmit buffer overflow
+
+    set push, a
+    jsr uint16_to_int
+
+    set pc, postamble
+
+;----------------------------------------------------------------
 :built_in_hwn
 ;----------------------------------------------------------------
     jsr built_in_params
@@ -3478,7 +3664,8 @@
 
     ; pop b    
     set a, [x]
-    set [a+2], pop
+    add a, [a]
+    set [a], pop
 
     ; int to tuple
     set a, [z-1]
@@ -3501,7 +3688,8 @@
 
     ; pop y    
     set a, [x]
-    set [a+2], pop
+    add a, [a]
+    set [a], pop
 
     ; int to tuple
     set a, [z-1]
@@ -3585,7 +3773,9 @@
     set b, [REGISTER_B]
     set c, [REGISTER_C]
     set x, [REGISTER_X]
-    set y, [REGISTER_Y]
+    set y, [REGISTER_Z]
+    set y, [REGISTER_I]
+    set y, [REGISTER_J]
     set pc, pop
 
 ;----------------------------------------------------------------
@@ -3597,6 +3787,9 @@
     set [REGISTER_C], c
     set [REGISTER_X], x
     set [REGISTER_Y], y
+    set [REGISTER_Z], z
+    set [REGISTER_I], i
+    set [REGISTER_J], j
     set pc, pop
 
 
