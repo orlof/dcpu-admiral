@@ -1266,38 +1266,41 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
 
 <h5>HIC FUNCTIONS</h5>
 
+HIC is a bi-directional multipurpose data port. Transmissions in either direction are independent of each other 
+and can operate asynchronously of one another. Admiral supports only 2 octet data primitive.
+
 <dl>
-  <dt id="hicsel">hicsel()</dt>
+  <dt id="hicsel">int hicsel()</dt>
   <dd>
     <p>
-      Return lowest port which has data available (or -1 if no data is available).
+      HIC select returns the lowest port which has data available or -1 if no data is available.
     </p>
   </dd>
 </dl>
 
 <dl>
-  <dt id="hicst">hicst(int)</dt>
+  <dt id="hicst">(int port, bool is_connected, str name) hicst(int port)</dt>
   <dd>
     <p>
-      Return port information for specified port. Port information is a tuple containing (port_id, is_connected, name).
+      HIC status returns information tuple for given port.
     </p>
   </dd>
 </dl>
 
 <dl>
-  <dt id="hicrd">hicrd(int)</dt>
+  <dt id="hicrd">int hicrd(int port)</dt>
   <dd>
     <p>
-      Returns integer containing a word of data received from specified port. 
+      HIC read returns an integer containing a word of data received from given port. 
     </p>
   </dd>
 </dl>
 
 <dl>
-  <dt id="hicwr">hicwr(int port, int data)</dt>
+  <dt id="hicwr">void hicwr(int port, int data)</dt>
   <dd>
     <p>
-      Write word of data to specified port. 
+      HIC write transmits a word of data to specified port. 
     </p>
   </dd>
 </dl>
