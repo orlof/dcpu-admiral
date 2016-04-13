@@ -3619,6 +3619,7 @@
         jsr recover
         #doc Illegal argument type for hwi(a)
 
+    set push, z
     ; push first parameter value to stack
     set push, x
     jsr int_to_int16
@@ -3629,6 +3630,7 @@
     hwi pop
 
     jsr save_registers
+    set z, pop
 
     set pc, postamble
 
@@ -3780,9 +3782,10 @@
     set b, [REGISTER_B]
     set c, [REGISTER_C]
     set x, [REGISTER_X]
-    set y, [REGISTER_Z]
-    set y, [REGISTER_I]
-    set y, [REGISTER_J]
+    set y, [REGISTER_Y]
+    set z, [REGISTER_Z]
+    set i, [REGISTER_I]
+    set j, [REGISTER_J]
     set pc, pop
 
 ;----------------------------------------------------------------
