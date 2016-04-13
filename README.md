@@ -61,10 +61,11 @@
 <h6>Implementation Principles</h6>
  - "First make it work. Then make it right. Then make it fast."
  - Memory allocation targets:
-   - 46.207 words for heap
-   - 4.096 words for stack
-   - 13.568 words for admiral core (including static memory buffers)
+   - 70% for heap
+   - 5% for stack
+   - 25% for admiral core (including static memory buffers)
  - Memory is conserved by using direct one-pass interpreter
+   - It is quite slow, but could be boosted with AST compiler - memory-speed trade-off 
  - Pratt’s algorithm for efficient expression parsing
  - Mark and sweep garbage collector for memory conservation and detecting trash even with reference loops
  - Floppy load/save uses object graph serialization e.g. 
@@ -146,9 +147,11 @@ b 2
  - Interactive command prompt with line editing
  - Functions: poke(), peek() and call() for low level access
  - Functions: hwn(), hwq() and hwi() for low level hardware access
+ - Functions: HIC select, status, read and transmit functions for TechCompliant HIC hardware
  
 <h6>Next in development</h6>
- - Github issue tracker contains a list of development items.
+ - Github issue tracker contains a list of development items
+ - Support for other TechCompliant hardware
 
 --
 
@@ -705,8 +708,8 @@ Important thing about a list is that items in a list need not be of the same typ
 Creating a list is as simple as putting different comma-separated values between square brackets. For example −
 
 <pre>
->l1=['Sun','Alpha Centauri',2085,16.7];
->l2=[1,2,3,4,5];
+>l1=['Sun','Alpha Centauri',2085,16.7]
+>l2=[1,2,3,4,5]
 >l3=["a","b","c","d"]
 </pre>
 
@@ -779,12 +782,12 @@ TODO
 
 <h5 id="4.6">Boolean</h5>
 
-TODO
+Admiral uses boolean variables to evaluate conditions. The boolean values true and false are returned when an 
+expression is compared or evaluated.
 
 <h5 id="4.7">None</h5>
 
-TODO
-
+None is frequently used to represent the absence of a value, as when default arguments are not passed to a function.
 --
 
 <h4 id="5">Statements</h4>
