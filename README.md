@@ -100,28 +100,32 @@ Here is another example of Admiral code. A function that calculates square Root 
 
 <pre>
 >sqrt=edit()                  # start integrated editor
-'p=0                          # define variable
+</pre>
+<pre>
+p=0                           # define variable
 x=argv[0]                     # assign first unnamed function argument to x
 while not x==p:               # loop to calculate sqrt
  p=x
  x=(x**2+argv[0])/(2*x)
 return x                      # return value
-'
->sqrt(81.0)                   # function call with float argument
+</pre>
+<pre>
+>print sqrt(81.0)             # function call with float argument
 9.00000000
->sqrt(81)                     # function call with integer argument
+>print sqrt(81)               # function call with integer argument
 9
 </pre>
 
-Couple of more examples:
+Example: variable swap
 <pre>
-# python's variable swap
 >a=1
 >b=2
 >a,b=b,a
-# dictionary printing
+</pre>
+Example: dictionary printing
+<pre>
 >d={'a':1,'b':2}
->for k,v in d: print k, v
+>for k,v in d:print k, v
 a 1
 b 2
 </pre>
@@ -238,7 +242,7 @@ When Admiral starts, it will show an interactive prompt '>' and wait for input. 
 
 Admiral also has a built-in text editor to facilitate software development in deep space colonies. It is 
 started by calling edit(). edit() returns the edited text as string that can be assigned to a variable.
-To exit the editor type CTRL (press AND release) followed by x. If you want to discard your editing, 
+To exit the editor hold down CTRL and then press x. If you want to discard your editing, 
 use CTRL followed by c, which will return the original string instead of the edited version.
 
     result=edit()
@@ -1391,7 +1395,7 @@ and can operate asynchronously of one another.
       used only when Admiral executes floppy commands. Floppy commands will overwrite the buffer area completely.
     </p>
     <p>
-      Given address should be in the range 0 thru 65535, or $0000 thru $FFFF. If the given address is outside these 
+      Given address should be in the range 0 thru 65535, or 0x0000 thru 0xFFFF. If the given address is outside these 
       limits, Admiral will use LSW as address.
     </p>
     <p>
