@@ -273,7 +273,7 @@ You can set default value for keyword argument with the following line:
 if "type" not in locals(): type='Gigalosaurus'
 </pre>
 
-Dicts and prototype assignment operator provide "poor mans" objects :-)
+Dicts with prototype creation provide "poor mans" objects :-)
 <pre>
 >ship={}                  # create prototype object (i.e. dict)
 >ship.spd=0               # assign value to prototype
@@ -289,6 +289,10 @@ me.spd+=me.acceleration  # function modifies object field
 >print ship.spd 
 0                         # and prototype's fields are intact
 </pre>
+
+Dict created with dict.create() inherits its properties from prototype. Prototype dict is
+used to read values if property is not defined in dict itself. Writing values never
+modify the prototype dict.
 
 Admiral has three different types of built-in functionalities:  statements, global functions 
 and class functions. E.g. print and run are stetements, len() and mem() are global functions, 
@@ -673,7 +677,22 @@ value associated with that key is forgotten. It is an error to extract a value u
   <dt>dict.create()</dt>
   <dd>
     <p>
-      Return a new dict object that has the object set as prototype.
+      Return a new dict object that has the existing dict set as prototype.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt>dict.me</dt>
+  <dd>
+    <p>
+      If function is called via dict reference e.g. dict.hello() then "me" keyword can be used to access 
+      the properties of the referenced dict.
+      <pre>
+      >d={'hello': 'print me.value', 'value':10}
+      >d.hello()
+      10
+      </pre>
     </p>
   </dd>
 </dl>
