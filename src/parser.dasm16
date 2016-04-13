@@ -3400,12 +3400,16 @@
 ;----------------------------------------------------------------
     jsr built_in_params
 
+    ife [hic], 0xffff
+        jsr recover
+        #doc HIC not found error in hicsel()
+
     ife i, 1
         set pc, built_in_hicsel_port
 
     ifn i, 0
         jsr recover
-        #doc Wrong number of arguments for hicsel([port])
+        #doc Wrong number of arguments for hicsel()
 
     set a, 0
     set c, 0
@@ -3426,7 +3430,7 @@
     set x, [z-1]
     ifn [x + HANDLE_TYPE], TYPE_INT
         jsr recover
-        #doc Illegal argument type for hicsel([int port])
+        #doc Illegal argument type for hicsel()
 
     set push, x
     jsr int_to_int16
@@ -3445,15 +3449,20 @@
 :built_in_hicst
 ;----------------------------------------------------------------
     jsr built_in_params
+
+    ife [hic], 0xffff
+        jsr recover
+        #doc HIC not found error in hicst()
+
     ifn i, 1
         jsr recover
-        #doc Wrong number of arguments for hicst(port)
+        #doc Wrong number of arguments for hicst(int port)
 
     ; verify that first parameter is int
     set x, [z-1]
     ifn [x + HANDLE_TYPE], TYPE_INT
         jsr recover
-        #doc Illegal argument type for hicrd(port)
+        #doc Illegal argument type for hicst(int port)
 
     set push, x
     jsr int_to_int16
@@ -3508,6 +3517,11 @@
 :built_in_hicrd
 ;----------------------------------------------------------------
     jsr built_in_params
+
+    ife [hic], 0xffff
+        jsr recover
+        #doc HIC not found error in hicrd()
+
     ifn i, 1
         jsr recover
         #doc Wrong number of arguments for hicrd(port)
@@ -3537,6 +3551,11 @@
 :built_in_hicwr
 ;----------------------------------------------------------------
     jsr built_in_params
+
+    ife [hic], 0xffff
+        jsr recover
+        #doc HIC not found error in hicwr()
+
     ifn i, 2
         jsr recover
         #doc Wrong number of arguments for hicwr(port, data)

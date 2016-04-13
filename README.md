@@ -1267,7 +1267,7 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
 <h5>HIC FUNCTIONS</h5>
 
 HIC is a bi-directional multipurpose data port. Transmissions in either direction are independent of each other 
-and can operate asynchronously of one another. Admiral supports only 2 octet data primitive.
+and can operate asynchronously of one another.
 
 <dl>
   <dt id="hicsel">int hicsel()</dt>
@@ -1281,10 +1281,10 @@ and can operate asynchronously of one another. Admiral supports only 2 octet dat
 </dl>
 
 <dl>
-  <dt id="hicst">(bool is_connected, str name) hicst(int port)</dt>
+  <dt id="hicst">str hicst(int port)</dt>
   <dd>
     <p>
-      HIC status returns information tuple for given port. name is None if port is invalid.
+      HIC status returns name for given port or None if port is invalid.
     </p>
   </dd>
 </dl>
@@ -1440,7 +1440,7 @@ and can operate asynchronously of one another. Admiral supports only 2 octet dat
 <h5>EXPRESSION PRECEDENCE TABLE</h5>
 <table cellpadding="1">
 <tr><th>OPERATOR</th><th>DESCRIPTION</th><th>ASSOCIATIVITY</th></tr>
-<tr><td>=, +=, -=, *=, /=, %=, **=, &gt;&gt;=, &lt;&lt;=, &=, ^=, %=, ?=, :=</td><td>Assignment, augmented assignments, conditional assignment, prototype</td><td>Right</td></tr>
+<tr><td>=, +=, -=, *=, /=, %=, **=, &gt;&gt;=, &lt;&lt;=, &=, ^=, %=</td><td>Assignment, augmented assignments</td><td>Right</td></tr>
 <tr><td>,</td><td>Comma</td><td>Left</td></tr>
 <tr><td>or</td><td>Boolean OR</td><td>Left</td></tr>
 <tr><td>and</td><td>Boolean AND</td><td>Left</td></tr>
