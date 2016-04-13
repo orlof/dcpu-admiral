@@ -45,11 +45,11 @@
 ;----------------------------------------------------------------
 ; GLOBAL HW VARIABLES
 ;----------------------------------------------------------------
-:keyboard           DAT 0
-:monitor            DAT 0 
-:clock              DAT 0
-:floppy             DAT 0
-:hic                DAT 0
+:keyboard           DAT 0xffff
+:monitor            DAT 0xffff
+:clock              DAT 0xffff
+:floppy             DAT 0xffff
+:hic                DAT 0xffff
 
 ;----------------------------------------------------------------
 ; GLOBAL HEAP MANAGEMENT VARIABLES
