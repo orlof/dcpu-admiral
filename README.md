@@ -687,7 +687,7 @@ value associated with that key is forgotten. It is an error to extract a value u
   <dd>
     <p>
       If function is called via dict reference e.g. dict.hello() then "me" keyword can be used to access 
-      the properties of the referenced dict.
+      the properties of the referenced dict inside that function.
       <pre>
       >d={'hello': 'print me.value', 'value':10}
       >d.hello()
@@ -699,7 +699,58 @@ value associated with that key is forgotten. It is an error to extract a value u
 
 <h5 id="4.4">List</h5>
 
-TODO
+The list is a versatile datatype which can be written as a list of comma-separated values (items) between square brackets. 
+Important thing about a list is that items in a list need not be of the same type.
+
+Creating a list is as simple as putting different comma-separated values between square brackets. For example −
+
+<pre>
+>l1=['Sun','Alpha Centauri',2085,16.7];
+>l2=[1,2,3,4,5];
+>l3=["a","b","c","d"]
+</pre>
+
+Similar to string indices, list indices start at 0, and lists can be sliced, concatenated and so on.
+
+To access values in lists, use the square brackets for slicing along with the index or indices to obtain value available at 
+that index. For example −
+
+<pre>
+>print l1[0]
+Sun
+>print l2[1:5]
+[2,3,4,5]
+</pre>
+
+You can update single or multiple elements of lists by giving the index on the left-hand side of the assignment operator, 
+and you can add to elements in a list with the append() method. For example −
+
+<pre>
+>l2[2]=2001
+>print l[2]
+2001
+</pre>
+
+To remove a list element, you can use the del statement, but you must know the index of the element which you are deleting. 
+For example −
+
+<pre>
+>del l1[1];
+>print l1
+['Sun',2085,16.7]
+</pre>
+
+Lists respond to the + and * operators much like strings; they mean concatenation and repetition here too, except that 
+the result is a new list, not a string.
+
+<table cellpadding="1">
+<tr><th>Expression</th><th>Results</th><th>Description</th></tr>
+<tr><td>len([1, 2, 3])</td><td>3</td><td>Length</td></tr>
+<tr><td>[1, 2, 3] + [4, 5, 6]</td><td>[1, 2, 3, 4, 5, 6]</td><td>Concatenation</td></tr>
+<tr><td>['Hi!'] * 4</td><td>['Hi!', 'Hi!', 'Hi!', 'Hi!']</td><td>Repetition</td></tr>
+<tr><td>3 in [1, 2, 3]</td><td>true</td><td>Membership</td></tr>
+<tr><td>for x in [1, 2, 3]: print x</td><td>1 2 3</td><td>Iteration</td></tr>
+</table>
 
 <h6>LIST API</h6>
 
