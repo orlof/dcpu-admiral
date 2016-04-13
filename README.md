@@ -84,16 +84,16 @@ Hello World
 ..or as a function call:
 
 <pre>
->output='print text'          # assign string to variable
->output(text='Hello World')   # call 'output' as function
-Hello World                   # function output
+>hello="print 'Hello World'"  # assign function string to 'hello'
+>hello()                      # call 'hello' as function
+Hello World                   # output
 </pre>
 
 In Admiral - ANY and ALL strings can be called as functions! You could even write:
 
 <pre>
->'print text'(text='Hello World')   # crazy way to call constant string as function
-Hello World                         # function output
+>'print argv[0]'('Hello World')   # crazy way to call constant string as function
+Hello World                       # function output
 </pre>
 
 Here is another example of Admiral code. A function that calculates square Root for integers and floats:
@@ -122,6 +122,7 @@ Example: variable swap
 >b=2
 >a,b=b,a
 </pre>
+
 Example: dictionary printing
 <pre>
 >d={'a':1,'b':2}
@@ -192,13 +193,15 @@ language *inside* DCPU.
 
 The latest version of Admiral release is available from github:
 
-    https://github.com/orlof/dcpu-admiral/releases
+ - https://github.com/orlof/dcpu-admiral/releases
 
 The admiral.bin is the precompiled binary file that should run in emulators.
 
 However, if you only want a quick peek at the Admiral, the easies way to try it is with Admiral Emulator:
 
-    https://github.com/orlof/admiral-emu/releases
+ - https://github.com/orlof/admiral-emu/releases
+
+Note that Admiral Emulator contains older version of Admiral and is not maintained at the moment.
     
 --
 
@@ -242,8 +245,8 @@ When Admiral starts, it will show an interactive prompt '>' and wait for input. 
 
 Admiral also has a built-in text editor to facilitate software development in deep space colonies. It is 
 started by calling edit(). edit() returns the edited text as string that can be assigned to a variable.
-To exit the editor hold down CTRL and then press x. If you want to discard your editing, 
-use CTRL followed by c, which will return the original string instead of the edited version.
+To exit the editor hold down CTRL and then press x (CTRL-x). If you want to discard your editing, 
+use CTRL-c, which will return the original string instead of the edited version.
 
     result=edit()
 
@@ -254,27 +257,31 @@ If you need to edit an existing text, you can give a string argument for edit():
 Since Admiral is pure interpreter all strings are callable (i.e. can be used as functions):
 
 <pre>
->'print "Hello World"'()
-Hello World
 >'print msg'(msg='Hello World again!') 
 Hello World again!
 </pre>
 
-Function calls can have positional and keyword arguments in any order:
+Function calls can have positional and keyword arguments in any order.
+
+Example: only keyword arguments (type='Monster", size='XXXL')
 <pre>
-# keywords: type='Monster', size='XXXL'
 get_danger_level(type='Monster", size='XXXL')
+</pre>
 
-# positional: argv[0]='Monster', argv[1]='XXXL'
+Example: only positional arguments (argv[0]='Monster' and argv[1]='XXXL')
+<pre>
 get_danger_level('Monster', 'XXXL')
+</pre>
 
-# mixed: type='Monster', argv[0]='XXXL'
+Example: mixed keyword and positional arguments (type='Monster' and argv[0]='XXXL')
+<pre>
 get_danger_level(type='Monster', 'XXXL')
 </pre>
 
 Positional arguments are automatically assigned to argv[] array from left to right order.
 
-You can set default value for keyword argument with the following line:
+You can set default value for keyword argument with the following one line idiom in the beginning 
+of the function:
 
 <pre>
 if "type" not in locals(): type='Gigalosaurus'
@@ -298,8 +305,10 @@ me.spd+=me.acceleration  # function modifies object field
 </pre>
 
 Dict created with dict.create() inherits its properties from prototype. Prototype dict is
-used to read values if property is not defined in dict itself. Writing values never
-modify the prototype dict.
+used to read values if property is not defined in dict itself. Note that prototype values
+are not just copied at creation time, but also changes in prototype values are reflected 
+to the created dict unless it has already defined the value itself. However, writing values 
+to created dict never modify the prototype dict.
 
 Admiral has three different types of built-in functionalities:  statements, global functions 
 and class functions. E.g. print and run are stetements, len() and mem() are global functions, 
@@ -309,16 +318,18 @@ Admiral programmer can write global functions and dict class functions. New stat
 functions to other class types cannot be added. Global functions are variables that have 
 string value and class functions can be defined for dicts by adding function with str key.
 
+Example: global function
 <pre>
-# global function example
->a="print argv[0]"
->a("Hello")
+>out="print argv[0]"
+>out("Hello")
 Hello
+</pre>
 
-# class fuction example
+Example: class function
+<pre>
 >a={}
->a.x="print argv[0]"
->a.x("Hello")
+>a.out="print argv[0]"
+>a.out("Hello")
 Hello
 </pre>
 
