@@ -1,29 +1,27 @@
 sin:
 x=float(argv[0])
 
-while x>me['pi']: x-=me['2pi']
-while x<me['-pi']: x+=me['2pi']
+while x>me.pi: x-=2.0*me.pi
+while x<-me.pi: x+=2.0*me.pi
 
-if x<me['-0.5pi']: x=me['-pi']-x
-if x>me['0.5pi']: x=me['pi']-x
+if x<-0.5*me.pi: x=-me.pi-x
+if x>0.5*me.pi: x=me.pi-x
 
 x2=x*x
 res=pow=x
 pow*=x2
-res-=pow/me[6]
+res-=pow/6.0
 pow*=x2
-res+=pow/me[120]
+res+=pow/120.0
 pow*=x2
-res-=pow/me[5040]
+res-=pow/5040.0
 return res
 
 cos:
-return me.sin(me['0.5pi']-argv[0])
+return me.sin(0.5*me.pi-argv[0])
 
 tan:
 return me.sin(argv[0])/me.cos(argv[0])
-
-sieve: "a=[true]*argv[0]"
 
 sqrt:
 p=0
@@ -33,12 +31,4 @@ while not x==p:
  x=(x**2+argv[0])/(2*x)
 return x
 
-6: 6.0
-120: 120.0
-5040: 5040.0
-0.5pi: 1.57
--0.5pi: -1.57
-pi: 3.14
--pi: -3.14
-2pi: 6.28
-
+pi: 3.14159

@@ -347,6 +347,7 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 5, "poke", built_in_poke
     dat 5, "read", built_in_read
     dat 5, "repr", built_in_repr
+    dat 5, "hsel", built_in_hsel
     dat 5, "save", built_in_save
     dat 5, "sort", built_in_sort
     dat 5, "type", built_in_type
@@ -359,12 +360,11 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 6, "float", built_in_float
     dat 6, "input", built_in_input
     dat 6, "write", built_in_write
-    dat 6, "hicrd", built_in_hicrd
-    dat 6, "hicwr", built_in_hicwr
-    dat 6, "hicst", built_in_hicst
+    dat 6, "hrecv", built_in_hrecv
+    dat 6, "hsend", built_in_hsend
+    dat 6, "hinfo", built_in_hinfo
     dat 7, "cursor", built_in_cursor
     dat 7, "format", built_in_format
-    dat 7, "hicsel", built_in_hicsel
     dat 7, "locals", built_in_locals
     dat 7, "scroll", built_in_scroll
     dat 8, "globals", built_in_globals
