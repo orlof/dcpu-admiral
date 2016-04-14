@@ -3396,41 +3396,41 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
-:built_in_hicsel
+:built_in_hsel
 ;----------------------------------------------------------------
     jsr built_in_params
 
     ife [hic], 0xffff
         jsr recover
-        #doc HIC not found error in hicsel()
+        #doc HIC not found error in hsel()
 
     ife i, 1
-        set pc, built_in_hicsel_port
+        set pc, built_in_hsel_port
 
     ifn i, 0
         jsr recover
-        #doc Wrong number of arguments for hicsel()
+        #doc Wrong number of arguments for hsel()
 
     set a, 0
     set c, 0
     hwi [hic]
 
     ife c, 0xffff
-        set pc, built_in_hicsel_no_data
+        set pc, built_in_hsel_no_data
 
     set push, c
     jsr uint16_to_int
     set pc, postamble
 
-:built_in_hicsel_no_data
+:built_in_hsel_no_data
     set x, INT_N1
     set pc, postamble
 
-:built_in_hicsel_port
+:built_in_hsel_port
     set x, [z-1]
     ifn [x + HANDLE_TYPE], TYPE_INT
         jsr recover
-        #doc Illegal argument type for hicsel()
+        #doc Illegal argument type for hsel()
 
     set push, x
     jsr int_to_int16
@@ -3446,23 +3446,23 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
-:built_in_hicst
+:built_in_hinfo
 ;----------------------------------------------------------------
     jsr built_in_params
 
     ife [hic], 0xffff
         jsr recover
-        #doc HIC not found error in hicst()
+        #doc HIC not found error in hinfo()
 
     ifn i, 1
         jsr recover
-        #doc Wrong number of arguments for hicst(int port)
+        #doc Wrong number of arguments for hinfo()
 
     ; verify that first parameter is int
     set x, [z-1]
     ifn [x + HANDLE_TYPE], TYPE_INT
         jsr recover
-        #doc Illegal argument type for hicst(int port)
+        #doc Illegal argument type for hinfo()
 
     set push, x
     jsr int_to_int16
@@ -3491,16 +3491,16 @@
     hwi [hic]
     ifn c, 0x0000
         jsr recover
-        #doc Port number out of bounds for hicst
+        #doc Port number out of bounds for hinfo
 
-:built_in_hicst_len_loop
+:built_in_hinfo_len_loop
     ife [b], 0
-        set pc, built_in_hicst_len_finish
+        set pc, built_in_hinfo_len_finish
 
     add b, 1
-    set pc, built_in_hicst_len_loop
+    set pc, built_in_hinfo_len_loop
 
-:built_in_hicst_len_finish
+:built_in_hinfo_len_finish
     set a, [x]
     sub b, a
     set [a], b
@@ -3514,23 +3514,23 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
-:built_in_hicrd
+:built_in_hrecv
 ;----------------------------------------------------------------
     jsr built_in_params
 
     ife [hic], 0xffff
         jsr recover
-        #doc HIC not found error in hicrd()
+        #doc HIC not found error in hrecv()
 
     ifn i, 1
         jsr recover
-        #doc Wrong number of arguments for hicrd(port)
+        #doc Wrong number of arguments for hrecv()
 
     ; verify that first parameter is int
     set x, [z-1]
     ifn [x + HANDLE_TYPE], TYPE_INT
         jsr recover
-        #doc Illegal argument type for hicrd(port)
+        #doc Illegal argument type for hrecv()
 
     set push, x
     jsr int_to_int16
@@ -3540,7 +3540,7 @@
     hwi [hic]
     ifg c, 0x0001
         jsr recover
-        #doc Fail, Receive error or no data available in hicrd
+        #doc Fail, Receive error or no data available in hrecv()
 
     set push, b
     jsr uint16_to_int
@@ -3548,23 +3548,23 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
-:built_in_hicwr
+:built_in_hsend
 ;----------------------------------------------------------------
     jsr built_in_params
 
     ife [hic], 0xffff
         jsr recover
-        #doc HIC not found error in hicwr()
+        #doc HIC not found error in hsend()
 
     ifn i, 2
         jsr recover
-        #doc Wrong number of arguments for hicwr(port, data)
+        #doc Wrong number of arguments for hsend()
 
     ; verify that first parameter is int
     set x, [z-1]
     ifn [x + HANDLE_TYPE], TYPE_INT
         jsr recover
-        #doc Illegal argument type for hicwr(port, data)
+        #doc Illegal argument type for hsend()
 
     set push, x
     jsr int_to_int16
@@ -3573,7 +3573,7 @@
     set x, [z-2]
     ifn [x + HANDLE_TYPE], TYPE_INT
         jsr recover
-        #doc Illegal argument type for hicwr(port, data)
+        #doc Illegal argument type for hsend()
 
     set push, x
     jsr int_to_int16
@@ -3583,7 +3583,7 @@
     hwi [hic]
     ifg c, 0x0001
         jsr recover
-        #doc Transmit buffer overflow, port is not connected or HIC is busy error in hicwr(port, data)
+        #doc Transmit buffer overflow, port is not connected or HIC is busy error in hsend()
 
     set x, NONE
     set pc, postamble
