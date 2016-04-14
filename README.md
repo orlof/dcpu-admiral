@@ -1358,39 +1358,39 @@ HIC is a bi-directional multipurpose data port. Transmissions in either directio
 and can operate asynchronously of one another.
 
 <dl>
-  <dt id="hicsel">int hicsel()</dt>
-  <dt>bool hicsel(int port)</dt>
+  <dt id="hsel">int hsel()</dt>
+  <dt>bool hsel(int port)</dt>
   <dd>
     <p>
-      HIC select returns the lowest port which has data available or -1 if no data is available.
-      If port number is specified hicsel returns true if data is available in the port, false otherwise.
+      Returns the lowest port which has data available or -1 if no data is available.
+      If port number is specified hsel returns true if data is available in the port, false otherwise.
     </p>
   </dd>
 </dl>
 
 <dl>
-  <dt id="hicst">str hicst(int port)</dt>
+  <dt id="hinfo">str hinfo(int port)</dt>
   <dd>
     <p>
-      HIC status returns name for given port or None if port is invalid.
+      Returns name for given port or None if port is invalid.
     </p>
   </dd>
 </dl>
 
 <dl>
-  <dt id="hicrd">int hicrd(int port)</dt>
+  <dt id="hread">int hread(int port)</dt>
   <dd>
     <p>
-      HIC read returns an integer containing a word of data received from given port. 
+      Returns an integer containing a word of data received from given port or none if no data is available. 
     </p>
   </dd>
 </dl>
 
 <dl>
-  <dt id="hicwr">void hicwr(int port, int data)</dt>
+  <dt id="hsend">void hsend(int port, int data)</dt>
   <dd>
     <p>
-      HIC write transmits a word of data to specified port. 
+      Transmits a word of data to specified port. 
     </p>
   </dd>
 </dl>

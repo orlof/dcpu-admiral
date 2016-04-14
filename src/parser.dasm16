@@ -3538,9 +3538,13 @@
 
     set a, 0x0001
     hwi [hic]
-    ifg c, 0x0001
+    ife c, 0x0002
         jsr recover
-        #doc Fail, Receive error or no data available in hrecv()
+        #doc Fail, Receive error in hrecv()
+
+    set x, NONE
+    ife c, 0x0003
+        set pc, postamble
 
     set push, b
     jsr uint16_to_int
