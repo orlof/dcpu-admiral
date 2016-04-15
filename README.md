@@ -1246,7 +1246,7 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
   <dt id="hex">hex(int)</dt>
   <dd>
     <p>
-      TODO
+      Convert an integer number (of any size) to a lowercase hexadecimal string prefixed with “0x”.
     </p>
   </dd>
 </dl>
@@ -1255,7 +1255,7 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
   <dt id="wget">wget(int x, int y)</dt>
   <dd>
     <p>
-      TODO
+      Return character (string of length 1) containing the character at screen coordinates x, y.
     </p>
   </dd>
 </dl>
@@ -1264,7 +1264,7 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
   <dt id="wset">wset(int x, int y, char c)</dt>
   <dd>
     <p>
-      TODO
+      Draw character (string of length 1) to screen coordinates x, y.
     </p>
   </dd>
 </dl>
@@ -1273,7 +1273,7 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
   <dt id="cursor">cursor(int x, int y)</dt>
   <dd>
     <p>
-      TODO
+      Move cursor to screen coordinates x, y. Next print statement will start from the cursor coordinates.
     </p>
   </dd>
 </dl>
@@ -1282,7 +1282,7 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
   <dt id="scroll">scroll(int dx, int dy)</dt>
   <dd>
     <p>
-      TODO
+      Scroll screen dx, dy characters. Areas that scroll in are filled with zero and appear empty on screen. 
     </p>
   </dd>
 </dl>
