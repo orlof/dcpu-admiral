@@ -1411,21 +1411,23 @@ and can operate asynchronously of one another.
     </p>
     <p>
       Parameters can be passed between Admiral and subroutine via registers. Before calling the specified address 
-      Admiral “loads” a, b, c, x, y, z, i and j registers with the words stored at addresses 0xeb78 - 0xeb7f.
+      Admiral “loads” a, b, c, x, y, z, i and j registers with the words stored at storage addresses (see table below).
     </p>
     <p>
       If or when the routine at the specified address returns control to Admiral (via an RTS instruction), Admiral 
-      immediately saves the contents of the registers back into the 0xeb78 - 0xeb7f memory range: This can be used 
-      to transfer results from the machine language routine to Admiral for further processing. 
+      immediately saves the contents of the registers back into the storage addresses memory range: This can be used 
+      to transfer results from the machine language routine to Admiral for further processing.
+
+      Storage addresses:
       <pre>
-      a: 0xeb78
-      b: 0xeb79
-      c: 0xeb7a
-      x: 0xeb7b
-      y: 0xeb7c
-      z: 0xeb7d
-      i: 0xeb7e
-      j: 0xeb7f
+      a: [0xffff]
+      b: [0xffff] + 1
+      c: [0xffff] + 2
+      x: [0xffff] + 3
+      y: [0xffff] + 4
+      z: [0xffff] + 5
+      i: [0xffff] + 6
+      j: [0xffff] + 7
       </pre>
 
       Subroutine can pollute registers a-j, but must return with rts.
@@ -1493,11 +1495,11 @@ and can operate asynchronously of one another.
     </p>
     <p>
       Parameters can be passed between Admiral and interrupt via registers. Before interrupt Admiral “loads” 
-      a, b, c, x, y, z, i and j registers with the words stored at addresses 0xdb78 - 0xdb7f.
+      a, b, c, x, y, z, i and j registers with the words stored at storage addresses (see call()).
     </p>
     <p>
       If or when the interrupt returns control, Admiral immediately saves the contents of the registers back 
-      into the 0xdb78 - 0xdb7f memory range: This can be used to transfer results from the interrupt to 
+      into the storage addresses memory range: This can be used to transfer results from the interrupt to 
       Admiral for further processing. 
     </p>
   </dd>
