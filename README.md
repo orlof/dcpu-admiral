@@ -1000,6 +1000,7 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
       <li><a href="#len">len()</a></li>
       <li><a href="#range">range()</a></li>
       <li><a href="#sort">sort()</a></li>
+      <li><a href="#type">type()</a></li>
     </ul>
   </li>
   <li>Numeric functions
@@ -1021,6 +1022,11 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
       <li><a href="#input">input()</a></li>
       <li><a href="#edit">edit()</a></li>
       <li><a href="#repr">repr()</a></li>
+      <li><a href="#hex">hex()</a></li>
+      <li><a href="#wget">wget()</a></li>
+      <li><a href="#wset">wset()</a></li>
+      <li><a href="#cursor">cursor()</a></li>
+      <li><a href="#scroll">scroll()</a></li>
     </ul>
   </li>
   <li>Memory functions
@@ -1050,10 +1056,10 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
   </li>
   <li>HIC functions
     <ul>
-      <li><a href="#hicsel">hicsel()</a></li>
-      <li><a href="#hicst">hicst()</a></li>
-      <li><a href="#hicrd">hicrd()</a></li>
-      <li><a href="#hicwr">hicwr()</a></li>
+      <li><a href="#hsel">hsel()</a></li>
+      <li><a href="#hinfo">hinfo()</a></li>
+      <li><a href="#hrecv">hrecv()</a></li>
+      <li><a href="#hsend">hsend()</a></li>
     </ul>
   </li>
   <li>Hardware functions
@@ -1118,6 +1124,26 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
     <p>
       Return a sorted version from the items in iterable. Strings and tuples are sorted by creating a new sorted iterable and lists are sorted in place. Reverse is a boolean value. If set to True, then the list elements are sorted as if each comparison were reversed.
     </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="type">type(obj)</dt>
+  <dd>
+    <p>
+      Return the type of an object. The return value is an integer specifiying the type.
+    </p>
+    <table cellpadding="1">
+      <tr><th>Type</th><th>Value</th></tr>
+      <tr><td>none</td><td>0x0080</td></tr>
+      <tr><td>float</td><td>0x0040</td></tr>
+      <tr><td>int</td><td>0x0020</td></tr>
+      <tr><td>bool</td><td>0x0010</td></tr>
+      <tr><td>str</td><td>0x0008</td></tr>
+      <tr><td>tuple</td><td>0x0004</td></tr>
+      <tr><td>list</td><td>0x0002</td></tr>
+      <tr><td>dict</td><td>0x0001</td></tr>
+    </table>
   </dd>
 </dl>
 
@@ -1212,6 +1238,51 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
     <p>
       Return a string containing a printable representation of an object. This is similar to str funtion, but surrounds
       string type values in quotes.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="hex">hex(int)</dt>
+  <dd>
+    <p>
+      Convert an integer number (of any size) to a lowercase hexadecimal string prefixed with “0x”.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="wget">wget(int x, int y)</dt>
+  <dd>
+    <p>
+      Return character (string of length 1) containing the character at screen coordinates x, y.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="wset">wset(int x, int y, char c)</dt>
+  <dd>
+    <p>
+      Draw character (string of length 1) to screen coordinates x, y.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="cursor">cursor(int x, int y)</dt>
+  <dd>
+    <p>
+      Move cursor to screen coordinates x, y. Next print statement will start from the cursor coordinates.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="scroll">scroll(int dx, int dy)</dt>
+  <dd>
+    <p>
+      Scroll screen dx, dy characters. Areas that scroll in are filled with zero and appear empty on screen. 
     </p>
   </dd>
 </dl>
