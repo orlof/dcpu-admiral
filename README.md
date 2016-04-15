@@ -997,9 +997,11 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
   <li>Generic functions
     <ul>
       <li><a href="#cmp">cmp()</a></li>
+      <li><a href="#exit">exit()</a></li>
       <li><a href="#len">len()</a></li>
       <li><a href="#range">range()</a></li>
       <li><a href="#sort">sort()</a></li>
+      <li><a href="#type">type()</a></li>
     </ul>
   </li>
   <li>Numeric functions
@@ -1021,6 +1023,11 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
       <li><a href="#input">input()</a></li>
       <li><a href="#edit">edit()</a></li>
       <li><a href="#repr">repr()</a></li>
+      <li><a href="#hex">hex()</a></li>
+      <li><a href="#wget">wget()</a></li>
+      <li><a href="#wset">wset()</a></li>
+      <li><a href="#cursor">cursor()</a></li>
+      <li><a href="#scroll">scroll()</a></li>
     </ul>
   </li>
   <li>Memory functions
