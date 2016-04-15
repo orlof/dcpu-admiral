@@ -803,6 +803,7 @@ expression is compared or evaluated.
 <h5 id="4.7">None</h5>
 
 None is frequently used to represent the absence of a value, as when default arguments are not passed to a function.
+
 --
 
 <h4 id="5">Statements</h4>
