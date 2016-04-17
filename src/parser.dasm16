@@ -3744,6 +3744,17 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
+:built_in_version
+;----------------------------------------------------------------
+    jsr built_in_params
+    ifn i, 0
+        jsr recover
+        #doc Wrong number of arguments for version()
+
+    set x, STR_VERSION
+    set pc, postamble
+
+;----------------------------------------------------------------
 :built_in_params
 ; util function used by built-in impls to parse arguments
 ;----------------------------------------------------------------
