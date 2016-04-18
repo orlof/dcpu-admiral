@@ -382,7 +382,6 @@
 ; operator and for separator.
 ;----------------------------------------------------------------
     jsr lexer_next                ; advance 'for'
-    ;jsr parser_fork_scope
 
     ; get the testlist (left side)
     set push, 0x0000
@@ -575,34 +574,11 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
-:parser_fork_scope
-;----------------------------------------------------------------
-    set [z-1], [current_scope] ; store current scope
-
-    ;----------------------------------------------------------------
-    ; comment to disabled block scope to mimic python's deficiencies
-    set push, 5            ; create new scope for while block
-    set push, TYPE_DICT
-    jsr alloc
-    set [z-2], x
-    set [current_scope], x        ; set new scope in effect
-
-    set push, x            ; set parent scope
-    set push, STR_UNDERSCORE
-    set push, [z-1]
-    jsr dict__set
-    ;----------------------------------------------------------------
-
-    set pc, pop
-
-;----------------------------------------------------------------
 :std_while
 ; return struct handle *none
 ; todo implement else
 ;----------------------------------------------------------------
     jsr lexer_next                ; advance 'while'
-
-    ;jsr parser_fork_scope
 
     jsr lexer_store                ; store lexer position
 
