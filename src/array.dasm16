@@ -35,6 +35,27 @@
     set pc, pop    
 
 ;----------------------------------------------------------------
+:array__qget
+; fastcall
+; a: struct handle *
+; b: index
+; return x: uint16 at specified index or 0
+;----------------------------------------------------------------
+:array__qget
+    set x, [a]
+    ife b, [x]
+        set pc, array__qget__eof
+
+    add x, b
+    set x, [x+1]
+    
+    set pc, pop
+
+:array__qget__eof
+    set x, 0
+    set pc, pop
+
+;----------------------------------------------------------------
 :array__set
 ; fastcall
 ; a: struct handle *

@@ -65,7 +65,7 @@
 ;----------------------------------------------------------------
 :lexer__goto_eol
 ;----------------------------------------------------------------
-    jsr array__get
+    jsr array__qget
     
     ife x, 0
         set pc, pop
@@ -83,7 +83,7 @@
         set pc, pop
         
     sub b, 1
-    jsr array__get
+    jsr array__qget
     
     ifn [x + lexer_table], lexer_char_newline
         set pc, lexer__goto_sol
@@ -157,7 +157,7 @@
     set c, 0    ; current indent
     
 :lexer_char_newline_loop
-    jsr array__get
+    jsr array__qget
     ifn x, ' '
         set pc, lexer_char_newline_break
 
@@ -197,7 +197,7 @@
 :lexer_char_dot
 ;----------------------------------------------------------------
     add b, 1
-    jsr array__get
+    jsr array__qget
 
     ife [x + lexer_table], lexer_char_digit
         set pc, lexer_float
@@ -277,7 +277,7 @@
 :lexer_char_star
 ;----------------------------------------------------------------
     add b, 1
-    jsr array__get
+    jsr array__qget
     ife x, '='
         set pc, lexer_char_star_assign
     ife x, '*'
@@ -344,7 +344,7 @@
     set [lexer_token], token_less
 
     add b, 1
-    jsr array__get
+    jsr array__qget
     ife x, '<'
         set pc, lexer_char_less_less    
     ifn x, '='
@@ -357,7 +357,7 @@
     set [lexer_token], token_lshift
     
     add b, 1
-    jsr array__get
+    jsr array__qget
     ifn x, '='
         set pc, lexer_finish
     
@@ -374,7 +374,7 @@
     set [lexer_token], token_greater
 
     add b, 1
-    jsr array__get
+    jsr array__qget
     ife x, '>'
         set pc, lexer_char_greater_greater    
     ifn x, '='
@@ -387,7 +387,7 @@
     set [lexer_token], token_rshift
     
     add b, 1
-    jsr array__get
+    jsr array__qget
     ifn x, '='
         set pc, lexer_finish
     
@@ -405,7 +405,7 @@
 :check_augass
 ;----------------------------------------------------------------
     add b, 1
-    jsr array__get
+    jsr array__qget
     ifn x, '='
         set pc, lexer_finish
 
@@ -426,7 +426,7 @@
         set pc, lexer_char_digit_start
 
     add b, 1
-    jsr array__get
+    jsr array__qget
     
     ife x, 'x'
         set pc, lexer_char_hex
@@ -438,7 +438,7 @@
 
 :lexer_char_digit_loop
     add b, 1
-    jsr array__get
+    jsr array__qget
 
 :lexer_char_digit_start
     ife x, '.'        ; discard int and go for float
@@ -458,7 +458,7 @@
 :lexer_char_hex
 ;----------------------------------------------------------------
     add b, 1
-    jsr array__get
+    jsr array__qget
 
     ife [x + lexer_table], lexer_char_digit
         set pc, lexer_char_hex
@@ -481,7 +481,7 @@
 ;----------------------------------------------------------------
 :lexer_name_loop
     add b, 1
-    jsr array__get
+    jsr array__qget
 
     ife [x + lexer_table], lexer_char_letter
         set pc, lexer_name_loop
@@ -524,7 +524,7 @@
 
 :lexer_literal_string_loop
     add b, 1
-    jsr array__get
+    jsr array__qget
 
     ife x, 0
         jsr recover
@@ -549,7 +549,7 @@
     set c, FP_STATE_START
 
 :lexer_float_loop
-    jsr array__get
+    jsr array__qget
     add b, 1
 
     ife x, '+'
@@ -623,7 +623,7 @@
 ; a: struct handle *
 ; b: index
 ;----------------------------------------------------------------
-    jsr array__get
+    jsr array__qget
     ifn x, ' '
         set pc, pop
     add b, 1
