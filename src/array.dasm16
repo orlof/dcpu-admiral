@@ -373,21 +373,23 @@
 ; uint array_cmp(struct handle *array, struct handle *array, func *comparator)
 ;----------------------------------------------------------------
 :array_cmp
-    set push, 3        ; sizeof(args)
-    set push, 0        ; sizeof(vars)
-    jsr preamble
+    set push, a
+    set push, b
+    set push, i
+    set push, j
 
-    set i, [z+12]    ; struct handle *list1
-    set i, [i]        ; struct list *list1
+    set i, [sp+7]   ; struct handle *left
+    set i, [i]      ; struct array *left
 
     set a, i
-    add a, [a]        ; *tail1
+    add a, [a]      ; *left[len]
     
-    set j, [z+11]    ; struct handle *list2
-    set j, [j]        ; struct list *list2
+    set j, [z+6]    ; struct handle *right
+    set j, [j]      ; struct list *right
 
-    sti b, j        ; i: *head1, j: *head2
-    add b, [b]        ; *tail2
+    sti b, j        ; i: *right[0]
+                    ; j: *left[0]
+    add b, [b]      ; *right[len]
 
 :array_cmp_loop
     ifg i, a
@@ -397,24 +399,32 @@
 
     set push, [i]
     set push, [j]
-    jsr [z+10]
+    jsr [sp+7]      ; *comparator
 
     ife x, 0
         sti pc, array_cmp_loop
 
-    set pc, postamble
+:array__cmp__return
+    set j, pop
+    set i, pop
+    set b, pop
+    set a, pop
+    set [sp], pop
+    set [sp], pop
+    set [sp], pop
+    set pc, pop
 
 :array_cmp_break__left
     set x, -1
     ifg j, b
         set x, 0
 
-    set pc, postamble
+    set pc, array__cmp__return
 
 :array_cmp_break__right
     set x, 1
 
-    set pc, postamble
+    set pc, array__cmp__return
 
 ;----------------------------------------------------------------
 ; struct handle *array_repeat(struct handle *array, struct handle *int_times)
