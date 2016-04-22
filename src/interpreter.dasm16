@@ -125,7 +125,7 @@
     jsr dict_del
     
     ifn x, 0
-        jsr postamble
+        set pc, postamble
         
     set push, [z+11]
     set push, STR_UNDERSCORE
@@ -139,7 +139,7 @@
     set push, [z + 10]
     jsr scope_del
     
-    jsr postamble
+    set pc, postamble
     
 ;----------------------------------------------------------------
 ; void scope_set(struct handle *dict, struct handle *key, struct handle *value, uint16 mode)
@@ -172,11 +172,11 @@
     jsr scope_set
     
     ifn x, 0
-        jsr postamble
+        set pc, postamble
 
 :scope_set_no_parent
     ife [z+10], SCOPE_MODE_UPDATE
-        jsr postamble
+        set pc, postamble
 
 :scope_set_insert
     set push, [z+13]
@@ -185,7 +185,7 @@
     jsr dict__set
 
     set x, 1
-    jsr postamble
+    set pc, postamble
     
 ;----------------------------------------------------------------
 :recover

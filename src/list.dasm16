@@ -14,7 +14,7 @@
 
     jsr array__get
 
-    jsr postamble
+    set pc, postamble
     
 ;----------------------------------------------------------------
 ; void list_set(struct handle *list, struct handle *index, struct handle *item)
@@ -33,7 +33,7 @@
     set c, [z+10]
     jsr array__set
 
-    jsr postamble
+    set pc, postamble
 
 ;----------------------------------------------------------------
 ; void list_del(struct handle *list, struct handle *index)
@@ -54,7 +54,7 @@
 
     jsr array__del
 
-    jsr postamble
+    set pc, postamble
     
 ;----------------------------------------------------------------
 ; uint list_cmp(struct handle *left, struct handle *right)
@@ -125,4 +125,4 @@
     jsr array__append
 
     set x, [z-1]
-    jsr postamble
+    set pc, postamble

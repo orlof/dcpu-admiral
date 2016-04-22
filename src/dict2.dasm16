@@ -27,7 +27,7 @@
     set x, [x]        ; struct list *kv_tuple
 
     set x, [x + DICT_ITEM_VALUE]
-    jsr postamble
+    set pc, postamble
 
 :dict__del__no_match
 :dict__get__no_match
@@ -123,7 +123,7 @@
     set b, c
     jsr array__del
 
-    jsr postamble
+    set pc, postamble
 
 ;----------------------------------------------------------------
 :dict__bin_search
@@ -246,4 +246,4 @@
     jsr array__append
 
     set x, [z-1]
-    jsr postamble
+    set pc, postamble

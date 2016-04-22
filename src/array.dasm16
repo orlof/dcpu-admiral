@@ -182,7 +182,7 @@
     
 :array__insert__finish
     set [i], [z+10]
-    jsr postamble
+    set pc, postamble
 
 ;----------------------------------------------------------------
 ; extern struct handle *array_insert(struct handle *array, void item)
@@ -317,7 +317,7 @@
     
 :array_split_loop
     ife j, c
-        jsr postamble
+        set pc, postamble
     sti [i+1], [j+1]
     set pc, array_split_loop
 
@@ -364,7 +364,7 @@
 
 :array_merge__right_loop
     ifg i, c
-        jsr postamble
+        set pc, postamble
         
     sti [j], [i]
     set pc, array_merge__right_loop
@@ -402,19 +402,19 @@
     ife x, 0
         sti pc, array_cmp_loop
 
-    jsr postamble
+    set pc, postamble
 
 :array_cmp_break__left
     set x, -1
     ifg j, b
         set x, 0
 
-    jsr postamble
+    set pc, postamble
 
 :array_cmp_break__right
     set x, 1
 
-    jsr postamble
+    set pc, postamble
 
 ;----------------------------------------------------------------
 ; struct handle *array_repeat(struct handle *array, struct handle *int_times)
@@ -448,7 +448,7 @@
 
 :array_repeat_loop
     ife j, [x]
-        jsr postamble
+        set pc, postamble
     ife i, [a]
         add i, [i]
     std [j], [i]    
@@ -475,7 +475,7 @@
 :array_sort_outer
     add a, 1    ; struct handle **first
     ife a, c
-        jsr postamble
+        set pc, postamble
 
     set y, a    ; struct handle **min
 
@@ -608,4 +608,4 @@
         sti pc, array_find__loop
 
     set x, i
-    jsr postamble
+    set pc, postamble

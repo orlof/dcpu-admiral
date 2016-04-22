@@ -112,14 +112,14 @@
             sti pc, str_search_inner_loop    ; j++
 
     ife j, y
-        jsr postamble
+        set pc, postamble
 
     add x, 1
     set pc, str_search_outer_loop
 
 :str_search_no_match
     set x, -1
-    jsr postamble
+    set pc, postamble
 
 ;----------------------------------------------------------------
 :built_in__str_isalpha
