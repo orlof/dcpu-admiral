@@ -384,7 +384,7 @@
     set a, i
     add a, [a]      ; *left[len]
     
-    set j, [z+6]    ; struct handle *right
+    set j, [sp+6]    ; struct handle *right
     set j, [j]      ; struct list *right
 
     sti b, j        ; i: *right[0]
