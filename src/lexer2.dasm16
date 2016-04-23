@@ -517,7 +517,7 @@
 ;----------------------------------------------------------------
 :lexer_char_quotationmark
 ;----------------------------------------------------------------
-    set y, x
+    set c, x
     add [lexer_start], 1     ; skip "
 
 :lexer_literal_string_loop
@@ -531,10 +531,8 @@
         jsr recover
         #doc Missing quotation mark error
 
-    ifn x, y
+    ifn x, c
         set pc, lexer_literal_string_loop
-
-    set [lexer_end], b
 
     set [lexer_token], token_str
     set pc, lexer_finish

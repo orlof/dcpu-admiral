@@ -3564,19 +3564,19 @@
     sti [i], [z-1]
     sti [i], [z-2]
 
-    set a, FALSE
+    set a, BOOL_FALSE
     ifb c, 0x0001
-        set a, TRUE
+        set a, BOOL_TRUE
     sti [i], a
 
-    set a, FALSE
+    set a, BOOL_TRUE
     ife c, 0xffe0
-        set a, TRUE
+        set a, BOOL_FALSE
     sti [i], a
 
-    set [i], FALSE
+    set [i], BOOL_TRUE
     ife c, 0xfff0
-        set [i], TRUE
+        set [i], BOOL_FALSE
 
     set pc, postamble
 
@@ -3720,9 +3720,9 @@
     add b, 1
     hwi [rci]
 
-    set x, TRUE
+    set x, BOOL_TRUE
     ifn c, 0
-        set x, FALSE
+        set x, BOOL_FALSE
 
     set pc, postamble
 
