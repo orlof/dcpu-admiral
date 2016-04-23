@@ -1,6 +1,5 @@
 ;----------------------------------------------------------------
 ; MEMORY LAYOUT
-; 29440 bytes is the maximum file size for admiral.bin
 ; the optimal value for MEM_CODE_SIZE is len(admiral.bin)/2
 ;----------------------------------------------------------------
 #define MEM_CODE_SIZE          0x3600

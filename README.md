@@ -1063,6 +1063,14 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
       <li><a href="#hsend">hsend()</a></li>
     </ul>
   </li>
+  <li>RCI functions
+    <ul>
+      <li><a href="#rconf">rconf()</a></li>
+      <li><a href="#rinfo">rinfo()</a></li>
+      <li><a href="#rrecv">rrecv()</a></li>
+      <li><a href="#rsend">rsend()</a></li>
+    </ul>
+  </li>
   <li>Hardware functions
     <ul>
       <li><a href="#call">call()</a></li>
@@ -1337,9 +1345,7 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
       Convert a value to a Boolean, using the standard truth testing procedure.
     </p>
     <p>
-      The following values are interpreted as false: false, numeric zero of all types, 
-      and empty strings and containers (including tuples, lists and dictionaries). All 
-      other values are interpreted as true.
+      The following values are interpreted as false: false, numeric zero of all types, and empty strings and containers (including tuples, lists and dictionaries). All other values are interpreted as true.
     </p>
   </dd>
 </dl>
@@ -1426,8 +1432,7 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
 
 <h5>HIC FUNCTIONS</h5>
 
-HIC is a bi-directional multipurpose data port. Transmissions in either direction are independent of each other 
-and can operate asynchronously of one another.
+HIC is a bi-directional multipurpose data port. Transmissions in either direction are independent of each other and can operate asynchronously of one another.
 
 <dl>
   <dt id="hsel">int hsel()</dt>
@@ -1450,7 +1455,7 @@ and can operate asynchronously of one another.
 </dl>
 
 <dl>
-  <dt id="hread">int hread(int port)</dt>
+  <dt id="hrecv">int hrecv(int port)</dt>
   <dd>
     <p>
       Returns an integer containing a word of data received from given port or none if no data is available. 
@@ -1463,6 +1468,49 @@ and can operate asynchronously of one another.
   <dd>
     <p>
       Transmits a word of data to specified port. 
+    </p>
+  </dd>
+</dl>
+
+<h5>RCI FUNCTIONS</h5>
+
+RCI is a half-duplex datagram-based radiofrequency communications device.
+
+<dl>
+  <dt id="rconf">void rconf(int channel, int power)</dt>
+  <dd>
+    <p>
+      Configure radio. Returns true if new settings are accepted and applied, and false if the proposed settings are invalid.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="rinfo">(int ch, int pw, bool buf, bool ant, bool dev) rinfo()</dt>
+  <dd>
+    <p>
+      Returns information about RCI status. Return value is a tuple:
+      <pre>
+        (int channel, int power, bool buffer_reserved, bool antenna_status, bool device_status)
+      </pre>
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="rrecv">str rrecv()</dt>
+  <dd>
+    <p>
+      Returns the received datagram from receiving buffer or none if no datagram is available.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="rsend">bool rsend(str data)</dt>
+  <dd>
+    <p>
+      Transmits a string as RCI datagram. Return true if the datagram is successfully queued for transmission, or false if there is already a datagram being transmitted. 
     </p>
   </dd>
 </dl>

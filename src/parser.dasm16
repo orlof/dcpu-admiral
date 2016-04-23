@@ -2335,13 +2335,12 @@
     set a, [a]
     
     set b, [a]
+    ifg b, 7
+        set pc, led_lparen_user_defined
+
     add a, 1
     
-    set x, built_in_functions_5
-    ifl b, 5
-        set x, built_in_functions_4
-    ifl b, 4
-        set x, built_in_functions_2
+    set x, [built_in_functions_by_len + b - 1]
 
     jsr built_in_matcher
     set pc, c
@@ -3422,6 +3421,46 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
+:built_in_rconf
+;----------------------------------------------------------------
+    jsr built_in_params
+
+    ife [rci], 0xffff
+        jsr recover
+        #doc rconf(): Device not present error
+
+    ifn i, 2
+        jsr recover
+        #doc rconf(): Illegal parameter list error
+
+    set x, [z-1]
+    ifn [x + HANDLE_TYPE], TYPE_INT
+        jsr recover
+        #doc rconf(): Type mismatch error in channel
+
+    set push, x
+    jsr int_to_int16
+    set b, x
+
+    set x, [z-2]
+    ifn [x + HANDLE_TYPE], TYPE_INT
+        jsr recover
+        #doc rconf(): Type mismatch error in power
+
+    set push, x
+    jsr int_to_int16
+    set c, x
+
+    set a, 3
+    hwi [rci]
+
+    set x, BOOL_TRUE
+    ifb c, 0x0001
+        set x, BOOL_FALSE
+
+    set pc, postamble
+
+;----------------------------------------------------------------
 :built_in_hinfo
 ;----------------------------------------------------------------
     jsr built_in_params
@@ -3432,7 +3471,7 @@
 
     ifn i, 1
         jsr recover
-        #doc Wrong number of arguments for hinfo()
+        #doc hinfo(): Illegal parameter list error
 
     ; verify that first parameter is int
     set x, [z-1]
@@ -3490,6 +3529,58 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
+:built_in_rinfo
+;----------------------------------------------------------------
+    jsr built_in_params
+
+    ife [rci], 0xffff
+        jsr recover
+        #doc rinfo(): Device not present error
+
+    ifn i, 0
+        jsr recover
+        #doc rinfo(): Illegal parameter list error
+
+    ; get the info from device
+    set a, 0
+    hwi [rci]
+
+    set push, a
+    jsr uint16_to_int
+    set [z-1], x
+
+    set push, b
+    jsr uint16_to_int
+    set [z-2], x
+
+    ; -------------
+    ; Create return tuple (channel, power, antenna, device)
+    ; -------------
+    set push, 5
+    set push, TYPE_TUPLE
+    jsr array_create
+    sti i, [x]
+
+    sti [i], [z-1]
+    sti [i], [z-2]
+
+    set a, FALSE
+    ifb c, 0x0001
+        set a, TRUE
+    sti [i], a
+
+    set a, FALSE
+    ife c, 0xffe0
+        set a, TRUE
+    sti [i], a
+
+    set [i], FALSE
+    ife c, 0xfff0
+        set [i], TRUE
+
+    set pc, postamble
+
+;----------------------------------------------------------------
 :built_in_hrecv
 ;----------------------------------------------------------------
     jsr built_in_params
@@ -3500,7 +3591,7 @@
 
     ifn i, 1
         jsr recover
-        #doc Wrong number of arguments for hrecv()
+        #doc hrecv(): Illegal parameter list error
 
     ; verify that first parameter is int
     set x, [z-1]
@@ -3526,6 +3617,43 @@
     jsr uint16_to_int
 
     set pc, postamble
+
+;----------------------------------------------------------------
+:built_in_rrecv
+;----------------------------------------------------------------
+    jsr built_in_params
+
+    ife [rci], 0xffff
+        jsr recover
+        #doc rrecv(): Device not present error
+
+    ifn i, 0
+        jsr recover
+        #doc rrecv(): Illegal parameter list error
+
+    set a, 0x0001
+    set b, MEM_FLOPPY_START
+    hwi [rci]
+
+    set x, NONE
+    ifn c, 0x0000
+        set pc, postamble
+
+    set push, b
+    set push, TYPE_STR
+    jsr array_create
+
+    set i, MEM_FLOPPY_START
+    add b, i
+    set j, [x]
+    add j, 1
+
+:built_in_rrecv_loop
+    ife i, b
+        set pc, postamble
+
+    set [j], [i]
+    sti pc, built_in_rrecv_loop
 
 ;----------------------------------------------------------------
 :built_in_hsend
@@ -3566,6 +3694,36 @@
         #doc Transmit buffer overflow, port is not connected or HIC is busy error in hsend()
 
     set x, NONE
+    set pc, postamble
+
+;----------------------------------------------------------------
+:built_in_rsend
+;----------------------------------------------------------------
+    jsr built_in_params
+
+    ife [rci], 0xffff
+        jsr recover
+        #doc rsend(): Device not present error
+
+    ifn i, 1
+        jsr recover
+        #doc rsend(): Illegal parameter list error
+
+    set x, [z-1]
+    ifn [x + HANDLE_TYPE], TYPE_STR
+        jsr recover
+        #doc rsend(): Type mismatch error in data
+
+    set a, 2
+    set b, [x]
+    set c, [b]
+    add b, 1
+    hwi [rci]
+
+    set x, TRUE
+    ifn c, 0
+        set x, FALSE
+
     set pc, postamble
 
 ;----------------------------------------------------------------

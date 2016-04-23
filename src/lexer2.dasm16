@@ -495,8 +495,6 @@
     sub b, [lexer_start]
 
     set c, token_name
-    ifl b, 2
-        set pc, lexer_name_loop_finish
     ifg b, 8
         set pc, lexer_name_loop_finish
 
@@ -505,7 +503,7 @@
 
     add a, 1
 
-    set x, [built_in_stmts_by_len + b - 2]
+    set x, [built_in_stmts_by_len + b - 1]
     jsr built_in_matcher
     
     set j, pop

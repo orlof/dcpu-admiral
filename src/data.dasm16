@@ -50,6 +50,7 @@
 :clock              DAT 0xffff
 :floppy             DAT 0xffff
 :hic                DAT 0xffff
+:rci                DAT 0xffff
 
 ;----------------------------------------------------------------
 ; GLOBAL HEAP MANAGEMENT VARIABLES
@@ -317,9 +318,21 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
 ; length+1, function_name, function_impl_ptr
 ; last line is the default if nothing matches
 ;----------------------------------------------------------------
+:built_in_functions_by_len
+    dat built_in_functions_1
+    dat built_in_functions_2
+    dat built_in_functions_3
+    dat built_in_functions_4
+    dat built_in_functions_5
+    dat built_in_functions_6
+    dat built_in_functions_7
+
 :built_in_functions_2
     dat 3, "id", built_in_id
     dat 3, "rm", built_in_rm
+:built_in_functions_1
+    dat 1, led_lparen_user_defined
+:built_in_functions_3
     dat 4, "dir", built_in_dir
     dat 4, "hex", built_in_hex
     dat 4, "hwi", built_in_hwi
@@ -336,7 +349,6 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 4, "cmp", built_in_cmp
     dat 4, "key", built_in_key
     dat 1, led_lparen_user_defined
-
 :built_in_functions_4
     dat 5, "bool", built_in_bool
     dat 5, "call", built_in_call
@@ -355,7 +367,6 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 5, "wget", built_in_win_get
     dat 5, "wset", built_in_win_set
     dat 1, led_lparen_user_defined
-
 :built_in_functions_5
     dat 6, "range", built_in_range
     dat 6, "float", built_in_float
@@ -364,10 +375,18 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 6, "hrecv", built_in_hrecv
     dat 6, "hsend", built_in_hsend
     dat 6, "hinfo", built_in_hinfo
+    dat 6, "rrecv", built_in_rrecv
+    dat 6, "rsend", built_in_rsend
+    dat 6, "rinfo", built_in_rinfo
+    dat 6, "rconf", built_in_rconf
+    dat 1, led_lparen_user_defined
+:built_in_functions_6    
     dat 7, "cursor", built_in_cursor
     dat 7, "format", built_in_format
     dat 7, "locals", built_in_locals
     dat 7, "scroll", built_in_scroll
+    dat 1, led_lparen_user_defined
+:built_in_functions_7
     dat 8, "globals", built_in_globals
     dat 8, "version", built_in_version
     dat 1, led_lparen_user_defined
@@ -401,6 +420,7 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
 ; last line is the default if nothing matches
 ;----------------------------------------------------------------
 :built_in_stmts_by_len
+    dat built_in_stmts_1
     dat built_in_stmts_2
     dat built_in_stmts_3
     dat built_in_stmts_4
@@ -414,6 +434,7 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 3, "or", token_or
     dat 3, "is", token_is
     dat 3, "in", token_in
+:built_in_stmts_1
     dat 1, token_name
 :built_in_stmts_3
     dat 4, "and", token_and

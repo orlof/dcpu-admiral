@@ -856,8 +856,11 @@
     ife a, 0x9088
         ife b, 0xe023
             set [hic], i
+    ife a, 0x90a5
+        ife b, 0xd005
+            set [rci], i
     set pc, detect_hardware__loop
-          
+
 ;----------------------------------------------------------------
 :win_getchar
 ; c: delayed key
