@@ -1489,10 +1489,15 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
   <dt id="rinfo">(int ch, int pw, bool buf, bool ant, bool dev) rinfo()</dt>
   <dd>
     <p>
-      Returns information about RCI status. Return value is a tuple:
-      <pre>
-        (int channel, int power, bool buffer_reserved, bool antenna_status, bool device_status)
-      </pre>
+      Returns information about RCI status. Return value is a tuple (channel, power, buffer, antenna, device):
+      <table cellpadding="1">
+        <tr><th>Value</th><th>Type</th><th>Description</th></tr>
+        <tr><td>channel</td><td>int</td><td>The current channel, from 0x0000 to 0x00FF</td></tr>
+        <tr><td>power</td><td>int</td><td>The current transmit power, from 0x0000 to 0x0007</td></tr>
+        <tr><td>buffer</td><td>bool</td><td>Receive buffer status: <br>True=buffer has a datagram <br>False=buffer is empty</td></tr>
+        <tr><td>antenna</td><td>bool</td><td>Antenna status: <br>True=antenna operational<br>False=antenna failure</td></tr>
+        <tr><td>device</td><td>bool</td><td>Device status: <br>True=device operational<br>False=device failure</td></tr>
+      </table>
     </p>
   </dd>
 </dl>
