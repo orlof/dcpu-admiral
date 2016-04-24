@@ -1477,10 +1477,10 @@ HIC is a bi-directional multipurpose data port. Transmissions in either directio
 RCI is a half-duplex datagram-based radiofrequency communications device.
 
 <dl>
-  <dt id="rconf">void rconf(int channel, int power)</dt>
+  <dt id="rconf">rconf(channel, power)</dt>
   <dd>
     <p>
-      Configure radio. Returns true if new settings are accepted and applied, and false if the proposed settings are invalid.
+      Configure radio. Channel must be an integer between 0 and 255, and transmit power must be an integer between 0 and 7. Returns true if the new settings are accepted and applied, and false if the proposed settings are invalid.
     </p>
   </dd>
 </dl>
@@ -1512,10 +1512,10 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
 </dl>
 
 <dl>
-  <dt id="rsend">rsend(data)</dt>
+  <dt id="rsend">rsend(str)</dt>
   <dd>
     <p>
-      Transmits the contents of the data string as RCI datagram. Returns true if datagram is successfully queued for transmission, or false if there is already a datagram being transmitted. 
+      Transmits the contents of the string as RCI datagram. Returns true if datagram is successfully queued for transmission, or false if there is already a datagram being transmitted. 
     </p>
   </dd>
 </dl>
