@@ -2346,6 +2346,7 @@
     set pc, c
 
 ;----------------------------------------------------------------
+DAT 0xffff
 :built_in__object_method__init
 ;----------------------------------------------------------------
     jsr built_in_params
@@ -2415,12 +2416,11 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
+DAT 0
+DAT TYPE_STR + TYPE_BOOL + TYPE_NONE + TYPE_INT + TYPE_FLOAT + TYPE_TUPLE + TYPE_LIST + TYPE_DICT
 :built_in_id
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 1
-        jsr recover
-        #doc Wrong number of arguments for id (1)
         
     set push, [z-1]
     jsr uint16_to_int
@@ -2428,6 +2428,7 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
+DAT 0xffff
 :built_in_input
 ;----------------------------------------------------------------
     jsr built_in_params
@@ -2450,6 +2451,7 @@
     set pc, postamble
     
 ;----------------------------------------------------------------
+DAT 0xffff
 :built_in_range
 ;----------------------------------------------------------------
     jsr built_in_params
@@ -2517,12 +2519,10 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
+DAT 0
 :built_in_mem
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 0
-        jsr recover
-        #doc Wrong number of arguments for mem()
 
     jsr mark
     jsr compact
@@ -2536,40 +2536,37 @@
     set pc, postamble    
 
 ;----------------------------------------------------------------
+DAT 0
 :built_in_exit
 ;----------------------------------------------------------------
 ; TODO
     jsr recover
 
 ;----------------------------------------------------------------
+DAT 0
 :built_in_locals
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 0
-        jsr recover
-        #doc Wrong number of arguments for locals()
 
     set x, [current_scope]
     set pc, postamble    
 
 ;----------------------------------------------------------------
+DAT 0
 :built_in_globals
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 0
-        jsr recover
-        #doc Wrong number of arguments for globals()
 
     set x, [global_scope]
     set pc, postamble    
 
 ;----------------------------------------------------------------
+DAT 0
+DAT TYPE_STR + TYPE_BOOL + TYPE_NONE + TYPE_INT + TYPE_FLOAT + TYPE_TUPLE + TYPE_LIST + TYPE_DICT
+DAT TYPE_STR + TYPE_BOOL + TYPE_NONE + TYPE_INT + TYPE_FLOAT + TYPE_TUPLE + TYPE_LIST + TYPE_DICT
 :built_in_cmp
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 2
-        jsr recover
-        #doc Wrong number of arguments for cmp(a, b)
 
     set push, [z-1]
     set push, [z-2]
@@ -2585,18 +2582,12 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_INT
 :built_in_chr
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 1
-        jsr recover
-        #doc Wrong number of arguments for chr(a)
 
     set a, [z-1]
-    ifc [a + HANDLE_TYPE], TYPE_GROUP_INTEGER
-        jsr recover
-        #doc Illegal parameter type for chr(), must be integer
-
     set a, [a]
     add a, [a]
 
@@ -2604,24 +2595,18 @@
     set push, TYPE_STR
     jsr array_create
     
-    sti i, [x]
-    set [i], [a]
+    set b, [x]
+    set [b+1], [a]
 
     set pc, postamble    
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_STR
 :built_in_ord
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 1
-        jsr recover
-        #doc Wrong number of arguments for ord(a)
 
     set a, [z-1]
-    ifn [a + HANDLE_TYPE], TYPE_STR
-        jsr recover
-        #doc Illegal parameter type for ord(), must be string
-
     set a, [a]
     ifn [a], 1
         jsr recover
@@ -2633,6 +2618,7 @@
     set pc, postamble    
 
 ;----------------------------------------------------------------
+DAT 0xffff
 :built_in_edit
 ;----------------------------------------------------------------
     jsr built_in_params
@@ -2654,6 +2640,7 @@
     set pc, postamble    
 
 ;----------------------------------------------------------------
+DAT 0xffff
 :built_in_rnd
 ;----------------------------------------------------------------
     jsr built_in_params
@@ -2707,44 +2694,28 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_INT + TYPE_FLOAT
 :built_in_abs
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 1
-        jsr recover
-        #doc Wrong number of arguments for abs(a)
 
-    set a, [z-1]
+    set push, [z-1]
 
-    set y, 0
-    
     ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
-        set y, int_abs
+        jsr int_abs
     ifb [a + HANDLE_TYPE], TYPE_FLOAT
-        set y, float__abs
-
-    ife y, 0
-        jsr recover
-        #doc Illegal parameter type for abc(a), must be numeric
-
-    set push, a
-    jsr y
+        jsr float__abs
 
     set pc, postamble    
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_STR + TYPE_TUPLE + TYPE_DICT + TYPE_LIST
 :built_in_len
 ;----------------------------------------------------------------
+; TODO TYPE_NAME
     jsr built_in_params
-    ifn i, 1
-        jsr recover
-        #doc Wrong number of arguments for len(a)
 
     set a, [z-1]
-    ifc [a + HANDLE_TYPE], TYPE_NAME + TYPE_STR + TYPE_TUPLE + TYPE_DICT + TYPE_LIST
-        jsr recover
-        #doc Illegal parameter type for len(a)
-
     set a, [a]
 
     set push, [a]
@@ -2753,12 +2724,10 @@
     set pc, postamble    
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_STR, TYPE_STR + TYPE_BOOL + TYPE_NONE + TYPE_INT + TYPE_FLOAT + TYPE_TUPLE + TYPE_LIST + TYPE_DICT
 :built_in_type
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 1
-        jsr recover
-        #doc Illegal number of arguments for type(a)
 
     set x, [z-1]
     set push, [x + HANDLE_TYPE]
@@ -2767,98 +2736,67 @@
     set pc, postamble    
 
 ;----------------------------------------------------------------
+DAT 0
 :built_in_dir
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 0
-        jsr recover
-        #doc Too many arguments for dir()
 
     jsr floppy__dir__read
 
-    set pc, postamble    
+    set pc, postamble
 
 ;----------------------------------------------------------------
+DAT 0
 :built_in_format
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 0
-        jsr recover
-        #doc Too many arguments for format()
 
     jsr floppy__format
 
-    set x, VOID
-    set pc, postamble    
+    set pc, postamble_none
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_STR
 :built_in_load
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 1
-        jsr recover
-        #doc Wrong number of arguments for load(str)
 
-    set a, [z-1]
-    ifc [a + HANDLE_TYPE], TYPE_STR
-        jsr recover
-        #doc Illegal argument type for load(str)
-
-    set push, a
+    set push, [z-1]
     jsr floppy__file__read
 
     set pc, postamble    
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_STR, TYPE_STR + TYPE_BOOL + TYPE_NONE + TYPE_INT + TYPE_FLOAT + TYPE_TUPLE + TYPE_LIST + TYPE_DICT
 :built_in_save
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 2
-        jsr recover
-        #doc Wrong number of arguments for save(name, item)
 
-    set a, [z-1]
-    ifc [a + HANDLE_TYPE], TYPE_STR
-        jsr recover
-        #doc Illegal argument type for save(name, item)
-
-    set push, a
+    set push, [z-1]
     set push, [z-2]
     jsr floppy__file__write
 
-    set x, VOID
-    set pc, postamble    
+    set pc, postamble_none
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_STR
 :built_in_rm
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 1
-        jsr recover
-        #doc Wrong number of arguments for rm(str)
 
-    set a, [z-1]
-    ifc [a + HANDLE_TYPE], TYPE_STR
-        jsr recover
-        #doc Illegal argument type for rm(str)
-
-    set push, a
+    set push, [z-1]
     jsr floppy__file__delete
 
     set pc, postamble    
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_STR + TYPE_BOOL + TYPE_INT + TYPE_FLOAT
 :built_in_int
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 1
-        jsr recover
-        #doc Wrong number of arguments for int(a)
 
     set a, [z-1]
 
-    ife [a + HANDLE_TYPE], TYPE_INT
-        set pc, built_in_int_int
     ife [a + HANDLE_TYPE], TYPE_BOOL
         set pc, built_in_int_bool
     ife [a + HANDLE_TYPE], TYPE_STR
@@ -2891,26 +2829,19 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_STR + TYPE_BOOL + TYPE_INT + TYPE_FLOAT
 :built_in_float
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 1
-        jsr recover
-        #doc Wrong number of arguments for float(a)
 
     set a, [z-1]
 
-    ife [a + HANDLE_TYPE], TYPE_INT
-        set pc, built_in_float_int
     ife [a + HANDLE_TYPE], TYPE_BOOL
         set pc, built_in_float_bool
     ife [a + HANDLE_TYPE], TYPE_STR
         set pc, built_in_float_string
     ife [a + HANDLE_TYPE], TYPE_FLOAT
         set pc, built_in_float_float
-
-    jsr recover
-    #doc Illegal argument type for float(a)
 
 :built_in_float_int
     set push, a
@@ -2934,48 +2865,34 @@
     set pc, postamble
     
 ;----------------------------------------------------------------
+DAT 0, TYPE_STR + TYPE_NAME + TYPE_BOOL + TYPE_NONE + TYPE_INT + TYPE_FLOAT + TYPE_TUPLE + TYPE_LIST + TYPE_DICT
 :built_in_repr
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 1
-        jsr recover
-        #doc Wrong number of arguments for repr(a)
 
     set push, [z-1]
     jsr repr
-    set [z-1], x
     
     set pc, postamble
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_INT
 :built_in_hex
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 1
-        jsr recover
-        #doc Wrong number of arguments for hex(a)
 
-    set x, [z-1]
-
-    ifn [x + HANDLE_TYPE], TYPE_INT
-        jsr recover
-        #doc Illegal argument type for hex(int)
-
-    set push, x
+    set push, [z-1]
     jsr int_to_hex
 
     set pc, postamble
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_STR + TYPE_NAME + TYPE_BOOL + TYPE_NONE + TYPE_INT + TYPE_FLOAT + TYPE_TUPLE + TYPE_LIST + TYPE_DICT
 :built_in_str
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 1
-        jsr recover
-        #doc Wrong number of arguments for str(a)
 
     set x, [z-1]
-
     ife [x + HANDLE_TYPE], TYPE_STR
         set pc, postamble
 
@@ -2985,12 +2902,10 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_INT + TYPE_BOOL + TYPE_FLOAT + TYPE_STR
 :built_in_bool
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 1
-        jsr recover
-        #doc Wrong number of arguments for bool(a)
 
     set push, [z-1]
     jsr boolean
@@ -2998,12 +2913,10 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
+DAT 0
 :built_in_getchar
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 0
-        jsr recover
-        #doc Wrong number of arguments for getchar()
 
 :built_in_getchar_loop
     set a, 1              ; store next key mode
@@ -3016,12 +2929,13 @@
     set push, TYPE_STR
     jsr array_create
     
-    sti i, [x]
-    set [i], c
+    set a, [x]
+    set [a+1], c
 
     set pc, postamble    
 
 ;----------------------------------------------------------------
+DAT 0xffff
 :built_in_key
 ;----------------------------------------------------------------
     jsr built_in_params
@@ -3046,7 +2960,7 @@
 
 :built_in_key_1
     set a, [z-1]
-    ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
+    ifb [a + HANDLE_TYPE], TYPE_INT
         set pc, built_in_key_1_int
         
     ifn [a + HANDLE_TYPE], TYPE_STR
@@ -3077,30 +2991,33 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
+DAT 0xffff
 :built_in_sort
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifg i, 1
-        jsr built_in_sort_2
 
-    set push, [z-1]
-    set push, BOOL_FALSE
-    jsr sort
-    
-    set pc, postamble
+    set x, NONE
+    ife i, 1
+        set x, BOOL_FALSE
+    ife i, 2
+        set x, [z-2]
 
-:built_in_sort_2
-    ifg i, 2
+    ife x, NONE
         jsr recover
         #doc Wrong number of arguments for sort()
-    
-    set push, [z-1]
-    set push, [z-2]
-    jsr sort
 
+    ifc [x + HANDLE_TYPE], TYPE_BOOL
+        jsr recover
+        #doc Illegal argument type for sort()
+
+    set push, [z-1]
+    set push, x
+    jsr sort
+    
     set pc, postamble
 
 ;----------------------------------------------------------------
+DAT 0xffff
 :built_in_cursor
 ;----------------------------------------------------------------
     jsr built_in_params
@@ -3110,22 +3027,8 @@
         jsr recover
         #doc Wrong number of arguments for cursor([x, y])
 
-    jsr screen__get_x
-    set push, x
-
-    jsr screen__get_y
-    set push, x
-
-    jsr screen_move_cursor
-    
-:built_in_cursor_coords
-    jsr screen__get_cursor
-    
-    set pc, postamble
-
-:screen__get_x
     set x, [z-1]
-    ifc [x + HANDLE_TYPE], TYPE_GROUP_INTEGER
+    ifc [x + HANDLE_TYPE], TYPE_INT
         jsr recover
         #doc Illegal argument type for cursor([x, y])
         
@@ -3136,10 +3039,9 @@
         set x, 0        
     ifg x, SCREEN_COLS - 1
         set x, SCREEN_COLS - 1
-        
-    set pc, pop
 
-:screen__get_y
+    set push, x
+
     set x, [z-2]
     ifc [x + HANDLE_TYPE], TYPE_GROUP_INTEGER
         jsr recover
@@ -3153,20 +3055,31 @@
     ifg x, SCREEN_ROWS - 1
         set x, SCREEN_ROWS - 1
 
-    set pc, pop
+    set push, x
+
+    jsr screen_move_cursor
+    
+:built_in_cursor_coords
+    jsr screen__get_cursor
+    
+    set pc, postamble
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_INT, TYPE_INT
 :built_in_win_get
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 2
-        jsr recover
-        #doc Wrong number of arguments for win_get(x, y)
 
-    jsr screen__get_x
+    set push, [z-1]
+    jsr int_to_int16
+    ifg x, SCREEN_COLS - 1
+        set pc, postamble_none
     set push, x
 
-    jsr screen__get_y
+    set push, [z-2]
+    jsr int_to_int16
+    ifg x, SCREEN_ROWS - 1
+        set pc, postamble_none
     set push, x
 
     jsr screen__get
@@ -3176,56 +3089,50 @@
     set push, TYPE_STR
     jsr array_create
     
-    sti i, [x]
-    set [i], c
+    set a, [x]
+    set [a+1], c
 
     set pc, postamble        
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_INT, TYPE_INT, TYPE_STR
 :built_in_win_set
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 3
-        jsr recover
-        #doc Wrong number of arguments for win_set(x, y, v)
 
-    jsr screen__get_x
+    set push, [z-1]
+    jsr int_to_int16
+    ifg x, SCREEN_COLS - 1
+        set pc, postamble_none
     set push, x
 
-    jsr screen__get_y
+    set push, [z-2]
+    jsr int_to_int16
+    ifg x, SCREEN_ROWS - 1
+        set pc, postamble_none
     set push, x
 
     set x, [z-3]
     set x, [x]
+    ifn [x], 1
+        jsr recover
+        #doc winset(): argument is string, not a char error
+
     set push, [x+1]
 
     jsr screen__set
 
-    set x, VOID
-    set pc, postamble
+    set pc, postamble_none
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_INT
 :built_in_call
 ;----------------------------------------------------------------
     jsr built_in_params
     
-    set x, MEM_FLOPPY_START
-    ife i, 0
-        set pc, built_in_call_registers
-    
-    ifn i, 1
-        jsr recover
-        #doc Wrong number of arguments for call(a)
-
-    set x, [z-1]
-    ifn [x + HANDLE_TYPE], TYPE_INT
-        jsr recover
-        #doc Illegal argument type for call(addr)
-
-    set push, x
+    set push, [z-1]
     jsr int_to_int16
 
-:built_in_call_registers
     set push, z
     set push, x
 
@@ -3236,10 +3143,10 @@
     jsr save_registers
 
     set z, pop
-    set x, VOID
-    set pc, postamble
+    set pc, postamble_none
 
 ;----------------------------------------------------------------
+DAT 0xffff  ; disable parameter checks
 :built_in_peek
 ;----------------------------------------------------------------
     jsr built_in_params
@@ -3292,19 +3199,12 @@
     set pc, built_in_peek_str_loop
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_INT, TYPE_INT + TYPE_STR
 :built_in_poke
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 2
-        jsr recover
-        #doc Wrong number of arguments for poke(addr, val)
 
-    set x, [z-1]
-    ifn [x + HANDLE_TYPE], TYPE_INT
-        jsr recover
-        #doc Illegal argument type for poke(addr, val)
-
-    set push, x
+    set push, [z-1]
     jsr int_to_int16
     set j, x
 
@@ -3312,16 +3212,11 @@
     ife [x + HANDLE_TYPE], TYPE_STR
         set pc, built_in_poke_str
 
-    ifn [x + HANDLE_TYPE], TYPE_INT
-        jsr recover
-        #doc Illegal argument type for poke(addr, val)
-
     set push, x
     jsr int_to_int16
     set [j], x
     
-    set x, [z-2]
-    set pc, postamble
+    set pc, postamble_none
 
 :built_in_poke_str
     set i, [x]
@@ -3331,46 +3226,41 @@
 
 :built_in_poke_str_loop
     ife i, [x]
-        set pc, postamble
+        set pc, postamble_none
 
     std [j], [i]
     set pc, built_in_poke_str_loop
     
 ;----------------------------------------------------------------
+DAT 0, TYPE_INT
 :built_in_read
 ;----------------------------------------------------------------
-    set b, 0
-    set pc, built_in_read_and_write
+    jsr built_in_params
+
+    set push, [z-1]
+    jsr int_to_int16
+
+    set push, x
+    jsr floppy__sector__read
+
+    set pc, postamble_none
+    
 ;----------------------------------------------------------------
+DAT 0, TYPE_INT
 :built_in_write
 ;----------------------------------------------------------------
-    set b, 1
-
-:built_in_read_and_write
     jsr built_in_params
-    ifn i, 1
-        jsr recover
-        #doc Wrong number of arguments for read / write
 
-    ; verify that first parameter is int
-    set x, [z-1]
-    ifn [x + HANDLE_TYPE], TYPE_INT
-        jsr recover
-        #doc Illegal argument type for read / write
-
-    ; push first parameter value to stack
-    set push, x
+    set push, [z-1]
     jsr int_to_int16
+
     set push, x
+    jsr floppy__sector__write
 
-    ife b, 0
-        jsr floppy__sector__read
-    ife b, 1
-        jsr floppy__sector__write
-
-    set pc, postamble
+    set pc, postamble_none
 
 ;----------------------------------------------------------------
+DAT 0xffff  ; disable parameter validation
 :built_in_hsel
 ;----------------------------------------------------------------
     jsr built_in_params
@@ -3421,6 +3311,7 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_INT, TYPE_INT
 :built_in_rconf
 ;----------------------------------------------------------------
     jsr built_in_params
@@ -3429,25 +3320,11 @@
         jsr recover
         #doc rconf(): Device not present error
 
-    ifn i, 2
-        jsr recover
-        #doc rconf(): Illegal parameter list error
-
-    set x, [z-1]
-    ifn [x + HANDLE_TYPE], TYPE_INT
-        jsr recover
-        #doc rconf(): Type mismatch error in channel
-
-    set push, x
+    set push, [z-1]
     jsr int_to_int16
     set b, x
 
-    set x, [z-2]
-    ifn [x + HANDLE_TYPE], TYPE_INT
-        jsr recover
-        #doc rconf(): Type mismatch error in power
-
-    set push, x
+    set push, [z-2]
     jsr int_to_int16
     set c, x
 
@@ -3461,25 +3338,16 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_INT
 :built_in_hinfo
 ;----------------------------------------------------------------
     jsr built_in_params
 
     ife [hic], 0xffff
         jsr recover
-        #doc HIC not found error in hinfo()
+        #doc hinfo(): Device not present error
 
-    ifn i, 1
-        jsr recover
-        #doc hinfo(): Illegal parameter list error
-
-    ; verify that first parameter is int
-    set x, [z-1]
-    ifn [x + HANDLE_TYPE], TYPE_INT
-        jsr recover
-        #doc Illegal argument type for hinfo()
-
-    set push, x
+    set push, [z-1]
     jsr int_to_int16
     set push, x
 
@@ -3487,9 +3355,8 @@
     set c, x
     hwi [hic]
 
-    set x, NONE
     ifb a, 0x0008
-        set pc, postamble
+        set pc, postamble_none
 
     ; -------------
     ; Get port name
@@ -3529,6 +3396,7 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
+DAT 0
 :built_in_rinfo
 ;----------------------------------------------------------------
     jsr built_in_params
@@ -3536,10 +3404,6 @@
     ife [rci], 0xffff
         jsr recover
         #doc rinfo(): Device not present error
-
-    ifn i, 0
-        jsr recover
-        #doc rinfo(): Illegal parameter list error
 
     ; get the info from device
     set a, 0
@@ -3581,25 +3445,16 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_INT
 :built_in_hrecv
 ;----------------------------------------------------------------
     jsr built_in_params
 
     ife [hic], 0xffff
         jsr recover
-        #doc HIC not found error in hrecv()
+        #doc hrecv(): Device not present error
 
-    ifn i, 1
-        jsr recover
-        #doc hrecv(): Illegal parameter list error
-
-    ; verify that first parameter is int
-    set x, [z-1]
-    ifn [x + HANDLE_TYPE], TYPE_INT
-        jsr recover
-        #doc Illegal argument type for hrecv()
-
-    set push, x
+    set push, [z-1]
     jsr int_to_int16
     set c, x
 
@@ -3619,6 +3474,7 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
+DAT 0
 :built_in_rrecv
 ;----------------------------------------------------------------
     jsr built_in_params
@@ -3626,10 +3482,6 @@
     ife [rci], 0xffff
         jsr recover
         #doc rrecv(): Device not present error
-
-    ifn i, 0
-        jsr recover
-        #doc rrecv(): Illegal parameter list error
 
     set a, 0x0001
     set b, MEM_FLOPPY_START
@@ -3656,34 +3508,20 @@
     sti pc, built_in_rrecv_loop
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_INT, TYPE_INT
 :built_in_hsend
 ;----------------------------------------------------------------
     jsr built_in_params
 
     ife [hic], 0xffff
         jsr recover
-        #doc HIC not found error in hsend()
+        #doc hsend(): Device not present error
 
-    ifn i, 2
-        jsr recover
-        #doc Wrong number of arguments for hsend()
-
-    ; verify that first parameter is int
-    set x, [z-1]
-    ifn [x + HANDLE_TYPE], TYPE_INT
-        jsr recover
-        #doc Illegal argument type for hsend()
-
-    set push, x
+    set push, [z-1]
     jsr int_to_int16
     set c, x
 
-    set x, [z-2]
-    ifn [x + HANDLE_TYPE], TYPE_INT
-        jsr recover
-        #doc Illegal argument type for hsend()
-
-    set push, x
+    set push, [z-2]
     jsr int_to_int16
     set b, x
 
@@ -3693,10 +3531,10 @@
         jsr recover
         #doc Transmit buffer overflow, port is not connected or HIC is busy error in hsend()
 
-    set x, NONE
-    set pc, postamble
+    set pc, postamble_none
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_STR
 :built_in_rsend
 ;----------------------------------------------------------------
     jsr built_in_params
@@ -3705,17 +3543,9 @@
         jsr recover
         #doc rsend(): Device not present error
 
-    ifn i, 1
-        jsr recover
-        #doc rsend(): Illegal parameter list error
-
-    set x, [z-1]
-    ifn [x + HANDLE_TYPE], TYPE_STR
-        jsr recover
-        #doc rsend(): Type mismatch error in data
-
     set a, 2
-    set b, [x]
+    set b, [z-1]
+    set b, [b]
     set c, [b]
     add b, 1
     hwi [rci]
@@ -3727,12 +3557,10 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
+DAT 0
 :built_in_hwn
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 0
-        jsr recover
-        #doc Wrong number of arguments for hwn()
 
     hwn x
 
@@ -3742,24 +3570,15 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_INT
 :built_in_hwi
 ;----------------------------------------------------------------
     jsr built_in_params
 
-    ; verify two parameters
-    ifn i, 1
-        jsr recover
-        #doc Wrong number of arguments for hwi(a)
-
-    ; verify that first parameter is int
-    set x, [z-1]
-    ifn [x + HANDLE_TYPE], TYPE_INT
-        jsr recover
-        #doc Illegal argument type for hwi(a)
-
     set push, z
+
     ; push first parameter value to stack
-    set push, x
+    set push, [z-1]
     jsr int_to_int16
     set push, x
 
@@ -3770,20 +3589,13 @@
     jsr save_registers
     set z, pop
 
-    set pc, postamble
+    set pc, postamble_none
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_INT
 :built_in_hwq
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 1
-        jsr recover
-        #doc Wrong number of arguments for hwq(a)
-
-    set x, [z-1]
-    ifn [x + HANDLE_TYPE], TYPE_INT
-        jsr recover
-        #doc Illegal argument type for hwq(a)
 
     set push, [z-1]
     jsr int_to_int16
@@ -3847,43 +3659,28 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_GROUP_INTEGER, TYPE_GROUP_INTEGER
 :built_in_scroll
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 2
-        jsr recover
-        #doc Wrong number of arguments for scroll(x, y)
 
-    set x, [z-1]
-    ifc [x + HANDLE_TYPE], TYPE_GROUP_INTEGER
-        jsr recover
-        #doc Illegal argument type for scroll(x, y)
-        
-    set push, x
+    set push, [z-1]
     jsr int_to_int16
     set push, x
 
-    set x, [z-2]
-    ifc [x + HANDLE_TYPE], TYPE_GROUP_INTEGER
-        jsr recover
-        #doc Illegal argument type for scroll(x, y)
-        
-    set push, x
+    set push, [z-2]
     jsr int_to_int16
     set push, x
 
     jsr screen__scroll
     
-    set x, VOID
-    set pc, postamble
+    set pc, postamble_none
 
 ;----------------------------------------------------------------
+DAT 0
 :built_in_version
 ;----------------------------------------------------------------
     jsr built_in_params
-    ifn i, 0
-        jsr recover
-        #doc Wrong number of arguments for version()
 
     set x, STR_VERSION
     set pc, postamble
@@ -3921,7 +3718,33 @@
     set push, token_rparen
     jsr lexer_advance    ; skip ')'
 
-    set pc, pop
+    set a, [sp]
+    sub a, 3
+    ife [a], 0xffff
+        ; disable parameter checking
+        set pc, pop
+
+    set b, z
+    sub b, i
+
+:built_in_params_type_loop
+    ife [a], 0
+        set pc, built_in_params_type_end
+
+    set x, [b]
+    ifc [a], [x + HANDLE_TYPE]
+        jsr recover
+        #doc Type mismatch error
+
+    sub a, 1
+    add b, 1
+    set pc, built_in_params_type_loop
+
+:built_in_params_type_end
+    ife b, z
+        set pc, pop
+    jsr recover
+    #doc Illegal parameter list error
 
 ;----------------------------------------------------------------
 :load_registers

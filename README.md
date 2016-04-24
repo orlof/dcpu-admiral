@@ -1526,9 +1526,7 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
   <dt id="call">call(addr)</dt>
   <dd>
     <p>
-      Hands the CPU over to a the machine language subroutine at a specific address. If address is not specified then 
-      start of the floppy drive buffer is used as a default. Floppy drive buffer provides 512 words of space that is
-      used only when Admiral executes floppy commands. Floppy commands will overwrite the buffer area completely.
+      Hands the CPU over to a the machine language subroutine at a specific address. Typical value for addr is the start of the floppy drive buffer that provides 512 words of space that is used only when Admiral executes floppy commands. Floppy commands will overwrite the buffer area completely. Floppy frive buffer address is stored in memory location 0xfffe and can be read with peek(0xfffe).
     </p>
     <p>
       Given address should be in the range 0 thru 65535, or 0x0000 thru 0xFFFF. If the given address is outside these 
@@ -1555,7 +1553,7 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
       j: [0xffff] + 7
       </pre>
 
-      Subroutine can pollute registers a-j, but must return with rts.
+      Subroutine can pollute registers a-j, but must restore stack and return with rts (set pc, pop).
     </p>
   </dd>
 </dl>

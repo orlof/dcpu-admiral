@@ -608,6 +608,8 @@
 ; if subroutine was intitialized by preamble. postamble will
 ; restore register and stack to original state and do rts.
 ; x:   return value
+:postamble_none
+    set x, NONE
 :postamble
     set sp, z                ; free local vars and heap refs
     set z, pop                ; restore fp
