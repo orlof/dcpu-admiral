@@ -1486,7 +1486,7 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
 </dl>
 
 <dl>
-  <dt id="rinfo">(int ch, int pw, bool buf, bool ant, bool dev) rinfo()</dt>
+  <dt id="rinfo">rinfo()</dt>
   <dd>
     <p>
       Returns information about RCI status. Return value is a tuple (channel, power, buffer, antenna, device):
@@ -1503,19 +1503,19 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
 </dl>
 
 <dl>
-  <dt id="rrecv">str rrecv()</dt>
+  <dt id="rrecv">rrecv()</dt>
   <dd>
     <p>
-      Returns the received datagram from receiving buffer or none if no datagram is available.
+      Returns the contents of the receive buffer as a string, or none if receive buffer is empty.
     </p>
   </dd>
 </dl>
 
 <dl>
-  <dt id="rsend">bool rsend(str data)</dt>
+  <dt id="rsend">rsend(data)</dt>
   <dd>
     <p>
-      Transmits a string as RCI datagram. Return true if the datagram is successfully queued for transmission, or false if there is already a datagram being transmitted. 
+      Transmits the contents of the data string as RCI datagram. Returns true if datagram is successfully queued for transmission, or false if there is already a datagram being transmitted. 
     </p>
   </dd>
 </dl>
