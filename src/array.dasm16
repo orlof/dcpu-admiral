@@ -477,6 +477,8 @@
     set b, [z+10]
 
     set a, [a]    ; struct handle **i
+    ife [a], 0
+        set pc, postamble
 
     set c, a
     add c, [a]    ; struct handle **last

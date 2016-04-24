@@ -304,16 +304,18 @@
     set a, [z+11]
     set b, [z+10]
 
+    set push, a
     ife [a + HANDLE_TYPE], TYPE_STR
         set pc, sort_string
-    ifb [a + HANDLE_TYPE], TYPE_TUPLE + TYPE_LIST
-        set pc, sort_array
+    ife [a + HANDLE_TYPE], TYPE_TUPLE
+        set pc, sort_tuple
+    ife [a + HANDLE_TYPE], TYPE_LIST
+        set pc, sort_list
         
     jsr recover
     #doc Sort is available only for str, tuple and list
 
 :sort_string
-    set push, a
     jsr array_clone
     set [z-1], x
 
@@ -345,15 +347,19 @@
     add sp, 3
     set pc, i
 
-:sort_array
-    set push, a
+:sort_tuple
+    jsr array_clone
+    set push, x
+
+:sort_list
+    set [z-1], [sp]
     ife b, BOOL_TRUE
         set push, array_reverse_comparator
     ife b, BOOL_FALSE
         set push, array_comparator
         
     jsr array_sort
-    set x, [z+11]
+    set x, [z-1]
     set pc, postamble
 
 :array_comparator

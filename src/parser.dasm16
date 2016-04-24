@@ -2477,23 +2477,29 @@ DAT 0xffff
         jsr recover
         #doc Too many arguments for range()
 
-    set push, [z-1]
-    bor [sp], [z-2]
-    bor [sp], [z-3]
-    ifc TYPE_GROUP_NON_INTEGER, pop
+    set a, [z-1]
+    set b, [a + HANDLE_TYPE]
+    set a, [z-2]
+    bor b, [a + HANDLE_TYPE]
+    set a, [z-3]
+    bor b, [a + HANDLE_TYPE]
+
+    ifn b, TYPE_INT
         jsr recover
         #doc range() arguments are not integers error
 
     set push, [z-3]
     jsr int_sgn
     set y, x
-    xor y, 0xffff
-    add y, 1
+    mul y, -1
 
     set push, 20
     set push, TYPE_LIST
     jsr alloc
     set [z-4], x
+
+    ife y, 0
+        set pc, built_in_range_break
 
 :built_in_range_loop
     set push, [z-1]
@@ -2724,7 +2730,7 @@ DAT 0, TYPE_STR + TYPE_TUPLE + TYPE_DICT + TYPE_LIST
     set pc, postamble    
 
 ;----------------------------------------------------------------
-DAT 0, TYPE_STR, TYPE_STR + TYPE_BOOL + TYPE_NONE + TYPE_INT + TYPE_FLOAT + TYPE_TUPLE + TYPE_LIST + TYPE_DICT
+DAT 0, TYPE_STR + TYPE_BOOL + TYPE_NONE + TYPE_INT + TYPE_FLOAT + TYPE_TUPLE + TYPE_LIST + TYPE_DICT
 :built_in_type
 ;----------------------------------------------------------------
     jsr built_in_params

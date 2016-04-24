@@ -1,5 +1,7 @@
 :interpreter_main
     set push, REGISTER_A
+    set push, MEM_FLOPPY_START
+    
     set push, 0
     set push, 5
     jsr preamble
