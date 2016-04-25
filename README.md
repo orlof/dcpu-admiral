@@ -1345,7 +1345,7 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
       Convert a value to a Boolean, using the standard truth testing procedure.
     </p>
     <p>
-      The following values are interpreted as false: false, numeric zero of all types, and empty strings and containers (including tuples, lists and dictionaries). All other values are interpreted as true.
+      The following values are interpreted as false: false, numeric zero of all types, string 'false' and empty strings and containers (including tuples, lists and dictionaries). All other values are interpreted as true.
     </p>
   </dd>
 </dl>
@@ -1354,9 +1354,7 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
   <dt id="int">int(x)</dt>
   <dd>
     <p>
-      Convert a number or string x to an integer. If x is a number, it can be a boolean, 
-      a plain integer, or a floating point number. If x is floating point, the conversion 
-      truncates towards zero.
+      Convert a number or string x to an integer. If x is a number, it can be a boolean, a plain integer, or a floating point number. If x is floating point, the conversion truncates towards zero.
     </p>
   </dd>
 </dl>
@@ -1526,7 +1524,7 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
   <dt id="call">call(addr)</dt>
   <dd>
     <p>
-      Hands the CPU over to a the machine language subroutine at a specific address. Typical value for addr is the start of the floppy drive buffer that provides 512 words of space that is used only when Admiral executes floppy commands. Floppy commands will overwrite the buffer area completely. Floppy frive buffer address is stored in memory location 0xfffe and can be read with peek(0xfffe).
+      Hands the CPU over to a the machine language subroutine at a specific address. Typical value for addr is the start of the floppy drive buffer that provides 512 words of space that is used only when Admiral executes floppy commands. Floppy commands will overwrite the buffer area completely. Floppy drive buffer address is stored in memory location 0xfffe and can be read with peek(0xfffe).
     </p>
     <p>
       Given address should be in the range 0 thru 65535, or 0x0000 thru 0xFFFF. If the given address is outside these 
@@ -1660,7 +1658,7 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
 <tr><td>not x</td><td>Boolean NOT (unary)</td><td>-</td></tr>
 <tr><td>in, not in</td><td>Membership test</td><td>Left</td></tr>
 <tr><td>is, is not</td><td>Identity tests</td><td>Left</td></tr>
-<tr><td>&lt;, &lt;=, &gt;, &gt;=, &lt;&gt;, !=, ==</td><td>Comparisons</td><td>Left</td></tr>
+<tr><td>&lt;, &lt;=, &gt;, &gt;=, !=, ==</td><td>Comparisons</td><td>Left</td></tr>
 <tr><td>|</td><td>Bitwise OR</td><td>Left</td></tr>
 <tr><td>^</td><td>Bitwise XOR</td><td>Left</td></tr>
 <tr><td>&</td><td>Bitwise AND</td><td>Left</td></tr>

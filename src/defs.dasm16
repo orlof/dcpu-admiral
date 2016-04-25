@@ -2,7 +2,7 @@
 ; MEMORY LAYOUT
 ; the optimal value for MEM_CODE_SIZE is len(admiral.bin)/2
 ;----------------------------------------------------------------
-#define MEM_CODE_SIZE          0x3700
+#define MEM_CODE_SIZE          0x3600
 #define MEM_FLOPPY_SIZE        0x200
 #define MEM_SCREEN_SIZE        0x480
 #define MEM_STACK_SIZE         0x1000
@@ -78,11 +78,12 @@
 ;----------------------------------------------------------------
 ; CONSTANTS
 ;----------------------------------------------------------------
-#define TRUE            1
-#define FALSE           0
+#define TRUE                1
+#define FALSE               0
 
-#define SCREEN_COLS     32
-#define SCREEN_ROWS     12
+#define SCREEN_COLS         32
+#define SCREEN_ROWS         12
+#define SCREEN_BLANK_CHAR   0x7020
 
 #define KEY_BS          0x10
 #define KEY_NEWLINE     0x11

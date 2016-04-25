@@ -866,10 +866,11 @@
 #define FP_STATE_EXPONENT_SIGN    64
 #define FP_STATE_EXPONENT_DIGIT    128
 
-#define FPV_EXPONENT_NEGATIVE    -2
+#define FPV_EXPONENT_NEGATIVE   -2
 #define FPV_EXPONENT            -3
-#define FPV_EXPONENT_MODIFIER    -4
-#define FPV_STATE                -5
+#define FPV_EXPONENT_MODIFIER   -4
+#define FPV_STATE               -5
+#define FPV_MANTISSA_NEGATIVE   -6
 
 :float__from_str
     set push, 1            ; sizeof(args)
@@ -915,10 +916,11 @@
     ;---------------------------------------
     set [z-1], FLOAT_0
 
-    set push, FALSE                ; FPV_EXPONENT_NEGATIVE
-    set push, 0                    ; FPV_EXPONENT
-    set push, 0                    ; FPV_EXPONENT_MODIFIER
-    set push, FP_STATE_START    ; FPV_STATE
+    set push, FALSE                 ; FPV_EXPONENT_NEGATIVE
+    set push, 0                     ; FPV_EXPONENT
+    set push, 0                     ; FPV_EXPONENT_MODIFIER
+    set push, FP_STATE_START        ; FPV_STATE
+    set push, FALSE                 ; FPV_MANTISSA_NEGATIVE
 
     set b, 0                    ; index in str
 
@@ -981,7 +983,7 @@
     jsr float__mul
     set [z-1], x
 
-    set push, [z-1]
+    set push, x
     set push, [FLOAT_TABLE + c]
     jsr float__add
     set [z-1], x
@@ -1016,10 +1018,7 @@
 :ffs_mantissa_minus
     ; handle leading minus
     set [z + FPV_STATE], FP_STATE_SIGN
-    
-    set push, [z-1]
-    jsr float__negate
-    set [z-1], x
+    set [z + FPV_MANTISSA_NEGATIVE], TRUE
 
     set pc, ffs_loop
 :ffs_exponent_minus
@@ -1052,6 +1051,14 @@
         jsr recover
         #doc Invalid number format
 
+    ife [z + FPV_MANTISSA_NEGATIVE], FALSE
+        set pc, ffs_end_skip_negate
+
+    set push, [z-1]
+    jsr float__negate
+    set [z-1], x
+
+:ffs_end_skip_negate
     set ex, 0
     ife [z + FPV_EXPONENT_NEGATIVE], FALSE
         add [z + FPV_EXPONENT], 0x8000

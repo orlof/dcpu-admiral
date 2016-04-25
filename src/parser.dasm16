@@ -754,6 +754,7 @@
 
     set c, [lexer_token]
     jsr [c + PROTOTYPE_NUD]
+    #doc Syntax error
     
     set [z-1], x       ; struct handle *left
 
@@ -2653,8 +2654,8 @@ DAT 0xffff
     ifg i, 0
         set pc, built_in_rnd_1
         
-    set a, [FLOAT_0]
-    set b, [FLOAT_1]
+    set a, FLOAT_0
+    set b, FLOAT_1
     
     set pc, built_in_rnd_finish
 
@@ -2665,13 +2666,13 @@ DAT 0xffff
     set b, [z-1]
     set c, [b + HANDLE_TYPE]
 
-    ifc c, TYPE_INT + TYPE_FLOAT + TYPE_BOOL
+    ifc c, TYPE_INT + TYPE_FLOAT
         jsr recover
-        #doc rnd() parameter not numeric
+        #doc rnd(): Type mismatch error
 
     set a, INT_0
     ife c, TYPE_FLOAT
-        set a, [FLOAT_0]
+        set a, FLOAT_0
 
     set pc, built_in_rnd_finish
 
@@ -2679,12 +2680,12 @@ DAT 0xffff
     set a, [z-1]
     set b, [z-2]
 
-    ifc [a + HANDLE_TYPE], TYPE_FLOAT + TYPE_INT + TYPE_BOOL
+    ifc [a + HANDLE_TYPE], TYPE_FLOAT + TYPE_INT
         jsr recover
-        #doc rnd() parameter not numeric
-    ifc [b + HANDLE_TYPE], TYPE_FLOAT + TYPE_INT + TYPE_BOOL
+        #doc rnd(): Type mismatch error
+    ifc [b + HANDLE_TYPE], TYPE_FLOAT + TYPE_INT
         jsr recover
-        #doc rnd() parameter not numeric
+        #doc rnd(): Type mismatch error
 
 :built_in_rnd_finish
     jsr cast_common_number_type
@@ -2705,11 +2706,12 @@ DAT 0, TYPE_INT + TYPE_FLOAT
 ;----------------------------------------------------------------
     jsr built_in_params
 
-    set push, [z-1]
+    set a, [z-1]
+    set push, a
 
-    ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
+    ife [a + HANDLE_TYPE], TYPE_INT
         jsr int_abs
-    ifb [a + HANDLE_TYPE], TYPE_FLOAT
+    ife [a + HANDLE_TYPE], TYPE_FLOAT
         jsr float__abs
 
     set pc, postamble    
@@ -2810,9 +2812,6 @@ DAT 0, TYPE_STR + TYPE_BOOL + TYPE_INT + TYPE_FLOAT
     ife [a + HANDLE_TYPE], TYPE_FLOAT
         set pc, built_in_int_float
 
-    jsr recover
-    #doc Illegal argument type for int(a)
-
 :built_in_int_int
     set x, a
     set pc, postamble
@@ -2856,9 +2855,9 @@ DAT 0, TYPE_STR + TYPE_BOOL + TYPE_INT + TYPE_FLOAT
 
 :built_in_float_bool
     ife a, BOOL_FALSE
-        set x, [FLOAT_0]
+        set x, FLOAT_0
     ife a, BOOL_TRUE
-        set x, [FLOAT_1]
+        set x, FLOAT_1
     set pc, postamble
 
 :built_in_float_string
@@ -2908,7 +2907,7 @@ DAT 0, TYPE_STR + TYPE_NAME + TYPE_BOOL + TYPE_NONE + TYPE_INT + TYPE_FLOAT + TY
     set pc, postamble
 
 ;----------------------------------------------------------------
-DAT 0, TYPE_INT + TYPE_BOOL + TYPE_FLOAT + TYPE_STR
+DAT 0, TYPE_INT + TYPE_BOOL + TYPE_FLOAT + TYPE_STR + TYPE_NONE + TYPE_TUPLE + TYPE_LIST + TYPE_DICT
 :built_in_bool
 ;----------------------------------------------------------------
     jsr built_in_params
