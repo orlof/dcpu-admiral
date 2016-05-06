@@ -207,24 +207,24 @@
     set pc, int_parse_hex_loop    
 
 :int_to_hex
-    set push, 1
+    set push, 2
     set push, 1
     jsr preamble
     set y, INT_16
     set pc, int_to_str_start
 ;----------------------------------------------------------------
-; extern struct handle *int_to_str(struct handle *integer)
+; extern struct handle *int_to_str(struct handle *integer, void *callback)
 ; local variable space
 ;   [ -1] REF temp
 ;----------------------------------------------------------------
 :int_to_str
-    set push, 1
+    set push, 2
     set push, 1
     jsr preamble
     set y, INT_10
 
 :int_to_str_start
-    set push, [z+10]
+    set push, [z+11]
     jsr int_abs
     set [z-1], x
 
@@ -261,32 +261,22 @@
 
 :int_to_str_negative
     ; add minus sign
-    set push, [z+10]
+    set push, [z+11]
     jsr int_sgn
 
     ifn x, -1
-        set pc, allocate_chars
+        set pc, itoa_reverse_string
 
     sti push, '-'
 
-:allocate_chars
-    set push, i
-    set push, TYPE_STR
-    jsr array_create
-    set [z-1], x
-
-    set a, [x]
-    add a, i
-
-    sti j, [x]    ; struct string *
-
 :itoa_reverse_string
-    set [j], pop
-    
-    ifl j, a
-        sti pc, itoa_reverse_string
+    ife i, 0
+        set pc, postamble
 
-    set pc, postamble
+    set c, pop
+    jsr [z+10]
+    
+    std pc, itoa_reverse_string
 
 ;----------------------------------------------------------------
 ; extern struct handle *int_random(struct handle *min, struct handle *max)

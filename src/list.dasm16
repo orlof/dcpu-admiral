@@ -65,26 +65,20 @@
     set pc, array_cmp
 
 ;----------------------------------------------------------------
-; struct handle *list_repr(struct handle *list)
+; struct handle *list_repr(struct handle *list, void *callback)
 ;----------------------------------------------------------------
 :list_repr
-    set push, 1
     set push, 2
+    set push, 1
     jsr preamble
     
-    set y, [z+10]
+    set y, [z+11]
     
-    set push, 10
-    set push, TYPE_STR
-    jsr alloc
-    set [z-1], x
-
-    set push, x
     ife [y + HANDLE_TYPE], TYPE_TUPLE
-        set push, '('
+        set c, '('
     ife [y + HANDLE_TYPE], TYPE_LIST
-        set push, '['
-    jsr array__append
+        set c, '['
+    jsr [z+10]
 
     set i, 0                    ; index
     set b, [y]                    ; struct list *
@@ -97,32 +91,24 @@
     ife i, 0
         set pc, list_repr_skip_comma
 
-    set push, [z-1]                    ; struct handle *str
-    set push, ','
-    jsr array__append
+    set c, ','
+    jsr [z+10]
 
 :list_repr_skip_comma
     set x, [y]                ; struct list *
     add x, i                ; current item
     
     set push, [x+1]            ; get repr of next item
+    set push, [z+10]
     jsr repr
-    set [z-2], x
     
-    set push, [z-1]
-    set push, [z-2]
-    jsr array_merge
-    set [z-1], x
-
     sti pc, list_repr_loop
         
 :list_repr_finish
-    set push, [z-1]
     ife [y + HANDLE_TYPE], TYPE_TUPLE
-        set push, ')'
+        set c, ')'
     ife [y + HANDLE_TYPE], TYPE_LIST
-        set push, ']'
-    jsr array__append
+        set c, ']'
+    jsr [z+10]
 
-    set x, [z-1]
     set pc, postamble

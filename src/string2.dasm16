@@ -1,4 +1,86 @@
 ;----------------------------------------------------------------
+; void str__repr(struct handle *str, void *callback)
+;----------------------------------------------------------------
+:str__repr
+    set push, 2
+    set push, 0
+    jsr preamble
+
+    set y, [z + 10]
+
+    set c, 39
+    jsr y
+
+    set a, [z + 11]
+    set b, 0xffff        ; index
+
+:str__repr__loop
+    add b, 1
+    jsr array__get
+
+:str__repr__loop_check
+    ife x, 0
+        set pc, str__repr__finish
+
+    set c, x            ; char
+    jsr y
+
+    set pc, str__repr__loop
+
+:str__repr__finish
+    set c, 39
+    jsr y
+
+    set pc, postamble
+
+;----------------------------------------------------------------
+; void str__str(struct handle *str, void *callback)
+;----------------------------------------------------------------
+:str__str
+    set push, 2
+    set push, 0
+    jsr preamble
+
+    set y, [z + 10]
+
+    set a, [z + 11]
+    set b, 0xffff        ; index
+
+:str__str__loop
+    add b, 1
+    jsr array__get
+
+:str__str__loop_check
+    ife x, 0
+        set pc, postamble
+
+    ife x, 0x5c
+        set pc, str__str__escape
+
+    set c, x            ; char
+    jsr y
+
+    set pc, str__str__loop
+
+:str__str__escape
+    add b, 1
+    jsr array__get
+    
+    ife x, 'n'
+        set pc, str__str__newline
+        
+    set c, 47
+    jsr y
+    
+    set pc, str__str__loop_check
+
+:str__str__newline
+    set c, 10
+    jsr y
+
+    set pc, str__str__loop
+
+;----------------------------------------------------------------
 ; uint str_cmp(struct handle *left, struct handle *right)
 ;----------------------------------------------------------------
 :str_cmp

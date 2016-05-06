@@ -1097,14 +1097,14 @@
     set pc, ffs_scale_loop
 
 ;----------------------------------------------------------------
-; struct handle *float__to_str(struct handle *f)
+; struct handle *float__to_str(struct handle *f, void *callback)
 ;----------------------------------------------------------------
 :float__to_str
-    set push, 1            ; number of arguments
-    set push, 2            ; amount of local variable space
+    set push, 2            ; number of arguments
+    set push, 1            ; amount of local variable space
     jsr preamble
 
-    set i, [z+10]
+    set i, [z+11]
     set i, [i]
 
     set x, 0
@@ -1118,65 +1118,59 @@
         set x, STR_NZERO
     ife [i + FLOAT_TYPE], FLOAT_TYPE_PZERO
         set x, STR_PZERO
+
     ifn x, 0
-        set pc, postamble
+        set pc, float__to_str__str
 
-    set push, 13
-    set push, TYPE_STR
-    jsr alloc
-    set [z-1], x
-
-    set push, [z+10]
+    set push, [z+11]
     jsr float__abs
-    set [z-2], x
+    set [z-1], x
 
     set a, 1        ; a: magnitude
     set b, 0        ; b: significants
     
-    ife [z+10], [z-2]
+    ife [z+11], [z-1]
         set pc, fts_scale_down
 
-    set push, [z-1]
-    set push, '-'
-    jsr array__append
+    set c, '-'
+    jsr [z+10]
     
 :fts_scale_down
-    set push, [z-2]
+    set push, [z-1]
     set push, FLOAT_10
     jsr float__cmp
 
     ife x, -1
         set pc, fts_print
 
-    set push, [z-2]
+    set push, [z-1]
     set push, FLOAT_10
     jsr float__div
-    set [z-2], x
+    set [z-1], x
     
     add a, 1
     set pc, fts_scale_down
 
 :fts_print
-    set push, [z-2]
+    set push, [z-1]
     jsr float__to_uint
 
     set c, x
-    add x, '0'            ; change number to character
+    set j, x
+    add c, '0'            ; change number to character
 
-    set push, [z-1]        ; add character to string
-    set push, x
-    jsr array__append
+    jsr [z+10]
 
-    set push, [z-2]
-    set push, [FLOAT_TABLE + c]
+    set push, [z-1]
+    set push, [FLOAT_TABLE + j]
     jsr float__sub
-    set [z-2], x
+    set [z-1], x
 
 ;    ife [MASK+i], MASK_ZERO
 ;        set pc, ftoa_fill_with_zero
 
-    bor c, b
-    ife c, 0
+    bor j, b
+    ife j, 0
         set pc, fts_scale_up
 
     add b, 1
@@ -1184,18 +1178,17 @@
         set pc, fts_fill_with_zero
 
 :fts_scale_up
-    set push, [z-2]
+    set push, [z-1]
     set push, FLOAT_10
     jsr float__mul
-    set [z-2], x
+    set [z-1], x
     
     sub a, 1
     ifn a, 0
         set pc, fts_print
 
-    set push, [z-1]        ; add character to string
-    set push, '.'
-    jsr array__append
+    set c, '.'
+    jsr [z+10]
     
     set pc, fts_print
 
@@ -1206,14 +1199,19 @@
     ifb a, 0x8000
         set pc, fts_finish
         
-    set push, [z-1]        ; add character to string
-    set push, '0'
-    jsr array__append
+    set c, '0'
+    jsr [z+10]
     
     set pc, fts_fill_with_zero
 
 :fts_finish
-    set x, [z-1]
+    set pc, postamble
+
+:float__to_str__str
+    set push, x
+    set push, [z+10]
+    jsr str__str
+
     set pc, postamble
 
 ;----------------------------------------------------------------

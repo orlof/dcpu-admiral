@@ -2876,20 +2876,43 @@ DAT 0, TYPE_STR + TYPE_NAME + TYPE_BOOL + TYPE_NONE + TYPE_INT + TYPE_FLOAT + TY
 ;----------------------------------------------------------------
     jsr built_in_params
 
+    jsr init_str_builder
+
     set push, [z-1]
+    set push, built_in_repr_builder
     jsr repr
-    
+
+    set x, [z-2]    
     set pc, postamble
+
+:built_in_repr_builder
+    set push, [repr_builder_ref]
+    set push, c
+    jsr array__append
+
+    set pc, pop
+
+:init_str_builder
+    set push, 20
+    set push, TYPE_STR
+    jsr alloc
+    set [z-2], x
+    set [repr_builder_ref], x
+
+    set pc, pop
 
 ;----------------------------------------------------------------
 DAT 0, TYPE_INT
 :built_in_hex
 ;----------------------------------------------------------------
     jsr built_in_params
+    jsr init_str_builder
 
     set push, [z-1]
+    set push, built_in_repr_builder
     jsr int_to_hex
 
+    set x, [z-2]    
     set pc, postamble
 
 ;----------------------------------------------------------------
@@ -2902,9 +2925,13 @@ DAT 0, TYPE_STR + TYPE_NAME + TYPE_BOOL + TYPE_NONE + TYPE_INT + TYPE_FLOAT + TY
     ife [x + HANDLE_TYPE], TYPE_STR
         set pc, postamble
 
-    set push, x
+    jsr init_str_builder
+
+    set push, [z-1]
+    set push, built_in_repr_builder
     jsr repr
 
+    set x, [z-2]    
     set pc, postamble
 
 ;----------------------------------------------------------------

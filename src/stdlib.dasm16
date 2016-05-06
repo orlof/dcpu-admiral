@@ -696,76 +696,45 @@
 ;----------------------------------------------------------------
 :print_repr
     set push, 1
-    set push, 1
+    set push, 0
     jsr preamble
 
-    set pc, print_with_repr
+    set a, [z+10]
+    set push, a
+    set push, screen_add_char
+
+    jsr repr
+
+    set pc, postamble
+
 ;----------------------------------------------------------------
 ; void print(struct handle *string)
 ;----------------------------------------------------------------
 :print
     set push, 1
-    set push, 1
+    set push, 0
     jsr preamble
 
-    set y, FALSE
-
     set a, [z+10]
+    set push, a
+    set push, screen_add_char
+
     ife [a + HANDLE_TYPE], TYPE_STR
-        set pc, print_skip_repr
+        set pc, print__str
 
-:print_with_repr
-    set push, [z+10]
     jsr repr
-    set [z-1], x
-    set a, x
-    
-    set y, TRUE
+    set pc, postamble
 
-:print_skip_repr
-    set b, 0xffff        ; index
-
-:print_loop
-    add b, 1
-    jsr array__get
-
-:print_loop__check
-    ife x, 0
-        set pc, postamble
-
-    ife y, FALSE
-        ife x, 47
-            set pc, print_loop_escape
-
-    set c, x            ; char
-    jsr screen_add_char
-
-    set pc, print_loop
-
-:print_loop_escape
-    add b, 1
-    jsr array__get
-    
-    ife x, 'n'
-        set pc, print_loop_newline
-        
-    set c, 47
-    jsr screen_add_char
-    
-    set pc, print_loop__check
-
-:print_loop_newline
-    set c, 10
-    jsr screen_add_char
-
-    set pc, print_loop
+:print__str
+    jsr str__str
+    set pc, postamble
 
 ;----------------------------------------------------------------
-; struct handle *repr(struct handle *value)
+; struct handle *repr(struct handle *value, void *callback)
 ;----------------------------------------------------------------
 :repr
-    set push, 1
-    set push, 1
+    set push, 2
+    set push, 0
     jsr preamble
 
 ;    set push, [z+10]
@@ -773,16 +742,16 @@
 ;    set [z-1], x
 ;    set a, x
 
-    set x, [z+10]
+    set x, [z+11]
 
     ife [x + HANDLE_TYPE], TYPE_STR
-        set pc, repr_string
-    ife [x + HANDLE_TYPE], TYPE_NAME
-        set pc, postamble
+        set pc, repr__string
+;    ife [x + HANDLE_TYPE], TYPE_NAME
+;        set pc, postamble
     ife [x + HANDLE_TYPE], TYPE_BOOL
-        set pc, repr_boolean
+        set pc, repr__boolean
     ife [x + HANDLE_TYPE], TYPE_NONE
-        set pc, repr_none
+        set pc, repr__none
 
     set y, recover
     ife [x + HANDLE_TYPE], TYPE_INT
@@ -791,54 +760,38 @@
         set y, float__to_str
     ifb [x + HANDLE_TYPE], TYPE_TUPLE + TYPE_LIST
         set y, list_repr
-
     ife [x + HANDLE_TYPE], TYPE_DICT
         set y, dict_repr
 
     set push, x
+    set push, [z+10]
     jsr y
     #doc Illegal type string conversion
+
     set pc, postamble
 
-:repr_string
-    set a, [x]
-    set a, [a]
-    add a, 2
+:repr__boolean
+    set push, STR_TRUE
+    ife x, BOOL_FALSE
+        set [sp], STR_FALSE
 
-    set push, a
-    set push, TYPE_STR
-    jsr alloc
-    set [z-1], x
-    
-    set push, [z-1]
-    set push, 39
-    jsr array__append
-    
-    set push, [z-1]
+:repr__str__finish
     set push, [z+10]
-    jsr array_merge
-    set [z-1], x
-
-    set push, [z-1]
-    set push, 39
-    jsr array__append
-
-    set x, [z-1]
-    set pc, postamble
-
-
-:repr_boolean
-    set a, x
-
-    set x, STR_TRUE
-    ife a, BOOL_FALSE
-        set x, STR_FALSE
+    jsr str__str
 
     set pc, postamble
 
-:repr_none
-    set x, STR_NONE
+:repr__none
+    set push, STR_NONE
+    set pc, repr__str__finish
+
+:repr__string
+    set push, x
+    set push, [z+10]
+    jsr str__repr
+
     set pc, postamble
+
 
 ;----------------------------------------------------------------
 :detect_hardware
