@@ -267,7 +267,7 @@
     add c, SCREEN_COLS
 
 :edit_line_chars_loop
-    set [j], 0
+    set [j], SCREEN_BLANK_CHAR
     ife i, [buf_end]
         set pc, edit_line_chars_loop_1
     ife [i], KEY_NEWLINE
