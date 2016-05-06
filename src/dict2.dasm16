@@ -64,10 +64,10 @@
     jsr array_create
     set [z-3], x
 
-    sti i, [x]
+    set b, [x]
 
-    sti [i], [z-2]        ; add key to tuple
-    set [i], [z+10]        ; add value to tuple
+    set [b + DICT_ITEM_KEY], [z-2]        ; add key to tuple
+    set [b + DICT_ITEM_VALUE], [z+10]        ; add value to tuple
 
     set b, dict__set__finish
     set pc, dict__bin_search
