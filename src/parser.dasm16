@@ -979,7 +979,7 @@
 ;----------------------------------------------------------------
 :nud_lcurly
     set push, 0
-    set push, 4
+    set push, 3
     jsr preamble
 
     set push, 5
@@ -996,11 +996,11 @@
     ; left side (key)
     set push, 0
     jsr expression
-    set [z-3], x
+    set [z-2], x
 
     set push, x
     jsr eval
-    set [z-3], x
+    set [z-2], x
 
     set push, token_colon
     jsr lexer_advance        ; skip ':'
@@ -1008,25 +1008,26 @@
     ; right side (value)
     set push, 0x0030        ; break at comma
     jsr expression
-    set [z-4], x
+    set [z-3], x
 
     set push, x
     jsr eval
-    set [z-4], x
+    set [z-3], x
 
     ; kv-pair
-    set push, 2
-    set push, TYPE_TUPLE
-    jsr array_create
-    set [z-2], x
+    ; set push, 2
+    ; set push, TYPE_TUPLE
+    ; jsr array_create
+    ; set [z-2], x
 
-    set a, [x]
-    set [a + DICT_ITEM_KEY],   [z-3]
-    set [a + DICT_ITEM_VALUE], [z-4]
+    ; set a, [x]
+    ; set [a + DICT_ITEM_KEY],   [z-3]
+    ; set [a + DICT_ITEM_VALUE], [z-4]
 
     set push, [z-1]
     set push, [z-2]
-    jsr array__append
+    set push, [z-3]
+    jsr dict__set
 
     ife [lexer_token], token_comma
         set pc, nud_lcurly_loop
