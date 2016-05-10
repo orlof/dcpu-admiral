@@ -73,13 +73,16 @@
     jsr preamble
     
     set y, [z+11]
-    bor [y + HANDLE_TYPE], TYPE_EXTENSION
     
     ifb [y + HANDLE_TYPE], TYPE_TUPLE
         set c, '('
     ifb [y + HANDLE_TYPE], TYPE_LIST
         set c, '['
     jsr [z+10]
+
+    xor [y + HANDLE_TYPE], TYPE_EXTENSION
+    ifc [y + HANDLE_TYPE], TYPE_EXTENSION
+        set pc, list__repr__recursion
 
     set i, 0                    ; index
     set b, [y]                    ; struct list *
@@ -99,10 +102,6 @@
     set x, [y]                ; struct list *
     add x, i                ; current item
 
-    set j, [x+1]
-    ifb [j + HANDLE_TYPE], TYPE_EXTENSION
-        set pc, list__repr__recursion
-    
     set push, [x+1]            ; get repr of next item
     set push, [z+10]
     jsr repr
@@ -114,7 +113,6 @@
     jsr [z+10]
     jsr [z+10]
     jsr [z+10]
-    sti pc, list_repr_loop
 
 :list_repr_finish
     ifb [y + HANDLE_TYPE], TYPE_TUPLE
