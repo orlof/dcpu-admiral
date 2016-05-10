@@ -364,7 +364,7 @@
         #doc Wrong number of arguments for str.find()
 
     set x, [z-1]
-    ifn [x + HANDLE_TYPE], TYPE_STR
+    ifc [x + HANDLE_TYPE], TYPE_STR
         jsr recover
         #doc Illegal argument type for str.find()
 
@@ -374,7 +374,7 @@
         set pc, built_in__str_find__no_start
 
     set x, [z-2]
-    ifn [x + HANDLE_TYPE], TYPE_INT
+    ifc [x + HANDLE_TYPE], TYPE_INT
         jsr recover
         #doc Illegal argument type for str.find()
         
@@ -386,7 +386,7 @@
         set pc, built_in__str_find__no_end
 
     set x, [z-3]
-    ifn [x + HANDLE_TYPE], TYPE_INT
+    ifc [x + HANDLE_TYPE], TYPE_INT
         jsr recover
         #doc Illegal argument type for str.find()
         
@@ -451,7 +451,7 @@
         set pc, return_false
     
     set b, [i]
-    ifn [b + HANDLE_TYPE], TYPE_STR
+    ifc [b + HANDLE_TYPE], TYPE_STR
         jsr recover
         #doc Illegal argument type for str.startswith() or str.endswith()
         

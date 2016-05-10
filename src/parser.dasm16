@@ -145,7 +145,7 @@
 
     ; add 'me' if loaded object was dict
     set x, [z-1]
-    ife [x + HANDLE_TYPE], TYPE_STR
+    ifb [x + HANDLE_TYPE], TYPE_STR
         set pc, std_run_args
 
     ; add 'me' to function scope
@@ -184,7 +184,7 @@
     jsr lexer_store
 
     set x, [z-1]
-    ife [x + HANDLE_TYPE], TYPE_STR
+    ifb [x + HANDLE_TYPE], TYPE_STR
         set pc, std_run_init_lexer
 
     set push, [z-1]
@@ -195,7 +195,7 @@
         jsr recover
         #doc Missing main function
 
-    ifn [x + HANDLE_TYPE], TYPE_STR
+    ifc [x + HANDLE_TYPE], TYPE_STR
         jsr recover
         #doc main is not callable (string)
 
@@ -206,7 +206,7 @@
     jsr parser_stmt
     set [z-3], x
 
-    ife [x+HANDLE_TYPE], TYPE_CONTROL
+    ifb [x+HANDLE_TYPE], TYPE_CONTROL
         set pc, std_run_control
 
     ifn [lexer_token], token_eof
@@ -249,7 +249,7 @@
     jsr expression
     set [z-1], x
 
-    ife [x + HANDLE_TYPE], TYPE_TUPLE_COMMA
+    ifb [x + HANDLE_TYPE], TYPE_TUPLE_COMMA
         set pc, std_print_array
         
     set push, x
@@ -416,7 +416,7 @@
         set pc, std_for_finish
 
     add c, i        ; c+1 = points to current item
-    ife [b + HANDLE_TYPE], TYPE_STR
+    ifb [b + HANDLE_TYPE], TYPE_STR
         set pc, std_for_loop_string
         
     set push, a
@@ -425,7 +425,7 @@
 
 :std_for_execute_suite
     jsr parser_suite
-    ife [x + HANDLE_TYPE], TYPE_CONTROL
+    ifb [x + HANDLE_TYPE], TYPE_CONTROL
         set pc, std_for_control
 ;    ife [lexer_token], token_eof
 ;        set pc, std_for_eof
@@ -435,7 +435,7 @@
     sti pc, std_for_loop
 
 :std_for_loop_string
-    ife [a + HANDLE_TYPE], TYPE_TUPLE
+    ifb [a + HANDLE_TYPE], TYPE_TUPLE
         set pc, std_for_loop_string_tuple
 
     set push, a
@@ -524,7 +524,7 @@
         set pc, std_if_false
 
     jsr parser_suite
-    ife [x + HANDLE_TYPE], TYPE_CONTROL
+    ifb [x + HANDLE_TYPE], TYPE_CONTROL
         set pc, postamble
     ife [lexer_token], token_eof
         set pc, std_if_eof
@@ -566,7 +566,7 @@
     
     jsr parser_suite
 
-    ife [x + HANDLE_TYPE], TYPE_CONTROL
+    ifb [x + HANDLE_TYPE], TYPE_CONTROL
         set pc, postamble
 
 :std_if_eof
@@ -598,7 +598,7 @@
         set pc, std_while_false
 
     jsr parser_suite
-    ife [x + HANDLE_TYPE], TYPE_CONTROL
+    ifb [x + HANDLE_TYPE], TYPE_CONTROL
         set pc, std_while_control
 ;    ife [lexer_token], token_eof
 ;        set pc, std_while_eof    
@@ -719,7 +719,7 @@
 :parser_suite_block_loop
     jsr parser_stmt
     
-    ife [x + HANDLE_TYPE], TYPE_CONTROL
+    ifb [x + HANDLE_TYPE], TYPE_CONTROL
         set pc, postamble
 
     ife [lexer_token], token_dedent
@@ -941,7 +941,7 @@
     jsr expression
     set [z-1], x
 
-    ife [x + HANDLE_TYPE], TYPE_TUPLE_COMMA
+    ifb [x + HANDLE_TYPE], TYPE_TUPLE_COMMA
         set pc, nud_lbrack_change_type
     
     set push, 5
@@ -1071,7 +1071,7 @@
     set y, 0
     ifb [x + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
         set y, int_negate
-    ife [x + HANDLE_TYPE], TYPE_FLOAT
+    ifb [x + HANDLE_TYPE], TYPE_FLOAT
         set y, float__negate
 
     ife y, 0
@@ -1101,7 +1101,7 @@
     jsr eval
     set [z-1], x
 
-    ife [x + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
+    ifb [x + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
         set pc, nud_tilde_int
         
     jsr recover
@@ -1574,7 +1574,7 @@
     ife c, TYPE_LIST + TYPE_INT
         set y, array_repeat
 
-    ifn [a + HANDLE_TYPE], TYPE_INT
+    ifc [a + HANDLE_TYPE], TYPE_INT
         set pc, led_operation_tailer
 
     ; swap a and b
@@ -1605,8 +1605,8 @@
     ifc c, TYPE_GROUP_NON_INTEGER
         set y, int_pow
         
-    ife [a + HANDLE_TYPE], TYPE_FLOAT
-        ife [b + HANDLE_TYPE], TYPE_INT
+    ifb [a + HANDLE_TYPE], TYPE_FLOAT
+        ifb [b + HANDLE_TYPE], TYPE_INT
             set y, float__pow
 
     set pc, led_operation_tailer
@@ -1972,7 +1972,7 @@
 
 :parse_testlist_item_assign
     ; f(a=1)
-    ifn [x + HANDLE_TYPE], TYPE_NAME
+    ifc [x + HANDLE_TYPE], TYPE_NAME
         jsr recover
         #doc Invalid name for function call parameter error
 
@@ -2004,7 +2004,7 @@
     jsr eval
     set [z-2], x
     
-    ifn [x + HANDLE_TYPE], TYPE_STR
+    ifc [x + HANDLE_TYPE], TYPE_STR
         jsr recover   
         #doc Only strings are callable error 
 
@@ -2020,7 +2020,7 @@
     jsr parser_stmt
     set [z-3], x
 
-    ife [x+HANDLE_TYPE], TYPE_CONTROL
+    ifb [x+HANDLE_TYPE], TYPE_CONTROL
         set pc, led_lparen_control
 
     ifn [lexer_token], token_eof
@@ -2066,7 +2066,7 @@
     jsr eval
     set [z-1], x
 
-    ife [x + HANDLE_TYPE], TYPE_DICT    ; branch dict
+    ifb [x + HANDLE_TYPE], TYPE_DICT    ; branch dict
         set pc, led_lbrack_dict
 
     ifc [x + HANDLE_TYPE], TYPE_STR + TYPE_TUPLE + TYPE_LIST
@@ -2263,7 +2263,7 @@
 
     set a, [z+10]
     set [z-1], a
-    ife [a + HANDLE_TYPE], TYPE_TUPLE_COMMA
+    ifb [a + HANDLE_TYPE], TYPE_TUPLE_COMMA
         set pc, led_comma_add
         
     set push, 5
@@ -2301,9 +2301,9 @@
 :built_in
 ;----------------------------------------------------------------
     set a, [z+10]
-    ife [a+HANDLE_TYPE], TYPE_NAME
+    ifb [a+HANDLE_TYPE], TYPE_NAME
         set pc, built_in__global_functions
-    ife [a+HANDLE_TYPE], TYPE_REFERENCE
+    ifb [a+HANDLE_TYPE], TYPE_REFERENCE
         set pc, built_in__object_functions
         
     set pc, led_lparen_user_defined
@@ -2314,11 +2314,11 @@
 
     ; ADD HERE OBJECT TYPES THAT HAVE METHODS
     set x, 0
-    ife [b + HANDLE_TYPE], TYPE_LIST
+    ifb [b + HANDLE_TYPE], TYPE_LIST
         set x, built_in__list_methods
-    ife [b + HANDLE_TYPE], TYPE_STR
+    ifb [b + HANDLE_TYPE], TYPE_STR
         set x, built_in__str_methods
-    ife [b + HANDLE_TYPE], TYPE_DICT
+    ifb [b + HANDLE_TYPE], TYPE_DICT
         set x, built_in__dict_methods
 
     ife x, 0
@@ -2638,7 +2638,7 @@ DAT 0xffff
     ife i, 0
         set a, STR_EMPTY
 
-    ifn [a + HANDLE_TYPE], TYPE_STR
+    ifc [a + HANDLE_TYPE], TYPE_STR
         jsr recover
         #doc Illegal parameter type for edit(str)
 
@@ -2692,7 +2692,7 @@ DAT 0xffff
     jsr cast_common_number_type
 
     set y, int_random
-    ife [a + HANDLE_TYPE], TYPE_FLOAT
+    ifb [a + HANDLE_TYPE], TYPE_FLOAT
         set y, float__random
 
     set push, a
@@ -2710,9 +2710,9 @@ DAT 0, TYPE_INT + TYPE_FLOAT
     set a, [z-1]
     set push, a
 
-    ife [a + HANDLE_TYPE], TYPE_INT
+    ifb [a + HANDLE_TYPE], TYPE_INT
         jsr int_abs
-    ife [a + HANDLE_TYPE], TYPE_FLOAT
+    ifb [a + HANDLE_TYPE], TYPE_FLOAT
         jsr float__abs
 
     set pc, postamble    
@@ -2806,11 +2806,11 @@ DAT 0, TYPE_STR + TYPE_BOOL + TYPE_INT + TYPE_FLOAT
 
     set a, [z-1]
 
-    ife [a + HANDLE_TYPE], TYPE_BOOL
+    ifb [a + HANDLE_TYPE], TYPE_BOOL
         set pc, built_in_int_bool
-    ife [a + HANDLE_TYPE], TYPE_STR
+    ifb [a + HANDLE_TYPE], TYPE_STR
         set pc, built_in_int_string
-    ife [a + HANDLE_TYPE], TYPE_FLOAT
+    ifb [a + HANDLE_TYPE], TYPE_FLOAT
         set pc, built_in_int_float
 
 :built_in_int_int
@@ -2842,11 +2842,11 @@ DAT 0, TYPE_STR + TYPE_BOOL + TYPE_INT + TYPE_FLOAT
 
     set a, [z-1]
 
-    ife [a + HANDLE_TYPE], TYPE_BOOL
+    ifb [a + HANDLE_TYPE], TYPE_BOOL
         set pc, built_in_float_bool
-    ife [a + HANDLE_TYPE], TYPE_STR
+    ifb [a + HANDLE_TYPE], TYPE_STR
         set pc, built_in_float_string
-    ife [a + HANDLE_TYPE], TYPE_FLOAT
+    ifb [a + HANDLE_TYPE], TYPE_FLOAT
         set pc, built_in_float_float
 
 :built_in_float_int
@@ -2922,7 +2922,7 @@ DAT 0, TYPE_STR + TYPE_NAME + TYPE_BOOL + TYPE_NONE + TYPE_INT + TYPE_FLOAT + TY
     jsr built_in_params
 
     set x, [z-1]
-    ife [x + HANDLE_TYPE], TYPE_STR
+    ifb [x + HANDLE_TYPE], TYPE_STR
         set pc, postamble
 
     jsr init_str_builder
@@ -2996,7 +2996,7 @@ DAT 0xffff
     ifb [a + HANDLE_TYPE], TYPE_INT
         set pc, built_in_key_1_int
         
-    ifn [a + HANDLE_TYPE], TYPE_STR
+    ifc [a + HANDLE_TYPE], TYPE_STR
         jsr recover
         #doc Wrong argument type for key(a)
         
@@ -3185,7 +3185,7 @@ DAT 0xffff  ; disable parameter checks
     jsr built_in_params
 
     set x, [z-1]
-    ifn [x + HANDLE_TYPE], TYPE_INT
+    ifc [x + HANDLE_TYPE], TYPE_INT
         jsr recover
         #doc Illegal argument type for peek(start[, end])
 
@@ -3209,7 +3209,7 @@ DAT 0xffff  ; disable parameter checks
     set i, x
 
     set x, [z-2]
-    ifn [x + HANDLE_TYPE], TYPE_INT
+    ifc [x + HANDLE_TYPE], TYPE_INT
         jsr recover
         #doc Illegal argument type for peek(start[, end])
 
@@ -3242,7 +3242,7 @@ DAT 0, TYPE_INT, TYPE_INT + TYPE_STR
     set j, x
 
     set x, [z-2]
-    ife [x + HANDLE_TYPE], TYPE_STR
+    ifb [x + HANDLE_TYPE], TYPE_STR
         set pc, built_in_poke_str
 
     set push, x
@@ -3326,7 +3326,7 @@ DAT 0xffff  ; disable parameter validation
 
 :built_in_hsel_port
     set x, [z-1]
-    ifn [x + HANDLE_TYPE], TYPE_INT
+    ifc [x + HANDLE_TYPE], TYPE_INT
         jsr recover
         #doc Illegal argument type for hsel()
 

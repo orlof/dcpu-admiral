@@ -49,7 +49,7 @@
     set x, [z+11]
     set [z-2], x
 
-    ifn [x + HANDLE_TYPE], TYPE_NAME
+    ifc [x + HANDLE_TYPE], TYPE_NAME
         set pc, dict_set_skip
 
     set push, x
@@ -181,6 +181,7 @@
     jsr preamble
     
     set y, [z+11]
+    bor [y + HANDLE_TYPE], TYPE_EXTENSION
     
     set c, '{'
     jsr [z+10]
@@ -206,22 +207,36 @@
     set j, [x+1]            ; struct handle *tuple
 
     set x, [j]                ; struct tuple *
-    set push, [x+1]
+    set push, [x + DICT_ITEM_KEY]
     set push, [z+10]
     jsr repr
 
     set c, ':'
     jsr [z+10]
 
-    set x, [j]
-    set push, [x+2]
+    set x, [j]                ; struct tuple *
+
+    set x, [x + DICT_ITEM_VALUE]
+    ifb [x + HANDLE_TYPE], TYPE_EXTENSION 
+        set pc, dict__repr__recursion
+
+    set push, x
     set push, [z+10]
     jsr repr
 
     sti pc, dict_repr_loop
-        
+
+:dict__repr__recursion
+    set c, '.'
+    jsr [z+10]
+    jsr [z+10]
+    jsr [z+10]
+    sti pc, dict_repr_loop
+
 :dict_repr_finish
     set c, '}'
     jsr [z+10]
+
+    xor [y + HANDLE_TYPE], TYPE_EXTENSION
 
     set pc, postamble

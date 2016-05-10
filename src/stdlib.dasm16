@@ -151,13 +151,13 @@
     set b, [a + SUBSCRIPTION_LIST]
     set c, [a + SUBSCRIPTION_INDEX]
 
-    ife [b + HANDLE_TYPE], TYPE_DICT
+    ifb [b + HANDLE_TYPE], TYPE_DICT
         set pc, eval_subscription_dict
-    ife [b + HANDLE_TYPE], TYPE_LIST
+    ifb [b + HANDLE_TYPE], TYPE_LIST
         set pc, eval_subscription_array
-    ife [b + HANDLE_TYPE], TYPE_TUPLE
+    ifb [b + HANDLE_TYPE], TYPE_TUPLE
         set pc, eval_subscription_array
-    ife [b + HANDLE_TYPE], TYPE_STR
+    ifb [b + HANDLE_TYPE], TYPE_STR
         set pc, eval_subscription_str
 
     jsr recover
@@ -175,9 +175,9 @@
     set pc, postamble
 
 :eval_subscription_array
-    ife [c + HANDLE_TYPE], TYPE_INT
+    ifb [c + HANDLE_TYPE], TYPE_INT
         set pc, eval_subscription_array_index
-    ife [c + HANDLE_TYPE], TYPE_TUPLE
+    ifb [c + HANDLE_TYPE], TYPE_TUPLE
         set pc, eval_subscription_array_slice
     jsr recover
     #doc Syntax error in array subscription
@@ -206,9 +206,9 @@
     set pc, postamble
 
 :eval_subscription_str
-    ife [c + HANDLE_TYPE], TYPE_INT
+    ifb [c + HANDLE_TYPE], TYPE_INT
         set pc, eval_subscription_str_index
-    ife [c + HANDLE_TYPE], TYPE_TUPLE
+    ifb [c + HANDLE_TYPE], TYPE_TUPLE
         set pc, eval_subscription_str_slice
     jsr recover
     #doc Syntax error in string subscription
@@ -307,11 +307,11 @@
     set b, [z+10]
 
     set push, a
-    ife [a + HANDLE_TYPE], TYPE_STR
+    ifb [a + HANDLE_TYPE], TYPE_STR
         set pc, sort_string
-    ife [a + HANDLE_TYPE], TYPE_TUPLE
+    ifb [a + HANDLE_TYPE], TYPE_TUPLE
         set pc, sort_tuple
-    ife [a + HANDLE_TYPE], TYPE_LIST
+    ifb [a + HANDLE_TYPE], TYPE_LIST
         set pc, sort_list
         
     jsr recover
@@ -398,16 +398,16 @@
     set a, [z+11]
     set b, [z+10]
 
-    ife [a + HANDLE_TYPE], TYPE_TUPLE_COMMA
+    ifb [a + HANDLE_TYPE], TYPE_TUPLE_COMMA
         set [a + HANDLE_TYPE], TYPE_TUPLE
 
-    ife [a + HANDLE_TYPE], TYPE_NAME
+    ifb [a + HANDLE_TYPE], TYPE_NAME
         set pc, assign_name
-    ife [a + HANDLE_TYPE], TYPE_TUPLE
+    ifb [a + HANDLE_TYPE], TYPE_TUPLE
         set pc, assign_tuple
-    ife [a + HANDLE_TYPE], TYPE_REFERENCE
+    ifb [a + HANDLE_TYPE], TYPE_REFERENCE
         set pc, assign_reference
-    ife [a + HANDLE_TYPE], TYPE_SUBSCRIPTION
+    ifb [a + HANDLE_TYPE], TYPE_SUBSCRIPTION
         set pc, assign_subscription
 
     jsr recover
@@ -418,12 +418,12 @@
     set y, [a + SUBSCRIPTION_LIST]
     set c, [a + SUBSCRIPTION_INDEX]
 
-    ife [y + HANDLE_TYPE], TYPE_DICT
+    ifb [y + HANDLE_TYPE], TYPE_DICT
         ifb [c + HANDLE_TYPE], TYPE_GROUP_IMMUTABLE
             set pc, assign_subscription_dict
     
-    ife [y + HANDLE_TYPE], TYPE_LIST
-        ife [c + HANDLE_TYPE], TYPE_INT
+    ifb [y + HANDLE_TYPE], TYPE_LIST
+        ifb [c + HANDLE_TYPE], TYPE_INT
             set pc, assign_subscription_list_int
 
     jsr recover
@@ -447,7 +447,7 @@
     set a, [a]
     ; vv this supposedly forces all dict ident keys to str
     set x, [a + REFERENCE_RIGHT]
-    ife [x + HANDLE_TYPE], TYPE_NAME
+    ifb [x + HANDLE_TYPE], TYPE_NAME
         set [x + HANDLE_TYPE], TYPE_STR
     ; ^^ this supposedly forces all dict ident keys to str
     set push, [a + REFERENCE_LEFT]
@@ -490,9 +490,9 @@
     add x, i
     set push, [x+1]
 
-    ife [b + HANDLE_TYPE], TYPE_STR
+    ifb [b + HANDLE_TYPE], TYPE_STR
         jsr assign_from_string
-    ifn [b + HANDLE_TYPE], TYPE_STR
+    ifc [b + HANDLE_TYPE], TYPE_STR
         jsr assign
 
     sti pc, assign_tuple_loop
@@ -521,13 +521,13 @@
     set c, [x]
     set [c+1], [z+10]
 
-    ife [a + HANDLE_TYPE], TYPE_NAME
+    ifb [a + HANDLE_TYPE], TYPE_NAME
         set pc, assign_name
 
     set y, recover
-    ife [a + HANDLE_TYPE], TYPE_REFERENCE
+    ifb [a + HANDLE_TYPE], TYPE_REFERENCE
         set y, dict__set
-    ife [a + HANDLE_TYPE], TYPE_SUBSCRIPTION
+    ifb [a + HANDLE_TYPE], TYPE_SUBSCRIPTION
         set y, list_set
 
     set a, [a]
@@ -550,16 +550,16 @@
     
     set a, [z+10]
 
-    ife [a + HANDLE_TYPE], TYPE_NAME
+    ifb [a + HANDLE_TYPE], TYPE_NAME
         set pc, del_name
 
     set y, recover
-    ife [a + HANDLE_TYPE], TYPE_SUBSCRIPTION
+    ifb [a + HANDLE_TYPE], TYPE_SUBSCRIPTION
         set y, list_del
 
     set a, [a]
     set b, [a + REFERENCE_LEFT]
-    ife [b + HANDLE_TYPE], TYPE_DICT
+    ifb [b + HANDLE_TYPE], TYPE_DICT
         set y, dict_del
     
     set push, b                     ; LEFT
@@ -589,11 +589,11 @@
 ;----------------------------------------------------------------
     ; automatic type conversions
     ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
-        ife [b + HANDLE_TYPE], TYPE_FLOAT
+        ifb [b + HANDLE_TYPE], TYPE_FLOAT
             set pc, itof_left
     
     ifb [b + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
-        ife [a + HANDLE_TYPE], TYPE_FLOAT
+        ifb [a + HANDLE_TYPE], TYPE_FLOAT
             set pc, itof_right
 
     set pc, pop
@@ -726,7 +726,7 @@
     set push, a
     set push, screen_add_char
 
-    ife [a + HANDLE_TYPE], TYPE_STR
+    ifb [a + HANDLE_TYPE], TYPE_STR
         set pc, print__str
 
     jsr repr
@@ -751,23 +751,23 @@
 
     set x, [z+11]
 
-    ife [x + HANDLE_TYPE], TYPE_STR
+    ifb [x + HANDLE_TYPE], TYPE_STR
         set pc, repr__string
 ;    ife [x + HANDLE_TYPE], TYPE_NAME
 ;        set pc, postamble
-    ife [x + HANDLE_TYPE], TYPE_BOOL
+    ifb [x + HANDLE_TYPE], TYPE_BOOL
         set pc, repr__boolean
-    ife [x + HANDLE_TYPE], TYPE_NONE
+    ifb [x + HANDLE_TYPE], TYPE_NONE
         set pc, repr__none
 
     set y, recover
-    ife [x + HANDLE_TYPE], TYPE_INT
+    ifb [x + HANDLE_TYPE], TYPE_INT
         set y, int_to_str
-    ife [x + HANDLE_TYPE], TYPE_FLOAT
+    ifb [x + HANDLE_TYPE], TYPE_FLOAT
         set y, float__to_str
     ifb [x + HANDLE_TYPE], TYPE_TUPLE + TYPE_LIST
         set y, list_repr
-    ife [x + HANDLE_TYPE], TYPE_DICT
+    ifb [x + HANDLE_TYPE], TYPE_DICT
         set y, dict_repr
 
     set push, x
