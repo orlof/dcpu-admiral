@@ -1934,14 +1934,14 @@
     jsr dict__set
     
     set a, [z+10]        ; if call is by reference, add path dict to scope (me)
-    ifn [a + HANDLE_TYPE], TYPE_REFERENCE
+    ifc [a + HANDLE_TYPE], TYPE_GROUP_SELF_AWARE
         set pc, led_lparen_args
         
     set a, [a]            ; a = struct reference *
         
     set push, [z-1]
     set push, STR_ME
-    set push, [a + REFERENCE_LEFT]
+    set push, [a + REFERENCE_OR_SUBSCRIPTION_ROOT]
     jsr dict__set
 
 :led_lparen_args

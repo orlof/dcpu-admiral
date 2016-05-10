@@ -22,7 +22,33 @@
     ife x, 0
         set pc, str__repr__finish
 
+    ife x, 10
+        set pc, str__repr__escape_LF
+
+    ife x, 0x5c
+        set pc, str__repr__escape_newline
+
     set c, x            ; char
+    jsr y
+
+    set pc, str__repr__loop
+
+:str__repr__escape_newline
+    add b, 1
+    jsr array__get
+
+    ife x, 'n'
+        set pc, str__repr__escape_LF
+
+    set pc, str__repr__loop_check
+
+:str__repr__escape_LF
+    set c, 0x5c
+    jsr y
+    set c, 0x5c
+    jsr y
+    
+    set c, 'n'
     jsr y
 
     set pc, str__repr__loop
@@ -66,16 +92,26 @@
     add b, 1
     jsr array__get
     
+    ife x, 0x5c
+        set pc, str__str__backslash
+        
     ife x, 'n'
         set pc, str__str__newline
-        
-    set c, 47
+
+    set c, 0x5c
     jsr y
     
     set pc, str__str__loop_check
 
 :str__str__newline
     set c, 10
+    jsr y
+
+    set pc, str__str__loop
+
+:str__str__backslash
+    set c, x
+    jsr y
     jsr y
 
     set pc, str__str__loop

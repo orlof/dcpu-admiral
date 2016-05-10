@@ -136,6 +136,8 @@
 
     set push, [x + REFERENCE_LEFT]        ; struct handle *dict or *list
     set push, [x + REFERENCE_RIGHT]        ; struct handle *key or index
+    set x, [x + REFERENCE_RIGHT]
+    set [x + HANDLE_TYPE], TYPE_STR
     jsr scope_get
     
     ife x, 0
@@ -443,6 +445,11 @@
 
 :assign_reference
     set a, [a]
+    ; vv this supposedly forces all dict ident keys to str
+    set x, [a + REFERENCE_RIGHT]
+    ife [x + HANDLE_TYPE], TYPE_NAME
+        set [x + HANDLE_TYPE], TYPE_STR
+    ; ^^ this supposedly forces all dict ident keys to str
     set push, [a + REFERENCE_LEFT]
     set push, [a + REFERENCE_RIGHT]
 :assign_reference_or_subscription_dict

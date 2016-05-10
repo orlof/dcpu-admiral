@@ -60,6 +60,7 @@
 #define TYPE_GROUP_RUNNABLE         TYPE_DICT + TYPE_STR
 #define TYPE_GROUP_CAN_REFERENCE    TYPE_LIST + TYPE_DICT + TYPE_STR
 #define TYPE_GROUP_INTEGER          TYPE_INT + TYPE_BOOL
+#define TYPE_GROUP_SELF_AWARE       TYPE_SUBSCRIPTION + TYPE_REFERENCE
 ;define TYPE_GROUP_NON_INTEGER      0xffff - TYPE_GROUP_INTEGER
 #define TYPE_GROUP_NON_INTEGER      0xffcf
 #define TYPE_GROUP_NUMERIC          TYPE_GROUP_INTEGER + TYPE_FLOAT
@@ -212,6 +213,7 @@
 #define SUBSCRIPTION_LIST   1
 #define SUBSCRIPTION_INDEX  2
 
+#define REFERENCE_OR_SUBSCRIPTION_ROOT  1
 ; screen is not stored in heap -> it can be non-standard
 ;
 ; struct screen {
