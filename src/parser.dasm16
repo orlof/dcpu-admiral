@@ -731,7 +731,9 @@
     set pc, parser_suite_block_loop
 
 :parser_suite_block_break
+    set push, x
     jsr lexer_next    ; skip dedent
+    set x, pop
     set pc, postamble
 
 ;----------------------------------------------------------------
