@@ -12,10 +12,6 @@
     set [cur_x], 0
     set [cur_y], 0
 
-    ; prev_char is a hack used to test with continuous cursor
-    ; movement while keeping button down - no luck
-    set [prev_char], 0
-
     ; initialize next screen
     jsr screen_next
     jsr screen_clear
@@ -61,13 +57,9 @@
     set push, [cur_y]
     jsr screen_move_cursor
 
-    set c, [prev_char]
-
     jsr screen_toggle_cursor
     jsr win_getchar
     jsr screen_toggle_cursor
-
-    set [prev_char], c
 
     ife c, KEY_UP
         set pc, edit_key_up
