@@ -22,9 +22,9 @@
     set [global_scope], x
     set [current_scope], x
 
+    set push, x
     set push, STR_CLIPBOARD
     set push, STR_EMPTY
-    set push, x
     jsr dict__set
 
     set push, HISTORY_SIZE+1
