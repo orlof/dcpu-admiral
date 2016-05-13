@@ -836,6 +836,10 @@
 ;----------------------------------------------------------------
 ; after 0x10c cancellation this keyboard input subroutine was
 ; simplified to support only megastage DCPU
+    ifn [clipboard_state], 0
+        set pc, win_getchar_from_clipboard
+
+:win_getchar_from_device
     set a, 1                      ; store next key mode
     hwi [keyboard]
 
@@ -862,6 +866,30 @@
     shl c, 15
     bor c, pop
 
+    ifn c, KEY_CTRL_Y
+        set pc, pop
+
+:win_getchar_from_clipboard
+    ; handle paste
+    set push, [global_scope]
+    set push, STR_CLIPBOARD
+    jsr dict_get
+
+    ife x, 0
+        set pc, win_getchar_from_clipboard_break
+
+    set x, [x]
+    ifl [clipboard_state], [x]
+        set pc, win_getchar_from_clipboard_next
+
+:win_getchar_from_clipboard_break
+    set [clipboard_state], 0
+    set pc, win_getchar_from_device
+
+:win_getchar_from_clipboard_next
+    add [clipboard_state], 1
+    add x, [clipboard_state]
+    set c, [x]
     set pc, pop
 
 ;----------------------------------------------------------------
