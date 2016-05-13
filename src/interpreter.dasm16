@@ -2,11 +2,11 @@
     set push, REGISTER_A
     set push, MEM_FLOPPY_START
     set push, MEM_STACK_START
-    
+
     set push, 0
     set push, 5
     jsr preamble
-    
+
     set [recovery_fp], z
     set [recovery_sp], sp
 
@@ -22,6 +22,11 @@
     set [global_scope], x
     set [current_scope], x
 
+    set push, STR_CLIPBOARD
+    set push, STR_EMPTY
+    set push, x
+    jsr dict__set
+
     set push, HISTORY_SIZE+1
     set push, TYPE_LIST
     jsr array_create
@@ -35,16 +40,16 @@
 
     set push, STR_STARTUP2
     jsr print
-    
+
     jsr mark
     jsr compact
 
     set a, [heap_handle_start]
     sub a, [heap_free_start]
-    
+
     set push, a
     jsr uint16_to_int
-    
+
     set push, x
     jsr print
 
@@ -57,10 +62,10 @@
 
     jsr interpreter__line_edit
     set [z-2], x
-    
+
     set c, 10
     jsr screen_add_char
-    
+
     jsr lexer_init
 
 :interpreter_loop_parse
@@ -69,7 +74,7 @@
 
     ife [x+1], TYPE_VOID
         set pc, interpreter_loop_parse_2
-    
+
     set push, x
     jsr eval
     set [z-3], x
@@ -83,7 +88,7 @@
 :interpreter_loop_parse_2
     ifn [lexer_token], token_eof
         set pc, interpreter_loop_parse
-    
+
     set pc, interpreter_loop
 
 ;----------------------------------------------------------------
@@ -101,14 +106,14 @@
     set push, [sp+2]
     set push, STR_UNDERSCORE
     jsr dict_get
-    
+
     ife x, 0
         set pc, scope_get__finish
 
     set push, x
     set push, [sp+2]
     jsr scope_get
-    
+
 :scope_get__finish
     set [sp], pop
     set [sp], pop
@@ -122,28 +127,28 @@
     set push, 2
     set push, 0
     jsr preamble
-    
+
     set push, [z+11]
     set push, [z+10]
     jsr dict_del
-    
+
     ifn x, 0
         set pc, postamble
-        
+
     set push, [z+11]
     set push, STR_UNDERSCORE
     jsr dict_get
-    
+
     ife x, 0
         jsr recover
         #doc Unknown variable error
-        
+
     set push, x
     set push, [z + 10]
     jsr scope_del
-    
+
     set pc, postamble
-    
+
 ;----------------------------------------------------------------
 ; void scope_set(struct handle *dict, struct handle *key, struct handle *value, uint16 mode)
 ; mode: SCOPE_MODE_UPDATE | SCOPE_MODE_INSERT
@@ -151,19 +156,19 @@
 :scope_set
     set push, 4
     set push, 0
-    jsr preamble    
+    jsr preamble
 
     set push, [z+13]
     set push, [z+12]
     jsr dict_get
-    
+
     ifn x, 0
         set pc, scope_set_insert
-        
+
     set push, [z+13]
     set push, STR_UNDERSCORE
     jsr dict_get
-    
+
     ife x, 0                            ; no parent found
         set pc, scope_set_no_parent
 
@@ -173,7 +178,7 @@
     set push, [z+11]                    ; value
     set push, SCOPE_MODE_UPDATE
     jsr scope_set
-    
+
     ifn x, 0
         set pc, postamble
 
@@ -189,7 +194,7 @@
 
     set x, 1
     set pc, postamble
-    
+
 ;----------------------------------------------------------------
 :recover
 ; fastcall
@@ -205,7 +210,7 @@
 
     set push, a
     jsr debug
-    
+
     set c, 10
     jsr screen_add_char
 
@@ -219,7 +224,7 @@
 ;    jsr lexer__get_token_marker
 ;    set push, x
 ;    jsr print
-    
+
 ;    set c, 10
 ;    jsr screen_add_char
 
@@ -230,7 +235,7 @@
     set push, 0
     set push, 1
     jsr preamble
-    
+
     set y, [current_screen]
     set [line_editor__buf_index], HISTORY_SIZE
     set [line_editor__start_addr], [y + SCREEN__CURSOR]
@@ -294,7 +299,7 @@
         set pc, interpreter__line_edit_main_loop
 
     set push, 1
-    
+
     set pc, interpreter__line_edit__history
 
 ;----------------------------------------------------------------
@@ -302,11 +307,11 @@
 ;----------------------------------------------------------------
     ; get current line as str
     jsr interpreter__line_edit__get_str
-    
+
     ; clear the current line
     set i, [line_editor__start_addr]
     set a, [line_editor__end_addr]
-    
+
     :interpreter__line_edit__key_up__loop1
         ife i, a
             set pc, interpreter__line_edit__key_up__break1
@@ -319,7 +324,7 @@
     set b, [line_editor__buf_index]
     set c, x
     jsr array__set
-        
+
     ; select older item
     add [line_editor__buf_index], pop
 
@@ -342,7 +347,7 @@
             set pc, interpreter__line_edit_main_loop
         ifg i, b
             set pc, interpreter__line_edit_main_loop
-        
+
         set push, [i]
         jsr interpreter__line_edit__draw_char
 
@@ -357,7 +362,7 @@
     sub [line_editor__current_addr], 1
 
     ; join key_del
-    
+
 ;----------------------------------------------------------------
 :interpreter__line_edit__key_del
 ;----------------------------------------------------------------
@@ -365,11 +370,11 @@
         set pc, interpreter__line_edit_main_loop
 
     set i, [line_editor__current_addr]
-    
+
 :interpreter__line_edit__del_char__loop
     ife i, [line_editor__end_addr]
         set pc, interpreter__line_edit__del_char__break
-        
+
     set [i], [i+1]
     add i, 1
     set pc, interpreter__line_edit__del_char__loop
@@ -400,7 +405,7 @@
     set push, x
     set push, [z-1]
     jsr val_cmp
-    
+
     ife x, 0
         set pc, interpreter__line_edit__key_newline__finish
 
@@ -425,13 +430,13 @@
 :interpreter__line_edit__key_newline__finish
     set x, [z-1]
     set pc, postamble
-        
+
 ;----------------------------------------------------------------
 :interpreter__line_edit__key_right
 ;----------------------------------------------------------------
     ifl [line_editor__current_addr], [line_editor__end_addr]
         add [line_editor__current_addr], 1
-    
+
     set pc, interpreter__line_edit_main_loop
 
 ;----------------------------------------------------------------
@@ -439,16 +444,16 @@
 ;----------------------------------------------------------------
     ifg [line_editor__current_addr], [line_editor__start_addr]
         sub [line_editor__current_addr], 1
-    
+
     set pc, interpreter__line_edit_main_loop
-    
+
 
 ;----------------------------------------------------------------
 :interpreter__line_edit__key_character
 ;----------------------------------------------------------------
     set j, [line_editor__end_addr]
     set i, [line_editor__current_addr]
-    
+
     :interpreter__line_edit__key_character__loop
         ife i, j
             set pc, interpreter__line_edit__key_character__break
@@ -472,7 +477,7 @@
     set [x], [sp+1]
 
     set [sp], pop
-        
+
     add [line_editor__current_addr], 1
     add [line_editor__end_addr], 1
 
@@ -482,11 +487,11 @@
     set push, 0
     set push, -1
     jsr screen__scroll
-    
+
     sub [line_editor__start_addr], SCREEN_COLS
     sub [line_editor__current_addr], SCREEN_COLS
     sub [line_editor__end_addr], SCREEN_COLS
-    
+
     ifl [line_editor__start_addr], [y + SCREEN__START]
         set [line_editor__start_addr], [y + SCREEN__START]
 
@@ -520,7 +525,7 @@
         set pc, interpreter__line_edit__get_str__finish
     set [j], [i]
     and [j], 0x007f
-    
+
     std pc, interpreter__line_edit__get_str__loop
 
 :interpreter__line_edit__get_str__finish
@@ -547,8 +552,8 @@
 
     set x, pop
     set c, pop
-    set a, pop 
-    set [sp], pop   
+    set a, pop
+    set [sp], pop
     set pc, pop
 
 :debug__char

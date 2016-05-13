@@ -51,11 +51,11 @@
 
 <h6>Design Philosophy</h6>
  - DCPU must provide a self sufficient environment for developing and running software
- - Capability is more important than capacity 
+ - Capability is more important than capacity
  - Users shouldn't be bothered with details that the machine can handle
- - A bug in the user’s Admiral-code should not be allowed to lead to undefined behavior 
+ - A bug in the user’s Admiral-code should not be allowed to lead to undefined behavior
    of the interpreter (except poke() and call())
- - Should there be no limit on the range of numbers, the length of strings, or the size 
+ - Should there be no limit on the range of numbers, the length of strings, or the size
    of collections (other than the total memory available)
 
 <h6>Implementation Principles</h6>
@@ -65,12 +65,15 @@
    - 5% for stack
    - 25% for admiral core (including static memory buffers)
  - Memory is conserved by using direct one-pass interpreter
-   - It is quite slow, but could be boosted with AST compiler - memory-speed trade-off 
+   - It is quite slow, but could be boosted with AST compiler - memory-speed trade-off
  - Pratt’s algorithm for efficient expression parsing
  - Mark and sweep garbage collector for memory conservation and detecting trash even with reference loops
- - Floppy load/save uses object graph serialization e.g. 
+ - Floppy load/save uses object graph serialization e.g.
    - save("big.obj", big_obj)
    - big_obj = load("big.obj")
+ - Limitations set for performance reasons
+   - Supports only single threaded execution - no multithreading
+   - No support for virtual memory
 
 <h6>Examples</h6>
 
@@ -143,7 +146,7 @@ b 2
    - Prototype based inheritance
    - Data types
      - Variable length integers (only limited by available heap space)
-     - Floats with compile time precision selection (1+ words for mantissa)
+     - Floats (float48b) - str<->float conversions functions loose precision (TODO)
      - Booleans, strings, lists, tuples and dicts
  - Integrated code editor with gap buffer
  - Object serialization for floppy
@@ -153,7 +156,7 @@ b 2
  - Functions: poke(), peek() and call() for low level access
  - Functions: hwn(), hwq() and hwi() for low level hardware access
  - Functions: HIC select, status, read and transmit functions for TechCompliant HIC hardware
- 
+
 <h6>Next in development</h6>
  - Github issue tracker contains a list of development items
  - Support for other TechCompliant hardware
@@ -173,7 +176,7 @@ Following sources were proven to be invaluable sources for information:
 
 <h5 id="1.4">Other in-game DCPU projects</h5>
 
-There are dozens of advanced compilers that compile DCPU assembler from multitude of different source languages 
+There are dozens of advanced compilers that compile DCPU assembler from multitude of different source languages
 e.g. java, c, c++, ...
 
 However, these compilers run IRL and emit outside processing power to in-game universe :) That is agains the
@@ -184,6 +187,8 @@ language *inside* DCPU.
    - Amazing port of Commodore 64 BASIC and KERNAL to the DCPU-16
  - hellige´s goforth: https://github.com/hellige/dcpu
    - I know nothing about forth, so the DCPU role in this project is a mystery for me :)
+ - Vendan's Forth https://github.com/andyleap/Forth
+   - Another Forth, but in active development
 
 --
 
@@ -201,8 +206,8 @@ However, if you only want a quick peek at the Admiral, the easies way to try it 
 
  - https://github.com/orlof/admiral-emu/releases
 
-Note that Admiral Emulator contains older version of Admiral and is not maintained at the moment.
-    
+Note that Admiral Emulator contains old version of Admiral and is not maintained at the moment.
+
 --
 
 <h5 id="2.2">Development</h5>
@@ -219,7 +224,7 @@ Today I use my self-made assembler and debugger:
  - https://github.com/orlof/dcpu-compiler
    - Python 2.7, Notchian syntax
  - https://github.com/orlof/dcpu-debugger
-   - Java 1.8, graphical ui
+   - Java 1.8, graphical UI
 
 Those are pretty sophisticated and field proven tools, but will lack proper releases and packaging until
 someone other than me starts using them ;)
@@ -228,24 +233,26 @@ someone other than me starts using them ;)
 
 <h5 id="2.3">Usage</h5>
 
-NOTE: Latest Admiral interpreter does not output return value automatically to screen. Instead 'print' statement 
-must be used.
+When Admiral starts, it will initialize the LEM screen with Admiral header.
+Header contains two lines and shows among other information the amount of
+available heap memory. After the header Admiral shows an interactive prompt '>'
+and waits for your input.
 
-When Admiral starts, it will show an interactive prompt '>' and wait for input. It can evaluate one line statements.
+Now you can already execute one line statements in Admiral's interactive shell.
 <pre>
 >print 1+2**32
-4294967297 
->for a in range(5): print a 
-0 
-1 
-2 
-3 
+4294967297
+>for a in range(5): print a
+0
+1
+2
+3
 4
 </pre>
 
-Admiral also has a built-in text editor to facilitate software development in deep space colonies. It is 
-started by calling edit(). edit() returns the edited text as string that can be assigned to a variable.
-To exit the editor hold down CTRL and then press x (CTRL-x). If you want to discard your editing, 
+Admiral also has a built-in text editor to facilitate software development in deep space colonies. It is
+started by calling edit(). Editor returns the edited text as string that can be assigned to a variable.
+To exit the editor hold down CTRL and then press x (CTRL-x). If you want to discard your changes,
 use CTRL-c, which will return the original string instead of the edited version.
 
     result=edit()
@@ -257,7 +264,7 @@ If you need to edit an existing text, you can give a string argument for edit():
 Since Admiral is pure interpreter all strings are callable (i.e. can be used as functions):
 
 <pre>
->'print msg'(msg='Hello World again!') 
+>'print msg'(msg='Hello World again!')
 Hello World again!
 </pre>
 
@@ -280,7 +287,7 @@ get_danger_level(type='Monster', 'XXXL')
 
 Positional arguments are automatically assigned to argv[] array from left to right order.
 
-You can set default value for keyword argument with the following one line idiom in the beginning 
+You can set default value for keyword argument with the following one line idiom in the beginning
 of the function:
 
 <pre>
@@ -294,28 +301,28 @@ Dicts with prototype creation provide "poor mans" objects :-)
 >ship.accelerate=edit()   # define function in prototype
 --------------------------
 me.spd+=me.acceleration  # function modifies object field
--------------------------- 
+--------------------------
 >shuttle=ship.create()    # create new object from prototype
 >shuttle.acceleration=8   # set value in new object
 >shuttle.accelerate()     # call new object's method (that is defined in prototype)
 >print shuttle.spd
 8                         # new objects field has changed...
->print ship.spd 
+>print ship.spd
 0                         # and prototype's fields are intact
 </pre>
 
 Dict created with dict.create() inherits its properties from prototype. Prototype dict is
 used to read values if property is not defined in dict itself. Note that prototype values
-are not just copied at creation time, but also changes in prototype values are reflected 
-to the created dict unless it has already defined the value itself. However, writing values 
+are not copied at creation time, and changes in prototype values are reflected
+to the created dict unless it has already defined the value itself. However, writing values
 to created dict never modify the prototype dict.
 
-Admiral has three different types of built-in functionalities:  statements, global functions 
-and class functions. E.g. print and run are stetements, len() and mem() are global functions, 
+Admiral has three different types of built-in functionalities:  statements, global functions
+and class functions. E.g. print and run are stetements, len() and mem() are global functions,
 and str.encrypt() is a class functions.
 
 Admiral programmer can write global functions and dict class functions. New statements or
-functions to other class types cannot be added. Global functions are variables that have 
+functions to other class types cannot be added. Global functions are variables that have
 string value and class functions can be defined for dicts by adding function with str key.
 
 Example: global function
@@ -341,8 +348,8 @@ Admiral provides some built-in data types i.e. dict, list, tuple, str, int, floa
 
 <h5 id="4.1">Numbers</h5>
 
-The Admiral interpreter acts as a simple calculator: you can type 'print' and an expression at it and it 
-will write the value. Expression syntax is straightforward: the operators +, -, * and / work just like 
+The Admiral interpreter acts as a simple calculator: you can type 'print' and an expression at it and it
+will write the value. Expression syntax is straightforward: the operators +, -, * and / work just like
 in most other languages (for example, Pascal or C); parentheses can be used for grouping. For example:
 
 <pre>
@@ -367,9 +374,9 @@ The equal sign ('=') is used to assign a value to a variable.
 >width*height
 </pre>
 
-Admiral treats an assignment as both an expression and as a statement. As an expression, its 
-value is the value assigned to the variable. This is done to allow multiple assignments in a 
-single statement, such as 
+Admiral treats an assignment as both an expression and as a statement. As an expression, its
+value is the value assigned to the variable. This is done to allow multiple assignments in a
+single statement, such as
 <pre>
 >x=y=z=0  # Zero x, y and z
 >print x,y,z
@@ -384,9 +391,9 @@ n
  ^
 </pre>
 
-Error codes are not yet documented and will change in every release.
+Error codes are documented in admiral.txt included in Admiral releases.
 
-There is full support for floating point; operators with mixed type operands convert the integer operand 
+There is full support for floating point; operators with mixed type operands convert the integer operand
 to floating point:
 
 <pre>
@@ -396,16 +403,14 @@ to floating point:
 3.5
 </pre>
 
-Floating point precision can be set during compilation time in defs.dasm16 file:
-<pre>
-#define FLOAT_MANTISSA_WORDS 2
-</pre>
+Floating point numbers use 16 bits for exponent and 32 bits for mantissa.
+Special values nan, inf, -inf, 0.0 and -0.0 are also supported.
 
-Recommended values are in range 1-4. NOTE currently only value 2 has been tested.
+
 
 <h5 id="4.2">String</h5>
 
-Besides numbers, Admiral can also manipulate strings, which can be expressed in several ways. They can be 
+Besides numbers, Admiral can also manipulate strings, which can be expressed in several ways. They can be
 enclosed in single quotes or double quotes:
 
 <pre>
@@ -414,11 +419,11 @@ enclosed in single quotes or double quotes:
 >'"Yes," he said.'
 </pre>
 
-repr() function generates strings in single quotes. 
+repr() function generates strings in single quotes.
 
 String literals cannot span multiple lines.
 
-The str class can be used to handle 16-bit binary data and DCPU 7-bit text. Some str functions such as 
+The str class can be used to handle 16-bit binary data and DCPU 7-bit text. Some str functions such as
 replace or split will not work with binary data. (That will be addressed in later releases)
 
 Strings can be concatenated (glued together) with the + operator, and repeated with *:
@@ -430,8 +435,8 @@ HelpA
 *HelpAHelpAHelpAHelpAHelpA*
 </pre>
 
-Strings can be subscripted (indexed); like in C, the first character of a string has subscript (index) 0. 
-There is no separate character type; a character is simply a string of size one. Like in Python, substrings can 
+Strings can be subscripted (indexed); like in C, the first character of a string has subscript (index) 0.
+There is no separate character type; a character is simply a string of size one. Like in Python, substrings can
 be specified with the slice notation: two indices separated by a colon.
 
 <pre>
@@ -443,7 +448,7 @@ He
 lp
 </pre>
 
-Slice indices have useful defaults; an omitted first index defaults to zero, an omitted second index defaults 
+Slice indices have useful defaults; an omitted first index defaults to zero, an omitted second index defaults
 to the size of the string being sliced.
 <pre>
 >print word[:2]    # The first two characters
@@ -452,7 +457,7 @@ He
 lpA
 </pre>
 
-Unlike a C string, Admiral strings cannot be changed. Assigning to an indexed position in the string results 
+Unlike a C string, Admiral strings cannot be changed. Assigning to an indexed position in the string results
 in an error.
 
 However, creating a new string with the combined content is easy:
@@ -471,7 +476,7 @@ HelpA
 HelpA
 </pre>
 
-Degenerate slice indices are handled gracefully: an index that is too large is replaced by the string size, 
+Degenerate slice indices are handled gracefully: an index that is too large is replaced by the string size,
 an upper bound smaller than the lower bound returns an empty string.
 
 <pre>
@@ -550,11 +555,11 @@ Current strings do not support escape characters or output formatting. That will
   <dt>str.find(sub[, start[, end]])</dt>
   <dd>
     <p>
-      Return the lowest index in the string where substring sub is found, such that sub is contained in the slice 
+      Return the lowest index in the string where substring sub is found, such that sub is contained in the slice
       s[start:end]. Optional arguments start and end are interpreted as in slice notation. Return -1 if sub is not found.
     </p>
     <p>
-      The find() method should be used only if you need to know the position of sub. To check if sub is a substring 
+      The find() method should be used only if you need to know the position of sub. To check if sub is a substring
       or not, use the in operator:
       <pre>
           >"mi" in "Admiral"
@@ -577,7 +582,7 @@ Current strings do not support escape characters or output formatting. That will
   <dt>str.split([sep])</dt>
   <dd>
     <p>
-      Return a list of the words in the string, using sep as the delimiter string. Consecutive delimiters are not 
+      Return a list of the words in the string, using sep as the delimiter string. Consecutive delimiters are not
       grouped together and are deemed to delimit empty strings:
       <pre>
           >'1,,2'.split(',')
@@ -586,14 +591,14 @@ Current strings do not support escape characters or output formatting. That will
       The sep argument may consist of multiple characters
       <pre>
           >'1<>2<>3'.split('<>')
-          ['1','2','3']). 
+          ['1','2','3']).
       </pre>
       Splitting an empty string with a specified separator returns [''].
     </p>
     <p>
-      If sep is not specified, a different splitting algorithm is applied: runs of consecutive whitespace are regarded 
-      as a single separator, and the result will contain no empty strings at the start or end if the string has leading 
-      or trailing whitespace. Consequently, splitting an empty string or a string consisting of just whitespace with 
+      If sep is not specified, a different splitting algorithm is applied: runs of consecutive whitespace are regarded
+      as a single separator, and the result will contain no empty strings at the start or end if the string has leading
+      or trailing whitespace. Consequently, splitting an empty string or a string consisting of just whitespace with
       a None separator returns [].
       <pre>
           >' 1  2   3  '.split()
@@ -607,7 +612,7 @@ Current strings do not support escape characters or output formatting. That will
   <dt>str.endswith(suffix)</dt>
   <dd>
     <p>
-      Return True if the string ends with the specified suffix, otherwise return False. suffix can also be a tuple 
+      Return True if the string ends with the specified suffix, otherwise return False. suffix can also be a tuple
       of suffixes to look for.
     </p>
   </dd>
@@ -617,7 +622,7 @@ Current strings do not support escape characters or output formatting. That will
   <dt>str.startswith(prefix)</dt>
   <dd>
     <p>
-      Return True if string starts with the prefix, otherwise return False. prefix can also be a tuple of prefixes to 
+      Return True if string starts with the prefix, otherwise return False. prefix can also be a tuple of prefixes to
       look for.
     </p>
   </dd>
@@ -643,19 +648,19 @@ Current strings do not support escape characters or output formatting. That will
 
 <h5 id="4.3">Dictionary</h5>
 
-Another useful data type built into Admiral is the dictionary. Dictionaries are sometimes found in other languages 
-as “associative memories” or “associative arrays”. Unlike sequences, which are indexed by a range of numbers, 
-dictionaries are indexed by keys, which can be strings or numbers. Tuples can not be used as keys as they can 
+Another useful data type built into Admiral is the dictionary. Dictionaries are sometimes found in other languages
+as “associative memories” or “associative arrays”. Unlike sequences, which are indexed by a range of numbers,
+dictionaries are indexed by keys, which can be strings or numbers. Tuples can not be used as keys as they can
 contain other mutable types.
 
-It is best to think of a dictionary as an unordered set of key: value pairs, with the requirement that the keys are 
-unique (within one dictionary). A pair of braces creates an empty dictionary: {}. 
+It is best to think of a dictionary as an unordered set of key: value pairs, with the requirement that the keys are
+unique (within one dictionary). A pair of braces creates an empty dictionary: {}.
 
 <pre>
 >d = {}
 </pre>
 
-Placing a comma-separated list of key:value pairs within the braces adds initial key:value pairs to the dictionary; 
+Placing a comma-separated list of key:value pairs within the braces adds initial key:value pairs to the dictionary;
 
 <pre>
 >d = {1: 2, 'Hi': [5,4,3,2,1]}
@@ -680,7 +685,7 @@ supports multiple formats to store key-value pair:
 {1: 3, 'one':1, 'two': 2}
 </pre>
 
-It is also possible to delete a key:value pair with del. If you store using a key that is already in use, the old 
+It is also possible to delete a key:value pair with del. If you store using a key that is already in use, the old
 value associated with that key is forgotten. It is an error to extract a value using a non-existent key.
 
 <pre>
@@ -704,7 +709,7 @@ value associated with that key is forgotten. It is an error to extract a value u
   <dt>dict.me</dt>
   <dd>
     <p>
-      If function is called via dict reference e.g. dict.hello() then "me" keyword can be used to access 
+      If function is called via dict reference e.g. dict.hello() then "me" keyword can be used to access
       the properties of the referenced dict inside that function.
       <pre>
       >d={'hello': 'print me.value', 'value':10}
@@ -717,7 +722,7 @@ value associated with that key is forgotten. It is an error to extract a value u
 
 <h5 id="4.4">List</h5>
 
-The list is a versatile datatype which can be written as a list of comma-separated values (items) between square brackets. 
+The list is a versatile datatype which can be written as a list of comma-separated values (items) between square brackets.
 Important thing about a list is that items in a list need not be of the same type.
 
 Creating a list is as simple as putting different comma-separated values between square brackets. For example −
@@ -730,7 +735,7 @@ Creating a list is as simple as putting different comma-separated values between
 
 Similar to string indices, list indices start at 0, and lists can be sliced, concatenated and so on.
 
-To access values in lists, use the square brackets for slicing along with the index or indices to obtain value available at 
+To access values in lists, use the square brackets for slicing along with the index or indices to obtain value available at
 that index. For example −
 
 <pre>
@@ -740,7 +745,7 @@ Sun
 [2,3,4,5]
 </pre>
 
-You can update single or multiple elements of lists by giving the index on the left-hand side of the assignment operator, 
+You can update single or multiple elements of lists by giving the index on the left-hand side of the assignment operator,
 and you can add to elements in a list with the append() method. For example −
 
 <pre>
@@ -749,7 +754,7 @@ and you can add to elements in a list with the append() method. For example −
 2001
 </pre>
 
-To remove a list element, you can use the del statement, but you must know the index of the element which you are deleting. 
+To remove a list element, you can use the del statement, but you must know the index of the element which you are deleting.
 For example −
 
 <pre>
@@ -758,7 +763,7 @@ For example −
 ['Sun',2085,16.7]
 </pre>
 
-Lists respond to the + and * operators much like strings; they mean concatenation and repetition here too, except that 
+Lists respond to the + and * operators much like strings; they mean concatenation and repetition here too, except that
 the result is a new list, not a string.
 
 <table cellpadding="1">
@@ -785,7 +790,7 @@ the result is a new list, not a string.
   <dt>list.insert(int, obj)</dt>
   <dd>
     <p>
-      Insert an item at a given position. The first argument is the index of the element before which to insert, 
+      Insert an item at a given position. The first argument is the index of the element before which to insert,
       so a.insert(0, x) inserts at the front of the list, and a.insert(len(a), x) is equivalent to a.append(x).
     </p>
   </dd>
@@ -797,7 +802,7 @@ TODO
 
 <h5 id="4.6">Boolean</h5>
 
-Admiral uses boolean variables to evaluate conditions. The boolean values true and false are returned when an 
+Admiral uses boolean variables to evaluate conditions. The boolean values true and false are returned when an
 expression is compared or evaluated.
 
 <h5 id="4.7">None</h5>
@@ -819,7 +824,7 @@ Simple statements are comprised within a single line.
 pass_stmt ::=  "pass"
 </pre>
 
-pass is a null operation — when it is executed, nothing happens. It is useful as a placeholder when 
+pass is a null operation — when it is executed, nothing happens. It is useful as a placeholder when
 a statement is required syntactically, but no code needs to be executed, for example:
 
 <pre>
@@ -846,7 +851,7 @@ break may only occur syntactically nested in a for or while loop. break terminat
 continue_stmt ::=  "continue"
 </pre>
 
-continue may only occur syntactically nested in a for or while loop. It continues with the next cycle of 
+continue may only occur syntactically nested in a for or while loop. It continues with the next cycle of
 the nearest enclosing loop.
 
 <h6>print</h6>
@@ -854,9 +859,9 @@ the nearest enclosing loop.
 print_stmt ::=  "print" [expression ([","] expression)* ]
 </pre>
 
-print evaluates each expression in turn and writes the resulting object to LEM screen. If an object is not 
-a string, it is first converted to a string using the rules for string conversions. A space is written 
-between each object separated by comma. You can also leave out the comma, but then items are written without 
+print evaluates each expression in turn and writes the resulting object to LEM screen. If an object is not
+a string, it is first converted to a string using the rules for string conversions. A space is written
+between each object separated by comma. You can also leave out the comma, but then items are written without
 separator.
 
 e.g.
@@ -871,7 +876,7 @@ HelloWorld
 My name is Orlof.
 </pre>
 
-Usage of plus operator to concatenate string in print statement is not recommended as it is much slower 
+Usage of plus operator to concatenate string in print statement is not recommended as it is much slower
 than using comma or implicit concatenation.
 
 <pre>
@@ -886,7 +891,7 @@ This is BAD!
 del_stmt ::=  "del" target_list
 </pre>
 
-Deletion removes the binding of that name from the local or global namespace. If the name is unbound, 
+Deletion removes the binding of that name from the local or global namespace. If the name is unbound,
 an error will be raised.
 
 Deletion of attribute reference removes the attribute from the primary object involved
@@ -896,7 +901,7 @@ Deletion of attribute reference removes the attribute from the primary object in
 cls_stmt ::=  "cls"
 </pre>
 
-cls (for clear screen) is a command used by the command line interpreter to clear the LEM1802 
+cls (for clear screen) is a command used by the command line interpreter to clear the LEM1802
 screen and restore cursor to top left -corner position.
 
 <h6>reset</h6>
@@ -904,7 +909,7 @@ screen and restore cursor to top left -corner position.
 reset_stmt ::=  "reset"
 </pre>
 
-routine that resets the Admiral interpreter and peripheral devices (as if it were turned off and then 
+routine that resets the Admiral interpreter and peripheral devices (as if it were turned off and then
 on again). This command retains the data that is stored into global scope!
 
 <h6>run</h6>
@@ -914,29 +919,29 @@ filename ::=  expression
 args ::= expression*
 </pre>
 
-routine that loads Admiral object serialization graph from file and executes it with given arguments. 
+routine that loads Admiral object serialization graph from file and executes it with given arguments.
 if filename is omitted, "MAIN" is used. Object serialization graph can be either dict or string.
 String object is executed directly and in dict object execution start point is value associated
 with key "main".
 
 <h5 id="5.2">Compound statements</h5>
 
-Compound statements contain other statements; they affect or control the execution of those other 
-statements in some way. In general, compound statements span multiple lines, although in simple 
+Compound statements contain other statements; they affect or control the execution of those other
+statements in some way. In general, compound statements span multiple lines, although in simple
 incarnations a whole compound statement may be contained in one line.
 
 The if, while and for statements implement traditional control flow constructs.
 
-Compound statements consist of one or more ‘clauses.’ A clause consists of a header and a ‘suite.’ 
-Each clause header begins with a uniquely identifying keyword and ends with a colon. A suite is a group 
-of statements controlled by a clause. A suite can be one simple statements on the same line as the header, 
+Compound statements consist of one or more ‘clauses.’ A clause consists of a header and a ‘suite.’
+Each clause header begins with a uniquely identifying keyword and ends with a colon. A suite is a group
+of statements controlled by a clause. A suite can be one simple statements on the same line as the header,
 following the header’s colon, or it can be one or more indented statements on subsequent lines. Only
-the latter form of suite can contain nested compound statements, mostly because it wouldn’t be clear 
+the latter form of suite can contain nested compound statements, mostly because it wouldn’t be clear
 to which if clause else clause would belong.
 
 All compound statements are executed in a block scope. Compound statements can use the enclosing scope
 (i.e. read and assign values to variables that are alrady defined in the enclosing scope) but all variables
-that are defined in the compound statement are discarded when control exits the compound statement's block scope. 
+that are defined in the compound statement are discarded when control exits the compound statement's block scope.
 
 NOTE: To help fitting source code into LEM 32x12 screen, INDENT and DEDENT MUST always BE a SINGLE SPACE!
 
@@ -950,9 +955,9 @@ if_stmt ::=  "if" expression ":" suite
              ["else" ":" suite]
 </pre>
 
-It selects exactly one of the suites by evaluating the expressions one by one until one is found to be 
+It selects exactly one of the suites by evaluating the expressions one by one until one is found to be
 true (see section Boolean operations for the definition of true and false); then that suite is executed
-(and no other part of the if statement is executed or evaluated). If all expressions are false, the 
+(and no other part of the if statement is executed or evaluated). If all expressions are false, the
 suite of the else clause, if present, is executed.
 
 <h6>while</h6>
@@ -963,7 +968,7 @@ The while statement is used for repeated execution as long as an expression is t
 while_stmt ::=  "while" expression ":" suite
 </pre>
 
-This repeatedly tests the expression and, if it is true, executes the suite; if the expression 
+This repeatedly tests the expression and, if it is true, executes the suite; if the expression
 is false (which may be the first time it is tested) the loop terminates.
 
 A break statement executed in the suite terminates the loop. A continue statement executed in the suite
@@ -977,9 +982,9 @@ The for statement is used to iterate over the elements of a string, tuple, list 
 for_stmt ::=  "for" target_list "in" expression_list ":" suite
 </pre>
 
-The expression list is evaluated once. The suite is then executed once for each item provided by the 
-expression list in the order of ascending indices. Each item in turn is assigned to the target list 
-using the standard rules for assignments, and then the suite is executed. When the items are exhausted 
+The expression list is evaluated once. The suite is then executed once for each item provided by the
+expression list in the order of ascending indices. Each item in turn is assigned to the target list
+using the standard rules for assignments, and then the suite is executed. When the items are exhausted
 the loop terminates.
 
 A break statement executed in the suite terminates the loop. A continue statement executed in the suite
@@ -987,7 +992,7 @@ skips the rest of the suite and continues with the next item, or terminates if t
 
 The suite may assign to the variable(s) in the target list; this does not affect the next item assigned to it.
 
-Hint: the built-in function range() returns a sequence of integers suitable to emulate the effect of Pascal’s 
+Hint: the built-in function range() returns a sequence of integers suitable to emulate the effect of Pascal’s
 for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
 
 --
@@ -1118,10 +1123,10 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
   <dt id="range">range(start, end[, step])</dt>
   <dd>
     <p>
-      This is a versatile function to create lists containing arithmetic progressions. It is most often used in for loops. 
-      The arguments must be plain integers. If the step argument is omitted, it defaults to 1. If the start argument is 
-      omitted, it defaults to 0. The full form returns a list of plain integers [start, start + step, start + 2 * step, ...]. 
-      If step is positive, the last element is the largest start + i * step less than stop; if step is negative, the last 
+      This is a versatile function to create lists containing arithmetic progressions. It is most often used in for loops.
+      The arguments must be plain integers. If the step argument is omitted, it defaults to 1. If the start argument is
+      omitted, it defaults to 0. The full form returns a list of plain integers [start, start + step, start + 2 * step, ...].
+      If step is positive, the last element is the largest start + i * step less than stop; if step is negative, the last
       element is the smallest start + i * step greater than stop. step must not be zero.
     </p>
   </dd>
@@ -1192,7 +1197,7 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
   <dt id="chr">chr(i)</dt>
   <dd>
     <p>
-      Return a string of one character whose ASCII code is the integer i. For example, chr(97) returns the string 'a'. 
+      Return a string of one character whose ASCII code is the integer i. For example, chr(97) returns the string 'a'.
       This is the inverse of ord().
     </p>
   </dd>
@@ -1223,7 +1228,7 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
   <dt id="input">input([str])</dt>
   <dd>
     <p>
-      If str argument is present, it is written to standard output without a trailing newline. The function 
+      If str argument is present, it is written to standard output without a trailing newline. The function
       then reads a line from input, converts it to a string (stripping a trailing newline), and returns that.
     </p>
   </dd>
@@ -1291,7 +1296,7 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
   <dt id="scroll">scroll(int dx, int dy)</dt>
   <dd>
     <p>
-      Scroll screen dx, dy characters. Areas that scroll in are filled with zero and appear empty on screen. 
+      Scroll screen dx, dy characters. Areas that scroll in are filled with zero and appear empty on screen.
     </p>
   </dd>
 </dl>
@@ -1363,9 +1368,9 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
   <dt id="float">float(x)</dt>
   <dd>
     <p>
-      Convert a string or a number to floating point. If the argument is a string, it must 
-      contain a possibly signed decimal or floating point number. The argument may also be 
-      [+|-]nan or [+|-]inf. Otherwise, the argument may be a plain integer or a floating 
+      Convert a string or a number to floating point. If the argument is a string, it must
+      contain a possibly signed decimal or floating point number. The argument may also be
+      [+|-]nan or [+|-]inf. Otherwise, the argument may be a plain integer or a floating
       point number, and a floating point number with the same value is returned.
     </p>
   </dd>
@@ -1375,7 +1380,7 @@ for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
   <dt id="str">str(x)</dt>
   <dd>
     <p>
-      Return a string containing an object representation of obj. For strings, this 
+      Return a string containing an object representation of obj. For strings, this
       returns the string itself.
     </p>
   </dd>
@@ -1456,7 +1461,7 @@ HIC is a bi-directional multipurpose data port. Transmissions in either directio
   <dt id="hrecv">int hrecv(int port)</dt>
   <dd>
     <p>
-      Returns an integer containing a word of data received from given port or none if no data is available. 
+      Returns an integer containing a word of data received from given port or none if no data is available.
     </p>
   </dd>
 </dl>
@@ -1465,7 +1470,7 @@ HIC is a bi-directional multipurpose data port. Transmissions in either directio
   <dt id="hsend">void hsend(int port, int data)</dt>
   <dd>
     <p>
-      Transmits a word of data to specified port. 
+      Transmits a word of data to specified port.
     </p>
   </dd>
 </dl>
@@ -1513,7 +1518,7 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
   <dt id="rsend">rsend(str)</dt>
   <dd>
     <p>
-      Transmits the contents of the string as RCI datagram. Returns true if datagram is successfully queued for transmission, or false if there is already a datagram being transmitted. 
+      Transmits the contents of the string as RCI datagram. Returns true if datagram is successfully queued for transmission, or false if there is already a datagram being transmitted.
     </p>
   </dd>
 </dl>
@@ -1527,16 +1532,16 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
       Hands the CPU over to a the machine language subroutine at a specific address. Typical value for addr is the start of the floppy drive buffer that provides 512 words of space that is used only when Admiral executes floppy commands. Floppy commands will overwrite the buffer area completely. Floppy drive buffer address is stored in memory location 0xfffe and can be read with peek(0xfffe).
     </p>
     <p>
-      Given address should be in the range 0 thru 65535, or 0x0000 thru 0xFFFF. If the given address is outside these 
+      Given address should be in the range 0 thru 65535, or 0x0000 thru 0xFFFF. If the given address is outside these
       limits, Admiral will use LSW as address.
     </p>
     <p>
-      Parameters can be passed between Admiral and subroutine via registers. Before calling the specified address 
+      Parameters can be passed between Admiral and subroutine via registers. Before calling the specified address
       Admiral “loads” a, b, c, x, y, z, i and j registers with the words stored at storage addresses (see table below).
     </p>
     <p>
-      If or when the routine at the specified address returns control to Admiral (via an RTS instruction), Admiral 
-      immediately saves the contents of the registers back into the storage addresses memory range: This can be used 
+      If or when the routine at the specified address returns control to Admiral (via an RTS instruction), Admiral
+      immediately saves the contents of the registers back into the storage addresses memory range: This can be used
       to transfer results from the machine language routine to Admiral for further processing.
 
       Storage addresses:
@@ -1560,13 +1565,13 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
   <dt id="peek">peek(addr[, len])</dt>
   <dd>
     <p>
-      Returns the memory contents of the specified address, which must be in the range 0x0000 through 0xffff. 
-      The int value returned will be in the range from 0x0000 thru 0xffff. If the address given exceeds the limits 
+      Returns the memory contents of the specified address, which must be in the range 0x0000 through 0xffff.
+      The int value returned will be in the range from 0x0000 thru 0xffff. If the address given exceeds the limits
       of the memory map, Admiral will use the LSW of the address.
     </p>
     <p>
-      The second form with 'length' argument returns a string that contains 'length' words copied from the memory 
-      area that starts from the given address. 
+      The second form with 'length' argument returns a string that contains 'length' words copied from the memory
+      area that starts from the given address.
     </p>
   </dd>
 </dl>
@@ -1579,8 +1584,8 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
       stores LSW to given addr and str form copies the str starting from the given addr.
     </p>
     <p>
-      Caution: A misplaced POKE may cause the DCPU to lock up, or garble or delete the program currently in memory. 
-      To restore a locked-up DCPU one has to reboot the DCPU, thereby losing any program or data in RAM! 
+      Caution: A misplaced POKE may cause the DCPU to lock up, or garble or delete the program currently in memory.
+      To restore a locked-up DCPU one has to reboot the DCPU, thereby losing any program or data in RAM!
     </p>
   </dd>
 </dl>
@@ -1615,13 +1620,13 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
       Sends the interrupt to hardware n.
     </p>
     <p>
-      Parameters can be passed between Admiral and interrupt via registers. Before interrupt Admiral “loads” 
+      Parameters can be passed between Admiral and interrupt via registers. Before interrupt Admiral “loads”
       a, b, c, x, y, z, i and j registers with the words stored at storage addresses (see call()).
     </p>
     <p>
-      If or when the interrupt returns control, Admiral immediately saves the contents of the registers back 
-      into the storage addresses memory range: This can be used to transfer results from the interrupt to 
-      Admiral for further processing. 
+      If or when the interrupt returns control, Admiral immediately saves the contents of the registers back
+      into the storage addresses memory range: This can be used to transfer results from the interrupt to
+      Admiral for further processing.
     </p>
   </dd>
 </dl>
@@ -1684,7 +1689,7 @@ NOTES
    - n bit / n bit -> Standard long division is used
  - Assignment is an expression, not statement
    - yelds the assigned value
-   - e.g. "a = (b += 1)" is a valid command 
+   - e.g. "a = (b += 1)" is a valid command
  - Assignment right side is alway evaluated before left side
    - e.g. "for n in range(3): a += b += 1"
      - round 1: a=1, b=1
@@ -1723,8 +1728,8 @@ ASSIGNMENTS
 3
 </pre>
 
-Currently Admiral does not support assigning to slices: 
-i.e. a[1:3]=(1,2,3) is not working. 
+Currently Admiral does not support assigning to slices:
+i.e. a[1:3]=(1,2,3) is not working.
 If that REALLY is a language feature that anyone would use, I will consider adding it :-)
 
 UNKNOWN IDENTS IN FUNCTIONS
@@ -1762,4 +1767,3 @@ PYTHON FEATURES MISSING (INCOMPLETE LIST)
  - 'yield'
  - 'try' - 'except' exception handling
  - lot of built-in functions
-
