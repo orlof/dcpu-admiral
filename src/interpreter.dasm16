@@ -331,7 +331,7 @@
     ; get current line
     set a, [history]
     set b, [line_editor__buf_index]
-    jsr array__get
+    jsr array__qget
 
     ; move cursor to start location
     set [y + SCREEN__CURSOR], [line_editor__start_addr]
@@ -397,7 +397,7 @@
 
     set a, [history]
     set b, HISTORY_SIZE - 1
-    jsr array__get
+    jsr array__qget
 
     ife x, 0
         set pc, interpreter__line_edit__key_newline__store

@@ -16,7 +16,7 @@
 
 :str__repr__loop
     add b, 1
-    jsr array__get
+    jsr array__qget
 
 :str__repr__loop_check
     ife x, 0
@@ -35,7 +35,7 @@
 
 :str__repr__escape_newline
     add b, 1
-    jsr array__get
+    jsr array__qget
 
     ife x, 'n'
         set pc, str__repr__escape_LF
@@ -74,7 +74,7 @@
 
 :str__str__loop
     add b, 1
-    jsr array__get
+    jsr array__qget
 
 :str__str__loop_check
     ife x, 0
@@ -90,7 +90,7 @@
 
 :str__str__escape
     add b, 1
-    jsr array__get
+    jsr array__qget
     
     ife x, 0x5c
         set pc, str__str__backslash
@@ -628,7 +628,7 @@
     ; copy char from src to dst
     set a, [z-3]
     set b, i
-    jsr array__get
+    jsr array__qget
     ife x, 0
         set pc, built_in__str_replace__finish
 
@@ -715,7 +715,7 @@
     ; [z-1] is used as str nursery
     ; [z-2] original str
     ; [z-3] list
-    jsr array__get
+    jsr array__qget
     
     add b, 1
     

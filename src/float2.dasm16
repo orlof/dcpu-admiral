@@ -925,7 +925,7 @@
     set b, 0                    ; index in str
 
 :ffs_loop
-    jsr array__get
+    jsr array__qget
     add b, 1
     set c, x
 

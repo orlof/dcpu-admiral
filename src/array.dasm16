@@ -43,16 +43,16 @@
 ;----------------------------------------------------------------
 :array__qget
     set x, [a]
-    ife b, [x]
-        set pc, array__qget__eof
+    ifl b, [x]
+        set pc, array__qget__in_range
 
+    set x, 0
+    set pc, pop
+
+:array__qget__in_range
     add x, b
     set x, [x+1]
     
-    set pc, pop
-
-:array__qget__eof
-    set x, 0
     set pc, pop
 
 ;----------------------------------------------------------------
