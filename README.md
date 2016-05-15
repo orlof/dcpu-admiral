@@ -3,6 +3,8 @@
 <h1>ADMIRAL programming language for DCPU-16</h1>
 <h5><i>"PURE INTERPRETED LANGUAGE FOR THE FRINGE COLONIES"</i></h5>
 
+Admiral is an easy to learn DCPU all-in-one environment that contains includes operating system and programming language. Programming language has efficient high-level data structures and simple approach to object-oriented programming. Admiral’s elegant syntax and dynamic typing, together with its interpreted nature, make it an ideal language for scripting and rapid application development.
+
 ---
 <h4>Table of contents</h4>
 <ul>
@@ -18,7 +20,15 @@
     <ul>
       <li><a href="#2.1">Download</a></li>
       <li><a href="#2.2">Development</a></li>
-      <li><a href="#2.3">Usage</a></li>
+    </ul>
+  </li>
+  <li><a href="#3">Usage</a>
+    <ul>
+      <li><a href="#3.1">Interactive Shell</a></li>
+      <li><a href="#3.2">Clipboard</a></li>
+      <li><a href="#3.3">Text Editor</a></li>
+      <li><a href="#3.4">Functions</a></li>
+      <li><a href="#3.5">Prototypes</a></li>
     </ul>
   </li>
   <li><a href="#4">Data types</a>
@@ -65,7 +75,7 @@
    - 5% for stack
    - 25% for admiral core (including static memory buffers)
  - Memory is conserved by using direct one-pass interpreter
-   - It is quite slow, but could be boosted with AST compiler - memory-speed trade-off
+   - It is slow, but can boosted with AST compiler - it is a memory-speed trade-off
  - Pratt’s algorithm for efficient expression parsing
  - Mark and sweep garbage collector for memory conservation and detecting trash even with reference loops
  - Floppy load/save uses object graph serialization e.g.
@@ -95,8 +105,8 @@ Hello World                   # output
 In Admiral - ANY and ALL strings can be called as functions! You could even write:
 
 <pre>
->'print argv[0]'('Hello World')   # crazy way to call constant string as function
-Hello World                       # function output
+>'print greet'(greet='Hello World') # crazy way to call constant string as function
+Hello World                         # function output
 </pre>
 
 Here is another example of Admiral code. A function that calculates square Root for integers and floats:
@@ -149,6 +159,7 @@ b 2
      - Floats (float48b) - str<->float conversions functions loose precision (TODO)
      - Booleans, strings, lists, tuples and dicts
  - Integrated code editor with gap buffer
+ - System clipboard
  - Object serialization for floppy
  - Dict implementation with binary search
  - Nice starting set of built-in functions
@@ -231,35 +242,107 @@ someone other than me starts using them ;)
 
 --
 
-<h5 id="2.3">Usage</h5>
+<h4 id="3">Usage</h4>
 
-When Admiral starts, it will initialize the LEM screen with Admiral header.
-Header contains two lines and shows among other information the amount of
-available heap memory. After the header Admiral shows an interactive prompt '>'
-and waits for your input.
+<h5 id="3.1">Interactive Shell</h4>
+
+When Admiral starts, it will show the Admiral title header in LEM screen. Header shows the Admiral version number and the amount of
+available heap memory. After the header Admiral shows an interactive prompt '>' and waits for your input.
 
 Now you can already execute one line statements in Admiral's interactive shell.
+
+For example:
+
 <pre>
->print 1+2**32
-4294967297
+>print "Hello World"
+Hello World
 >for a in range(5): print a
 0
 1
 2
 3
 4
+># This is a comment
+>print 2+2 # code and a comment in the same line
+4
 </pre>
 
-Admiral also has a built-in text editor to facilitate software development in deep space colonies. It is
-started by calling edit(). Editor returns the edited text as string that can be assigned to a variable.
-To exit the editor hold down CTRL and then press x (CTRL-x). If you want to discard your changes,
-use CTRL-c, which will return the original string instead of the edited version.
+The Admiral interpreter acts as a simple calculator: you can type 'print' and an expression at it and it will write the value. Expression syntax is straightforward: the operators +, -, * and / work just like in most other languages (for example, Pascal or C); parentheses can be used for grouping. 
 
-    result=edit()
+<pre>
+>print 2+2
+4
+>print 1+2**32
+4294967297
+>print (50-5*6)/4
+5
+</pre>
+
+The equal sign ('=') is used to assign a value to a variable.
+<pre>
+>width=20
+>height=5*9
+>width*height
+</pre>
+
+Admiral treats an assignment as both an expression and as a statement. As an expression, its
+value is the value assigned to the variable. This is done to allow multiple assignments in a
+single statement, such as
+<pre>
+>x=y=z=0  # Zero x, y and z
+>print x,y,z
+0 0 0
+</pre>
+
+Variables must be “defined” (assigned a value) before they can be used, or an error will occur:
+<pre>
+>n  # try to access an undefined variable
+ERROR:2846
+n
+ ^
+</pre>
+
+Error codes change in every Admiral release and they are documented in admiral.txt.
+
+<h5 id="3.2">Clipboard</h4>
+
+Admiral has system clipboard that can transfer data between applications. Copying data to clipboard can be done in any Admiral software by manipulating "_cb_" value in global scope.
+
+<pre>
+>globals()['_cb_']="Hello World"
+</pre>
+
+CTRL-y pastes clipboard to any application by writing the clipboard to key buffer.
+
+<h5 id="3.3">Text Editor</h4>
+
+Admiral also has a built-in text editor to facilitate software development in deep space colonies. It is started by calling edit(). Editor returns the edited text as string that can be assigned to a variable. 
+
+Editor has following special key commands:
+
+<table cellpadding="1">
+<tr><th>Key</th><th>Function</th></tr>
+<tr><td>CTRL-x</td><td>Exit editor, return edited text</td></tr>
+<tr><td>CTRL-c</td><td>Exit editor, return original text</td></tr>
+<tr><td>CTRL-k</td><td>Kill line to end (copy/append to clipboard)</td></tr>
+<tr><td>CTRL-y</td><td>Re-insert ('yank') the last text that was killed</td></tr>
+</table>
+
+CTRL-x means to hold down CTRL and then press x (CTRL-x). 
+
+To store the results of your editing, you should always assign edit() function return value to some variable:
+
+<pre>
+>result=edit()
+</pre>
 
 If you need to edit an existing text, you can give a string argument for edit():
 
-    result=edit(result)
+<pre>
+>result=edit(result)
+</pre>
+
+<h5 id="3.4">Functions</h4>
 
 Since Admiral is pure interpreter all strings are callable (i.e. can be used as functions):
 
@@ -294,7 +377,31 @@ of the function:
 if "type" not in locals(): type='Gigalosaurus'
 </pre>
 
-Dicts with prototype creation provide "poor mans" objects :-)
+Admiral has a set of built-in functions that are listed in following chapters. User can also define their own user functions. All functions are either global or class -functions.
+
+E.g. len() and mem() are global built-in functions, while str.encrypt() is a built-in class functions.
+
+Admiral programmer can write global functions and dict class functions. Functions to other class types cannot be added. Global functions are variables that have string value and class functions can be defined for dicts by adding function with str key.
+
+Example: global user function
+<pre>
+>out="print argv[0]"
+>out("Hello")
+Hello
+</pre>
+
+Example: class user function
+<pre>
+>a={}
+>a.out="print argv[0]"
+>a.out("Hello")
+Hello
+</pre>
+
+<h5 id="3.5">Prototypes</h4>
+
+Dicts create() method that can be used to create new dicts that are based on the prototype:
+
 <pre>
 >ship={}                  # create prototype object (i.e. dict)
 >ship.spd=0               # assign value to prototype
@@ -311,34 +418,7 @@ me.spd+=me.acceleration  # function modifies object field
 0                         # and prototype's fields are intact
 </pre>
 
-Dict created with dict.create() inherits its properties from prototype. Prototype dict is
-used to read values if property is not defined in dict itself. Note that prototype values
-are not copied at creation time, and changes in prototype values are reflected
-to the created dict unless it has already defined the value itself. However, writing values
-to created dict never modify the prototype dict.
-
-Admiral has three different types of built-in functionalities:  statements, global functions
-and class functions. E.g. print and run are stetements, len() and mem() are global functions,
-and str.encrypt() is a class functions.
-
-Admiral programmer can write global functions and dict class functions. New statements or
-functions to other class types cannot be added. Global functions are variables that have
-string value and class functions can be defined for dicts by adding function with str key.
-
-Example: global function
-<pre>
->out="print argv[0]"
->out("Hello")
-Hello
-</pre>
-
-Example: class function
-<pre>
->a={}
->a.out="print argv[0]"
->a.out("Hello")
-Hello
-</pre>
+Dict created with dict.create() inherits its properties from prototype. Prototype dict is used to read values if property is not defined in dict itself. Note that prototype values are not copied at creation time, and changes in prototype values are reflected to the created dict unless it has already defined the value itself. However, writing values to created dict never modify the prototype dict.
 
 --
 
@@ -348,18 +428,11 @@ Admiral provides some built-in data types i.e. dict, list, tuple, str, int, floa
 
 <h5 id="4.1">Numbers</h5>
 
-The Admiral interpreter acts as a simple calculator: you can type 'print' and an expression at it and it
-will write the value. Expression syntax is straightforward: the operators +, -, * and / work just like
-in most other languages (for example, Pascal or C); parentheses can be used for grouping. For example:
+Admiral supports two types of numbers: integers and floats.
+
+Integers in Admiral have unlimited length. Floats use 16 bits for exponents and 32 bits for base (mantissa).
 
 <pre>
->print 2+2
-4
-># This is a comment
->print 2+2 # and a comment on the same line as code
-4
->print (50-5*6)/4
-5
 ># Integer division returns the number closer to 0:
 >print 7/3
 2
@@ -367,34 +440,7 @@ in most other languages (for example, Pascal or C); parentheses can be used for 
 -2
 </pre>
 
-The equal sign ('=') is used to assign a value to a variable.
-<pre>
->width=20
->height=5*9
->width*height
-</pre>
-
-Admiral treats an assignment as both an expression and as a statement. As an expression, its
-value is the value assigned to the variable. This is done to allow multiple assignments in a
-single statement, such as
-<pre>
->x=y=z=0  # Zero x, y and z
->print x,y,z
-0 0 0
-</pre>
-
-Variables must be “defined” (assigned a value) before they can be used, or an error will occur:
-<pre>
->n  # try to access an undefined variable
-ERROR:2846
-n
- ^
-</pre>
-
-Error codes are documented in admiral.txt included in Admiral releases.
-
-There is full support for floating point; operators with mixed type operands convert the integer operand
-to floating point:
+There is full support for operators with mixed types as Admiral converts integer operands to floating point automatically:
 
 <pre>
 >print 3 * 3.75 / 1.5
@@ -403,10 +449,7 @@ to floating point:
 3.5
 </pre>
 
-Floating point numbers use 16 bits for exponent and 32 bits for mantissa.
-Special values nan, inf, -inf, 0.0 and -0.0 are also supported.
-
-
+Floating points support also special values of nan, inf, -inf, 0.0 and -0.0.
 
 <h5 id="4.2">String</h5>
 
