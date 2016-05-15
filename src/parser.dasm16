@@ -3712,15 +3712,6 @@ DAT 0, TYPE_GROUP_INTEGER, TYPE_GROUP_INTEGER
     set pc, postamble_none
 
 ;----------------------------------------------------------------
-DAT 0
-:built_in_version
-;----------------------------------------------------------------
-    jsr built_in_params
-
-    set x, STR_VERSION
-    set pc, postamble
-
-;----------------------------------------------------------------
 :built_in_params
 ; util function used by built-in impls to parse arguments
 ;----------------------------------------------------------------

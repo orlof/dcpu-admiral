@@ -97,6 +97,8 @@
 :cur_x      dat 0
 :cur_y      dat 0
 
+:cutting    dat 0
+
 ;----------------------------------------------------------------
 ; INTERPRETER LINE EDITOR
 ;----------------------------------------------------------------
@@ -200,7 +202,6 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
 :STR_ERROR      DAT STR_ERROR + 2, TYPE_STR, 6, "ERROR:"
 :STR_AUTOEXEC   DAT STR_AUTOEXEC + 2, TYPE_STR, 8, "MAIN.BIN"
 :STR_MAIN       DAT STR_MAIN + 2, TYPE_NAME, 4, "main"
-:STR_VERSION    DAT STR_VERSION + 2, TYPE_STR, 4, "0.54"
 
 :STR_UNDERSCORE DAT STR_UNDERSCORE + 2, TYPE_NAME, 1, "_"
 :STR_EX         DAT STR_EX + 2, TYPE_NAME, 2, "ex"
@@ -393,7 +394,6 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 1, led_lparen_user_defined
 :built_in_functions_7
     dat 8, "globals", built_in_globals
-    dat 8, "version", built_in_version
     dat 1, led_lparen_user_defined
 
 :built_in__list_methods

@@ -3,7 +3,7 @@
 :edit_main
 ;----------------------------------------------------------------
     set push, 1
-    set push, 1
+    set push, 2
     jsr preamble
 
     ; initialize cursor to top left corner
@@ -16,23 +16,25 @@
     jsr screen_next
     jsr screen_clear
 
-    ; reserve space for editing text as string (not _really_ correct)
-    set push, EDIT_BUFFER_SIZE
+    set [buf_start], 0
+    set [gap_start], 0
+    set [win_start], 0
+    set [cur_line], 0
+
+    set a, EDIT_BUFFER_SIZE
+    set [cur_pos], a
+    set [buf_end], a
+    set [gap_end], a
+
+    ; reserve space for editing text as string (violation to str is immutable)
+    set push, a
     set push, TYPE_STR
     jsr alloc
     set [z-1], x
 
-    set x, [x]            ; x: struct string *
+    jsr edit_update_pointers
 
-    set [buf_start], x
-    set [gap_start], x
-    set [cur_pos], x
-    set [win_start], x
-    set [cur_line], x
-
-    add x, EDIT_BUFFER_SIZE
-    set [buf_end], x
-    set [gap_end], x
+    set [cutting], FALSE
 
     set x, [z+10]
     set x, [x]
@@ -61,6 +63,9 @@
     jsr win_getchar
     jsr screen_toggle_cursor
 
+    ife c, KEY_CTRL_K
+        set pc, edit_key_ctrl_k
+    set [cutting], FALSE
     ife c, KEY_UP
         set pc, edit_key_up
     ife c, KEY_DOWN
@@ -180,6 +185,71 @@
     ifl [cur_pos], [buf_end]
         jsr edit_remove_char
     set pc, edit_main_loop
+;----------------------------------------------------------------
+:edit_key_ctrl_k
+;----------------------------------------------------------------
+    set y, sp
+
+:edit_key_ctrl_k_loop
+    set x, 0
+    ifl [cur_pos], [buf_end]
+        jsr edit_remove_char
+    ife x, 0
+        set pc, edit_key_ctrl_k_loop_break
+
+    set push, x
+
+    ife x, KEY_NEWLINE
+        set pc, edit_key_ctrl_k_loop_break    
+
+    set x, [cur_pos]
+    ife [x], KEY_NEWLINE
+        set pc, edit_key_ctrl_k_loop_break
+    set pc, edit_key_ctrl_k_loop       
+
+:edit_key_ctrl_k_loop_break
+    set x, y
+    sub x, sp
+
+    set push, x
+    set push, TYPE_STR
+    jsr array_create
+    set [z-2], x
+
+    set j, [x]
+    add j, [j]
+
+:edit_key_ctrl_k_copy_loop
+    ife j, [x]
+        set pc, edit_key_ctrl_k_copy_loop_break
+    set [j], pop
+    std pc, edit_key_ctrl_k_copy_loop
+
+:edit_key_ctrl_k_copy_loop_break
+    ife [cutting], FALSE
+        set pc, edit_key_ctrl_k_reset
+
+    set push, [global_scope]
+    set push, STR_CLIPBOARD
+    jsr dict_get
+
+    set push, x
+    set push, [z-2]
+    jsr array_merge
+    set [z-2], x
+
+:edit_key_ctrl_k_reset
+    set push, [global_scope]
+    set push, STR_CLIPBOARD
+    set push, [z-2]
+    jsr dict__set
+
+    set x, [z-1]
+    jsr edit_update_pointers
+
+    set [cutting], TRUE
+    set pc, edit_main_loop
+
 ;----------------------------------------------------------------
 :edit_key_bs
 ;----------------------------------------------------------------
@@ -336,6 +406,8 @@
 
     jsr edit_gap_move    
 
+    set x, [cur_pos]
+    set x, [x]
     add [gap_end], 1
     add [cur_pos], 1
     set pc, pop
@@ -594,3 +666,23 @@
     add [win_shift], 8
     
     set pc, win_normalize_7
+
+;----------------------------------------------------------------
+:edit_update_pointers
+; fastcall
+;     x: new buf start
+;----------------------------------------------------------------
+:edit_update_pointers
+    set x, [x]
+    sub x, [buf_start]
+
+    add [buf_start], x
+    add [gap_start], x
+    add [win_start], x
+    add [cur_line], x
+
+    add [cur_pos], x
+    add [buf_end], x
+    add [gap_end], x
+
+    set pc, pop
