@@ -91,6 +91,8 @@
 
     set pc, interpreter_loop
 
+
+
 ;----------------------------------------------------------------
 ; struct handle *scope_get(struct handle *dict, struct handle *key)
 ; return value from scope or any of the ancestor scopes

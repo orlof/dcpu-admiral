@@ -11,17 +11,13 @@
     set x, [z+10]
     set [z-2], x
 
-    set push, [x + HANDLE_TYPE]
-    ife peek, TYPE_NAME
+    ife [x + HANDLE_TYPE], TYPE_NAME
         set [x + HANDLE_TYPE], TYPE_STR
     
     set b, dict__get__finish
     set pc, dict__bin_search
 
 :dict__get__match
-    set a, [z-2]
-    set [a + HANDLE_TYPE], pop    
-
     ; translate memory address to value
     set x, [c]        ; struct handle *tuple
     set x, [x]        ; struct list *kv_tuple
@@ -31,9 +27,6 @@
 
 :dict__del__no_match
 :dict__get__no_match
-    set a, [z-2]
-    set [a + HANDLE_TYPE], pop    
-
     set x, 0        ; return none
     set pc, postamble
 
@@ -49,15 +42,9 @@
     set x, [z+11]
     set [z-2], x
 
-    ifc [x + HANDLE_TYPE], TYPE_NAME
-        set pc, dict_set_skip
+    ife [x + HANDLE_TYPE], TYPE_NAME
+        set [x + HANDLE_TYPE], TYPE_STR
 
-    set push, x
-    jsr array_clone
-    set [x + HANDLE_TYPE], TYPE_STR
-    set [z-2], x
-
-:dict_set_skip
     ; create item tuple
     set push, 2
     set push, TYPE_TUPLE
@@ -74,7 +61,7 @@
 
 :dict__set__match
     ; translate memory address to array index
-    set [c], [z - 3]
+    set [c], [z-3]
     set pc, postamble
 
 :dict__set__no_match
@@ -101,8 +88,7 @@
     set x, [z+10]
     set [z-2], x
 
-    set push, [x + HANDLE_TYPE]
-    ife peek, TYPE_NAME
+    ife [x + HANDLE_TYPE], TYPE_NAME
         set [x + HANDLE_TYPE], TYPE_STR
 
     set b, dict__del__finish
@@ -113,9 +99,6 @@
     dat dict__del__no_match
 
 :dict__del__match
-    set b, [z-2]
-    set [b + HANDLE_TYPE], pop    
-
     sub c, a
     sub c, 1
 

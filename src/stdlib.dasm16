@@ -44,8 +44,8 @@
             set pc, float__cmp__float_int
 
     ; (str,str),(ident,ident)
-    ifb [a], TYPE_STR + TYPE_NAME
-        ife [b], [a]
+    ifb [a], TYPE_STR | TYPE_NAME
+        ifb [b], TYPE_STR | TYPE_NAME
             set pc, str_cmp
 
     ; (tuple,tuple),(list,list),(dict,dict)
@@ -401,7 +401,7 @@
     ifb [a + HANDLE_TYPE], TYPE_TUPLE_COMMA
         set [a + HANDLE_TYPE], TYPE_TUPLE
 
-    ifb [a + HANDLE_TYPE], TYPE_NAME
+    ifb [a + HANDLE_TYPE], TYPE_NAME | TYPE_STR
         set pc, assign_name
     ifb [a + HANDLE_TYPE], TYPE_TUPLE
         set pc, assign_tuple
@@ -446,9 +446,9 @@
 :assign_reference
     set a, [a]
     ; vv this supposedly forces all dict ident keys to str
-    set x, [a + REFERENCE_RIGHT]
-    ifb [x + HANDLE_TYPE], TYPE_NAME
-        set [x + HANDLE_TYPE], TYPE_STR
+    ; set x, [a + REFERENCE_RIGHT]
+    ; ifb [x + HANDLE_TYPE], TYPE_NAME
+    ;     set [x + HANDLE_TYPE], TYPE_STR
     ; ^^ this supposedly forces all dict ident keys to str
     set push, [a + REFERENCE_LEFT]
     set push, [a + REFERENCE_RIGHT]
@@ -521,7 +521,7 @@
     set c, [x]
     set [c+1], [z+10]
 
-    ifb [a + HANDLE_TYPE], TYPE_NAME
+    ifb [a + HANDLE_TYPE], TYPE_NAME | TYPE_STR
         set pc, assign_name
 
     set y, recover

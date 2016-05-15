@@ -10,6 +10,8 @@
 :recovery_sp    dat 0
 
 :clipboard_state dat 0
+:try_fp         dat 0
+:try_sp         dat 0
 
 ;----------------------------------------------------------------
 ; GLOBAL DISPLAY VARIABLES
@@ -201,12 +203,12 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
 :STR_PROMPT     DAT STR_PROMPT + 2, TYPE_STR, 1, ">"
 :STR_ERROR      DAT STR_ERROR + 2, TYPE_STR, 6, "ERROR:"
 :STR_AUTOEXEC   DAT STR_AUTOEXEC + 2, TYPE_STR, 8, "MAIN.BIN"
-:STR_MAIN       DAT STR_MAIN + 2, TYPE_NAME, 4, "main"
+:STR_MAIN       DAT STR_MAIN + 2, TYPE_STR, 4, "main"
 
-:STR_UNDERSCORE DAT STR_UNDERSCORE + 2, TYPE_NAME, 1, "_"
-:STR_EX         DAT STR_EX + 2, TYPE_NAME, 2, "ex"
-:STR_ME         DAT STR_ME + 2, TYPE_NAME, 2, "me"
-:STR_ARGV       DAT STR_ARGV + 2, TYPE_NAME, 4, "argv"
+:STR_UNDERSCORE DAT STR_UNDERSCORE + 2, TYPE_STR, 1, "_"
+:STR_EX         DAT STR_EX + 2, TYPE_STR, 2, "ex"
+:STR_ME         DAT STR_ME + 2, TYPE_STR, 2, "me"
+:STR_ARGV       DAT STR_ARGV + 2, TYPE_STR, 4, "argv"
 :STR_CLIPBOARD  DAT STR_CLIPBOARD + 2, TYPE_STR, 4, "_cb_"
 
 :STR_NONE       DAT STR_NONE + 2, TYPE_STR, 4, "none"
