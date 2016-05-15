@@ -3,7 +3,7 @@
 <h1>ADMIRAL programming language for DCPU-16</h1>
 <h5><i>"PURE INTERPRETED LANGUAGE FOR THE FRINGE COLONIES"</i></h5>
 
-Admiral is an easy to learn DCPU all-in-one environment that contains includes operating system and programming language. Programming language has efficient high-level data structures and simple approach to object-oriented programming. Admiral’s elegant syntax and dynamic typing, together with its interpreted nature, make it an ideal language for scripting and rapid application development.
+Admiral is an easy to learn all-in-one environment for DCPU. It requires no toolchains and includes an operating system and programming language. Programming language has efficient high-level syntax. Admiral’s elegant syntax and dynamic typing, together with its interpreted nature, make it an ideal language for scripting and rapid application development.
 
 ---
 <h4>Table of contents</h4>
