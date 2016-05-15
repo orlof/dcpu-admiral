@@ -21,14 +21,13 @@
     set pc, x
 
 :lexer_restore
-    set x, pop
-    set [lexer_current_indent], [SP]
-    set [lexer_target_indent], [SP+1]
-    set [lexer_end], [SP+2]
-    set [lexer_start], [SP+3]
-    set [lexer_token], [SP+4]
-    set [lexer_string], [SP+5]
-    set pc, x
+    set [lexer_current_indent], [SP+1]
+    set [lexer_target_indent], [SP+2]
+    set [lexer_end], [SP+3]
+    set [lexer_start], [SP+4]
+    set [lexer_token], [SP+5]
+    set [lexer_string], [SP+6]
+    set pc, pop
 
 :lexer_get_token_as_string
     set push, [lexer_string]

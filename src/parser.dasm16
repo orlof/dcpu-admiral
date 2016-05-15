@@ -201,36 +201,7 @@
 
 :std_run_init_lexer
     jsr lexer_init
-
-:std_run_call
-    jsr parser_stmt
-    set [z-3], x
-
-    ifb [x+HANDLE_TYPE], TYPE_CONTROL
-        set pc, std_run_control
-
-    ifn [lexer_token], token_eof
-        set pc, std_run_call
-
-    set a, VOID
-
-:std_run_finish
-    jsr lexer_restore
-    set [current_scope], [sp+6]
-    set x, a
-    set pc, postamble
-
-:std_run_control
-    set a, [x]
-    ifn [a + CONTROL_SIGNAL], token_return
-        jsr recover            ; break and continue
-        #doc Illegal return type
-
-    set push, [a + CONTROL_VALUE]
-    jsr eval
-    set a, x
-    
-    set pc, std_run_finish
+    set pc, led_lparen_call
 
 
 ;----------------------------------------------------------------
@@ -297,19 +268,27 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
-:std_return
-; return struct handle *control
+:std_raise
 ;----------------------------------------------------------------
+    set b, CONTROL_SIGNAL_RAISE
+    set pc, std_return_and_raise
+
+;----------------------------------------------------------------
+:std_return
+;----------------------------------------------------------------
+    set b, CONTROL_SIGNAL_RETURN
+
+:std_return_and_raise
     jsr lexer_next        ; skip return
 
-    set push, SIZEOF_CONTROL                ; create struct control
+    set push, SIZEOF_CONTROL            ; create struct control
     set push, TYPE_CONTROL
     jsr array_create
     set [z-1], x
 
     set a, [x]
-    set [a + CONTROL_SIGNAL], token_return        ; set control type
-    set [a + CONTROL_VALUE], NONE            ; default: no return value
+    set [a + CONTROL_SIGNAL], b         ; set control type
+    set [a + CONTROL_VALUE], NONE       ; default: no return value
 
     ife [lexer_token], token_newline
         set pc, std_return_finish
@@ -333,11 +312,16 @@
     
 ;----------------------------------------------------------------
 :std_break
-:std_continue
-; return struct handle *control
 ;----------------------------------------------------------------
-    set b, [lexer_token]            ; store token for control signal
+    set b, CONTROL_SIGNAL_BREAK            ; store token for control signal
+    set pc, std_continue_and_break
 
+;----------------------------------------------------------------
+:std_continue
+;----------------------------------------------------------------
+    set b, CONTROL_SIGNAL_CONTINUE            ; store token for control signal
+
+:std_continue_and_break
     jsr lexer_next                    ; advance 'break' or 'continue'
 
     ifn [lexer_token], token_newline
@@ -453,12 +437,12 @@
 
 :std_for_control
     set a, [x]
-    ife [a + CONTROL_SIGNAL], token_continue
+    ifb [a + CONTROL_SIGNAL], CONTROL_SIGNAL_CONTINUE
         set pc, std_for_control_continue
-    ife [a + CONTROL_SIGNAL], token_break
+    ifb [a + CONTROL_SIGNAL], CONTROL_SIGNAL_BREAK
         set pc, std_for_control_break
-    ife [a + CONTROL_SIGNAL], token_return
-        set pc, std_for_control_return
+    ifb [a + CONTROL_SIGNAL], CONTROL_SIGNAL_RETURN | CONTROL_SIGNAL_RAISE
+        set pc, postamble
 
     jsr recover
     #doc for loop not terminated by continue, break or return -error
@@ -468,11 +452,9 @@
 
 :std_for_finish    
     jsr parser_skip_suite
+
 :std_for_eof
     set x, VOID
-
-:std_for_control_return
-    ;set [current_scope], [z-1]
     set pc, postamble
 
 ;----------------------------------------------------------------
@@ -496,6 +478,73 @@
     set pc, std_del_loop
 
 :std_del_break
+    set x, VOID
+    set pc, postamble
+
+;----------------------------------------------------------------
+:std_try
+;----------------------------------------------------------------
+    jsr lexer_next                  ; advance 'try'
+
+    set push, token_colon           ; verify colon
+    jsr lexer_advance
+
+    jsr lexer_store                 ; store lexer position
+
+    jsr parser_suite                ; process try block
+    ifb [x + HANDLE_TYPE], TYPE_CONTROL
+        set pc, std_try_control
+
+    set push, token_except          ; verify except
+    jsr lexer_advance
+
+    set push, token_colon           ; skip test list
+    jsr parser_skip_until_token
+
+    jsr lexer_next                  ; skip colon
+
+    jsr parser_skip_suite           ; skip except block
+
+    set x, VOID
+    set pc, postamble
+
+:std_try_control
+    set a, [x]
+    ifb [a + CONTROL_SIGNAL], CONTROL_SIGNAL_CONTINUE | CONTROL_SIGNAL_BREAK | CONTROL_SIGNAL_RETURN
+        set pc, postamble
+    ifb [a + CONTROL_SIGNAL], CONTROL_SIGNAL_RAISE
+        set pc, std_try_control_raise
+
+    jsr recover
+    #doc assert: unexpected control signal in try block 
+
+:std_try_control_raise
+    set [z-1], x
+    jsr lexer_restore
+    jsr parser_skip_suite
+
+    set push, token_except          ; verify except
+    jsr lexer_advance
+
+    ; get the testlist (left side)
+    set push, 0x0000
+    jsr testlist
+    set [z-2], x
+
+    set push, x
+    set x, [z-1]
+    set x, [x]
+    set push, [x + CONTROL_VALUE]
+    jsr assign
+
+    set push, token_colon           ; verify colon
+    jsr lexer_advance
+
+    jsr parser_suite                ; process try block
+
+    ifb [x + HANDLE_TYPE], TYPE_CONTROL
+        set pc, postamble
+
     set x, VOID
     set pc, postamble
 
@@ -609,15 +658,15 @@
 
 :std_while_control
     set a, [x]
-    ife [a + CONTROL_SIGNAL], token_continue
+    ifb [a + CONTROL_SIGNAL], CONTROL_SIGNAL_CONTINUE
         set pc, std_while_control_continue
-    ife [a + CONTROL_SIGNAL], token_break
+    ifb [a + CONTROL_SIGNAL], CONTROL_SIGNAL_BREAK
         set pc, std_while_control_break
-    ife [a + CONTROL_SIGNAL], token_return
-        set pc, std_while_control_return
+    ifb [a + CONTROL_SIGNAL], CONTROL_SIGNAL_RETURN | CONTROL_SIGNAL_RAISE
+        set pc, postamble
 
     jsr recover
-    #doc while loop not terminated by continue, break or return -error
+    #doc assertion failed, unknown control signal terminated while loop
 
 :std_while_control_break
     jsr lexer_restore
@@ -629,11 +678,9 @@
 
 :std_while_false
     jsr parser_skip_suite
+
 :std_while_eof
     set x, VOID
-
-:std_while_control_return
-    ;set [current_scope], [z-1]
     set pc, postamble
 
 ;----------------------------------------------------------------
@@ -691,7 +738,7 @@
         set pc, parser_skip_suite_block_loop
 
 ;    add sp, 1
-    set ex, pop
+    set ex, pop     ; pop value to dev/null
     set pc, pop
 
 
@@ -2028,7 +2075,7 @@
     ifn [lexer_token], token_eof
         set pc, led_lparen_call
 
-    set a, VOID
+    set a, NONE
 
 :led_lparen_finish
     jsr lexer_restore
@@ -2038,12 +2085,18 @@
 
 :led_lparen_control
     set a, [x]
-    ifn [a + CONTROL_SIGNAL], token_return
-        jsr recover            ; break and continue
-        #doc Illegal exit from function (break or continue)
+    ifb [a + CONTROL_SIGNAL], CONTROL_SIGNAL_RETURN
+        set pc, led_lparen_control_return
+    ifb [a + CONTROL_SIGNAL], CONTROL_SIGNAL_RAISE
+        set pc, led_lparen_control_raise
 
+    jsr recover
+    #doc Assertion failed: Illegal control signal in function return
+
+:led_lparen_control_return
     set push, [a + CONTROL_VALUE]
     jsr eval
+:led_lparen_control_raise
     set a, x
     
     set pc, led_lparen_finish

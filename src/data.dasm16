@@ -244,15 +244,18 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
 :token_del          dat std_del, recover, recover, 0x0000
 :token_for          dat std_for, recover, recover, 0x0000
 :token_run          dat std_run, recover, recover, 0x0000
+:token_try          dat std_try, recover, recover, 0x0000
 :token_elif         dat recover, recover, recover, 0x0000
 :token_else         dat recover, recover, recover, 0x0000
 :token_pass         dat std_pass, recover, recover, 0x0000
-:token_print            dat std_print, recover, recover, 0x0000
-:token_while            dat std_while, recover, recover, 0x0000
-:token_break            dat std_break, recover, recover, 0x0000
-:token_reset            dat std_reset, recover, recover, 0x0000
-:token_return           dat std_return, recover, recover, 0x0000
-:token_continue         dat std_continue, recover, recover, 0x0000
+:token_print        dat std_print, recover, recover, 0x0000
+:token_while        dat std_while, recover, recover, 0x0000
+:token_break        dat std_break, recover, recover, 0x0000
+:token_raise        dat std_raise, recover, recover, 0x0000
+:token_reset        dat std_reset, recover, recover, 0x0000
+:token_except       dat recover, recover, recover, 0x0000
+:token_return       dat std_return, recover, recover, 0x0000
+:token_continue     dat std_continue, recover, recover, 0x0000
 
 ; assignments
 :token_assign           dat recover, recover, led_assign, 0x0010
@@ -450,6 +453,7 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 4, "inf", token_float
     dat 4, "nan", token_float
     dat 4, "run", token_run
+    dat 4, "try", token_try
     dat 1, token_name
 :built_in_stmts_4
     dat 5, "elif", token_elif
@@ -464,9 +468,11 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 6, "while", token_while
     dat 6, "reset", token_reset
     dat 6, "break", token_break
+    dat 6, "raise", token_raise
     dat 1, token_name
 :built_in_stmts_6
     dat 7, "return", token_return
+    dat 7, "except", token_except
 :built_in_stmts_7
     dat 1, token_name
 :built_in_stmts_8
