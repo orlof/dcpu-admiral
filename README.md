@@ -26,9 +26,10 @@ Admiral is an easy to learn all-in-one environment for DCPU. It requires no tool
     <ul>
       <li><a href="#3.1">Interactive Shell</a></li>
       <li><a href="#3.2">Clipboard</a></li>
-      <li><a href="#3.3">Text Editor</a></li>
-      <li><a href="#3.4">Functions</a></li>
-      <li><a href="#3.5">Prototypes</a></li>
+      <li><a href="#3.3">Exception Handling</a></li>
+      <li><a href="#3.4">Text Editor</a></li>
+      <li><a href="#3.5">Functions</a></li>
+      <li><a href="#3.6">Prototypes</a></li>
     </ul>
   </li>
   <li><a href="#4">Data types</a>
@@ -154,6 +155,7 @@ b 2
    - Garbage collection
    - Dynamic typing
    - Prototype based inheritance
+   - Exception mechanism (try-raise-except)
    - Data types
      - Variable length integers (only limited by available heap space)
      - Floats (float48b) - str<->float conversions functions loose precision (TODO)
@@ -267,7 +269,7 @@ Hello World
 4
 </pre>
 
-The Admiral interpreter acts as a simple calculator: you can type 'print' and an expression at it and it will write the value. Expression syntax is straightforward: the operators +, -, * and / work just like in most other languages (for example, Pascal or C); parentheses can be used for grouping. 
+The Admiral interpreter acts as a simple calculator: you can type 'print' and an expression at it and it will write the value. Expression syntax is straightforward: the operators +, -, * and / work just like in most other languages (for example, Pascal or C); parentheses can be used for grouping.
 
 <pre>
 >print 2+2
@@ -314,9 +316,29 @@ Admiral has system clipboard that can transfer data between applications. Copyin
 
 CTRL-y pastes clipboard to any application by writing the clipboard to key buffer.
 
-<h5 id="3.3">Text Editor</h4>
+<h5 id="3.3">Exception Handling</h4>
 
-Admiral also has a built-in text editor to facilitate software development in deep space colonies. It is started by calling edit(). Editor returns the edited text as string that can be assigned to a variable. 
+Admiral has an exception mechanism for user level exceptions. These exceptions have nothing to do with system level errors that always exit the currently active code and return back to interpreter with four number hexadecimal error code.
+
+Later releases may integrate some runtime system level errors to exception handling mechanism.
+
+The simplest way to handle exceptions is with a "try-except" block:
+
+<pre>
+x, y = 5, 0
+try:
+ if y == 0: raise "DivisionByZero"
+ return x / y
+except e:
+ print e
+ return 0
+</pre>
+
+Admiral does not have different exception types. You always catch them all - re-raising exceptions must be done in except handler explicitly.
+
+<h5 id="3.4">Text Editor</h4>
+
+Admiral also has a built-in text editor to facilitate software development in deep space colonies. It is started by calling edit(). Editor returns the edited text as string that can be assigned to a variable.
 
 Editor has following special key commands:
 
@@ -328,7 +350,7 @@ Editor has following special key commands:
 <tr><td>CTRL-y</td><td>Re-insert ('yank') the last text that was killed</td></tr>
 </table>
 
-CTRL-x means to hold down CTRL and then press x (CTRL-x). 
+CTRL-x means to hold down CTRL and then press x (CTRL-x).
 
 To store the results of your editing, you should always assign edit() function return value to some variable:
 
@@ -342,7 +364,7 @@ If you need to edit an existing text, you can give a string argument for edit():
 >result=edit(result)
 </pre>
 
-<h5 id="3.4">Functions</h4>
+<h5 id="3.5">Functions</h4>
 
 Since Admiral is pure interpreter all strings are callable (i.e. can be used as functions):
 
@@ -398,7 +420,7 @@ Example: class user function
 Hello
 </pre>
 
-<h5 id="3.5">Prototypes</h4>
+<h5 id="3.6">Prototypes</h4>
 
 Dicts create() method that can be used to create new dicts that are based on the prototype:
 
@@ -874,6 +896,19 @@ a statement is required syntactically, but no code needs to be executed, for exa
 while not getchar()=='y': pass
 </pre>
 
+<h6>raise</h6>
+<pre>
+raise_stmt ::=  "raise" [expression]
+</pre>
+
+The raise statement allows the programmer to force a specified exception to occur. For example:
+
+<pre>
+>raise "Illegal Argument"
+</pre>
+
+If an expression is not present, None is substituted.
+
 <h6>return</h6>
 <pre>
 return_stmt ::=  "return" [expression]
@@ -987,6 +1022,37 @@ All compound statements are executed in a block scope. Compound statements can u
 that are defined in the compound statement are discarded when control exits the compound statement's block scope.
 
 NOTE: To help fitting source code into LEM 32x12 screen, INDENT and DEDENT MUST always BE a SINGLE SPACE!
+
+<h6>try except</h6>
+
+The if statement is used for conditional execution:
+
+<pre>
+try_stmt ::=  "try" ":" suite
+              "except" target-list ":" suite
+</pre>
+
+It is possible to write programs that handle exceptions.
+
+The try statement works as follows.
+
+- First, the try clause (the statement(s) between the try and except keywords) is executed.
+- If no exception occurs, the except clause is skipped and execution of the try statement is finished.
+- If an exception occurs during execution of the try clause, the rest of the clause is skipped. Then the except clause is executed, and then execution continues after the try statement.
+- A try statement may have only one except clause. To specify handlers for different exceptions you must inspect the expect parameters to distinguish between different error conditions.
+
+If you need to determine whether an exception was raised but don’t intend to handle it, you can re-raise the exception:
+
+<pre>
+try:
+ print "Helo World"
+ raise "SyntaxError"
+ print "Not executed"
+except e:
+ print e
+ raise e
+print "Not executed"
+</pre>
 
 <h6>if</h6>
 
