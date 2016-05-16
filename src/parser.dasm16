@@ -92,11 +92,11 @@
     set push, 0
     jsr expression
     set [z-1], x
-    
+
     set push, x
     jsr eval
     set [z-1], x
-    
+
     ; filename is required to be str
     ifc [x + HANDLE_TYPE], TYPE_STR
         jsr recover
@@ -205,7 +205,7 @@
 
 
 ;----------------------------------------------------------------
-:std_print    
+:std_print
 ; return struct handle *none
 ;----------------------------------------------------------------
     jsr lexer_next        ; skip 'print'
@@ -222,14 +222,14 @@
 
     ifb [x + HANDLE_TYPE], TYPE_TUPLE_COMMA
         set pc, std_print_array
-        
+
     set push, x
     jsr eval
     set [z-1], x
 
     set push, x
     jsr print
-    
+
     set pc, std_print_loop
 
 :std_print_array
@@ -334,7 +334,7 @@
         set pc, std_return_finish
     ife [lexer_token], token_eof
         set pc, std_return_finish
-    
+
     set push, 0
     jsr expression
 
@@ -349,7 +349,7 @@
 
     set x, [z-1]
     set pc, postamble
-    
+
 ;----------------------------------------------------------------
 :std_break
 ;----------------------------------------------------------------
@@ -402,7 +402,7 @@
 ; TODO 'else'
 ; Comments:
 ; Python grammar uses valid operator 'in' as for loop
-; separator. there is no way for parser to detect between expression 
+; separator. there is no way for parser to detect between expression
 ; operator and for separator.
 ;----------------------------------------------------------------
     jsr lexer_next                ; advance 'for'
@@ -414,7 +414,7 @@
 
     set push, token_in    ; verify 'in'
     jsr lexer_advance
-    
+
     ; get the exprlist (right side)
     set push, 0x0000
     jsr expression
@@ -426,11 +426,11 @@
 
     set push, token_colon        ; verify colon
     jsr lexer_advance
-    
+
     jsr lexer_store                ; store lexer position
 
     set i, 0
-    
+
 :std_for_loop
     set a, [z-3]   ; struct handle *left
     set b, [z-4]   ; struct handle *right
@@ -442,7 +442,7 @@
     add c, i        ; c+1 = points to current item
     ifb [b + HANDLE_TYPE], TYPE_STR
         set pc, std_for_loop_string
-        
+
     set push, a
     set push, [c+1]
     jsr assign
@@ -472,7 +472,7 @@
     set push, a
     set push, b
     jsr assign
-    
+
     set pc, std_for_execute_suite
 
 :std_for_control
@@ -490,7 +490,7 @@
 :std_for_control_break
     jsr lexer_restore
 
-:std_for_finish    
+:std_for_finish
     jsr parser_skip_suite
 
 :std_for_eof
@@ -511,10 +511,10 @@
     set push, 0
     jsr expression
     set [z-1], x
-    
+
     set push, x
     jsr del
-    
+
     set pc, std_del_loop
 
 :std_del_break
@@ -567,15 +567,15 @@
     set push, 0            ; evaluate if condition
     jsr expression
     set [z-3], x
-    
+
     set push, x
     jsr eval
     set [z-3], x
-    
+
     set push, x
     jsr boolean
     set [z-3], x
-    
+
     set push, token_colon        ; verify colon
     jsr lexer_advance
 
@@ -614,7 +614,7 @@
         set pc, std_if
     ife [lexer_token], token_else
         set pc, std_if_else
-    
+
     set pc, std_if_eof
 
 :std_if_else
@@ -622,7 +622,7 @@
 
     set push, token_colon
     jsr lexer_advance    ; skip COLON
-    
+
     jsr parser_suite
 
     ifb [x + HANDLE_TYPE], TYPE_CONTROL
@@ -645,11 +645,11 @@
     set push, 0                    ; evaluate loop condition
     jsr expression
     set [z-3], x
-    
+
     set push, x
     jsr boolean
     set [z-3], x
-    
+
     set push, token_colon        ; verify colon
     jsr lexer_advance
 
@@ -660,7 +660,7 @@
     ifb [x + HANDLE_TYPE], TYPE_CONTROL
         set pc, std_while_control
 ;    ife [lexer_token], token_eof
-;        set pc, std_while_eof    
+;        set pc, std_while_eof
 
 :std_while_control_continue
     jsr lexer_restore                ; restore lexer to loop condition
@@ -680,7 +680,7 @@
 
 :std_while_control_break
     jsr lexer_restore
-    
+
     set push, token_colon
     jsr parser_skip_until_token
 
@@ -740,7 +740,7 @@
     ife [lexer_token], token_indent
         add [sp], 1
     ife [lexer_token], token_dedent
-        sub [sp], 1        
+        sub [sp], 1
 
     jsr lexer_next
 
@@ -772,10 +772,10 @@
 
     set push, token_indent    ; verify indent
     jsr lexer_advance
-    
+
 :parser_suite_block_loop
     jsr parser_stmt
-    
+
     ifb [x + HANDLE_TYPE], TYPE_CONTROL
         set pc, postamble
 
@@ -814,7 +814,7 @@
     set c, [lexer_token]
     jsr [c + PROTOTYPE_NUD]
     #doc Syntax error
-    
+
     set [z-1], x       ; struct handle *left
 
 :expr_loop
@@ -835,7 +835,7 @@
 :expr_finish
     set x, [z-1]       ; struct handle *left
     set pc, postamble
-    
+
 ;----------------------------------------------------------------
 ; struct handle *testlist(uint16 rbp)
 ;----------------------------------------------------------------
@@ -855,7 +855,7 @@
     ife y, 0
         jsr recover
         #doc Illegal list definition error
-        
+
     jsr y
     set [z-1], x       ; struct handle *left
 
@@ -874,10 +874,10 @@
         set y, led_reference
     ife c, token_comma
         set y, led_comma
-    
+
     ife y, 0
         set pc, expr_finish
-    
+
     set push, [z-1]
     jsr y
 :testlist_callback
@@ -916,7 +916,7 @@
     set push, x
     jsr a
     set [z-1], x
-        
+
     jsr lexer_next
 
     set x, [z-1]
@@ -956,7 +956,7 @@
     jsr preamble
 
     jsr lexer_next    ; skip '('
-    
+
     ife [lexer_token], token_rparen
         set pc, nud_lparen_empty
 
@@ -992,7 +992,7 @@
     jsr preamble
 
     jsr lexer_next    ; skip '['
-    
+
     ife [lexer_token], token_rbrack
         set pc, nud_lbrack_empty
 
@@ -1002,7 +1002,7 @@
 
     ifb [x + HANDLE_TYPE], TYPE_TUPLE_COMMA
         set pc, nud_lbrack_change_type
-    
+
     set push, 5
     set push, TYPE_LIST
     jsr alloc
@@ -1012,7 +1012,7 @@
     set [a], 1
     set [a+1], [z-1]
     set pc, nud_lbrack_continue
-    
+
 :nud_lbrack_change_type
     set [x + HANDLE_TYPE], TYPE_LIST
     set [z-2], x
@@ -1162,7 +1162,7 @@
 
     ifb [x + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
         set pc, nud_tilde_int
-        
+
     jsr recover
         #doc Only integer and boolean types can be used in negate operation
 
@@ -1208,7 +1208,8 @@
     set push, 1
     jsr preamble
 
-    jsr lexer_next
+    set x, [lexer_token]
+    set push, [x + PROTOTYPE_LBP]        ; push for expression call
 
     ; evaluate left side
     set push, [z+10]
@@ -1219,9 +1220,9 @@
     jsr boolean
     set [z-1], x
 
+    jsr lexer_next
+
     ; right side
-    set x, [lexer_token]
-    set push, [x + PROTOTYPE_LBP]        ; push for expression call
     jsr expression
 
     ife [z-1], BOOL_FALSE
@@ -1233,14 +1234,13 @@
     set push, x
     jsr eval
     set [z-1], x
-    
+
     set push, x
     jsr boolean
     set [z-1], x
 
 :led_and__finish
     set x, [z-1]
-            
     set pc, postamble
 
 ;----------------------------------------------------------------
@@ -1251,7 +1251,8 @@
     set push, 2
     jsr preamble
 
-    jsr lexer_next
+    set x, [lexer_token]
+    set push, [x + PROTOTYPE_LBP]        ; push for expression call
 
     ; evaluate left side
     set push, [z+10]
@@ -1262,9 +1263,9 @@
     jsr boolean
     set [z-2], x
 
+    jsr lexer_next
+
     ; right side
-    set x, [lexer_token]
-    set push, [x + PROTOTYPE_LBP]        ; push for expression call
     jsr expression
 
     ife [z-2], BOOL_TRUE
@@ -1296,7 +1297,7 @@
         set a, FALSE
     ife [lexer_token], token_not
         jsr lexer_next
-    
+
     ; evaluate left side
     set push, [z+10]
     jsr eval
@@ -1306,7 +1307,7 @@
     set push, 0x0070
     jsr expression
     set [z-2], x
-    
+
     ; evaluate right side
     set push, [z-2]
     jsr eval
@@ -1364,7 +1365,7 @@
     set push, 0x0060
     jsr expression
     set [z-2], x
-    
+
     ; evaluate right side
     set push, [z-2]
     jsr eval
@@ -1409,14 +1410,14 @@
     set x, BOOL_TRUE
     ife a, TRUE
         set x, BOOL_FALSE
-        
+
     set pc, postamble
 
 :led_in_not_found
     set x, BOOL_FALSE
     ife a, TRUE
         set x, BOOL_TRUE
-        
+
     set pc, postamble
 
 ;----------------------------------------------------------------
@@ -1532,7 +1533,7 @@
     set push, [z-2]
     jsr eval
     set [z-2], x
-    
+
     set push, [z-1]
     set push, [z-2]
     jsr val_cmp
@@ -1550,15 +1551,15 @@
     jsr preamble
 
     jsr infix
-    jsr led_plus_operation    
-    
+    jsr led_plus_operation
+
     set pc, postamble
 
 :led_plus_operation
     jsr cast_common_number_type
     set c, [a + HANDLE_TYPE]
     bor c, [b + HANDLE_TYPE]
-    
+
     ifc c, TYPE_GROUP_NON_INTEGER
         set y, int_add
     ife c, TYPE_FLOAT
@@ -1587,8 +1588,8 @@
     jsr preamble
 
     jsr infix
-    jsr led_minus_operation    
-    
+    jsr led_minus_operation
+
     set pc, postamble
 
 :led_minus_operation
@@ -1613,8 +1614,8 @@
     jsr preamble
 
     jsr infix
-    jsr led_star_operation    
-    
+    jsr led_star_operation
+
     set pc, postamble
 
 :led_star_operation
@@ -1653,8 +1654,8 @@
     jsr preamble
 
     jsr infixr
-    jsr led_power_operation    
-    
+    jsr led_power_operation
+
     set pc, postamble
 
 :led_power_operation
@@ -1663,7 +1664,7 @@
 
     ifc c, TYPE_GROUP_NON_INTEGER
         set y, int_pow
-        
+
     ifb [a + HANDLE_TYPE], TYPE_FLOAT
         ifb [b + HANDLE_TYPE], TYPE_INT
             set y, float__pow
@@ -1680,8 +1681,8 @@
     jsr preamble
 
     jsr infix
-    jsr led_bitwise_or_operation    
-    
+    jsr led_bitwise_or_operation
+
     set pc, postamble
 
 :led_bitwise_or_operation
@@ -1704,8 +1705,8 @@
     jsr preamble
 
     jsr infix
-    jsr led_bitwise_xor_operation    
-    
+    jsr led_bitwise_xor_operation
+
     set pc, postamble
 
 :led_bitwise_xor_operation
@@ -1727,8 +1728,8 @@
     jsr preamble
 
     jsr infix
-    jsr led_bitwise_and_operation    
-    
+    jsr led_bitwise_and_operation
+
     set pc, postamble
 
 :led_bitwise_and_operation
@@ -1750,8 +1751,8 @@
     jsr preamble
 
     jsr infix
-    jsr led_lshift_operation    
-    
+    jsr led_lshift_operation
+
     set pc, postamble
 
 :led_lshift_operation
@@ -1773,8 +1774,8 @@
     jsr preamble
 
     jsr infix
-    jsr led_rshift_operation    
-    
+    jsr led_rshift_operation
+
     set pc, postamble
 
 :led_rshift_operation
@@ -1796,8 +1797,8 @@
     jsr preamble
 
     jsr infix
-    jsr led_slash_operation    
-    
+    jsr led_slash_operation
+
     set pc, postamble
 
 :led_slash_operation
@@ -1822,8 +1823,8 @@
     jsr preamble
 
     jsr infix
-    jsr led_percent_operation    
-    
+    jsr led_percent_operation
+
     set pc, postamble
 
 :led_percent_operation
@@ -1849,7 +1850,7 @@
     set push, 0x0009                     ; right binding power
     jsr expression
     set [z-1], x
-    
+
     set push, x
     jsr eval
     set [z-1], x
@@ -1857,7 +1858,7 @@
     set push, [z+10]
     set push, x
     jsr assign
-    
+
     set pc, postamble
 
 ;----------------------------------------------------------------
@@ -1884,7 +1885,7 @@
     set push, [z+10]
     set push, x
     jsr assign
-    
+
     set pc, postamble
 
 ;----------------------------------------------------------------
@@ -1979,7 +1980,7 @@
     set push, STR_EX
     set push, [global_scope]
     jsr dict__set
-    
+
     ; create tuple for arguments
     set push, 5
     set push, TYPE_TUPLE
@@ -1991,13 +1992,13 @@
     set push, STR_ARGV
     set push, x
     jsr dict__set
-    
+
     set a, [z+10]        ; if call is by reference, add path dict to scope (me)
     ifc [a + HANDLE_TYPE], TYPE_GROUP_SELF_AWARE
         set pc, led_lparen_args
-        
+
     set a, [a]            ; a = struct reference *
-        
+
     set push, [z-1]
     set push, STR_ME
     set push, [a + REFERENCE_OR_SUBSCRIPTION_ROOT]
@@ -2009,7 +2010,7 @@
     ife [lexer_token], token_rparen
         set pc, led_lparen_prepare_call
 
-    ; read value or name    
+    ; read value or name
     set push, 0x0030
     jsr expression
     set [z-2], x
@@ -2022,7 +2023,7 @@
     set push, x
     jsr eval
     set [z-2], x
-    
+
     set push, [z-4]
     set push, x
     jsr array__append
@@ -2062,10 +2063,10 @@
     set push, [z+10]
     jsr eval
     set [z-2], x
-    
+
     ifc [x + HANDLE_TYPE], TYPE_STR
-        jsr recover   
-        #doc Only strings are callable error 
+        jsr recover
+        #doc Only strings are callable error
 
     set push, [current_scope]
     set [current_scope], [z-1]
@@ -2106,7 +2107,7 @@
     jsr eval
 :led_lparen_control_raise
     set a, x
-    
+
     set pc, led_lparen_finish
 
 ;----------------------------------------------------------------
@@ -2134,7 +2135,7 @@
 
     ifc [x + HANDLE_TYPE], TYPE_STR + TYPE_TUPLE + TYPE_LIST
         jsr recover
-        #doc Element subscription is available only for dict, string, tuple and list 
+        #doc Element subscription is available only for dict, string, tuple and list
 
     ; handle str, tuple, list
     ifn [lexer_token], token_colon
@@ -2149,7 +2150,7 @@
     set push, 0
     jsr expression
     set [z-2], x
-    
+
     set push, x
     jsr eval
     set [z-2], x
@@ -2176,7 +2177,7 @@
     set push, 0
     jsr expression
     set [z-3], x
-    
+
     set push, x
     jsr eval
     set [z-3], x
@@ -2195,18 +2196,18 @@
     set push, [a]
     jsr  uint16_to_int
     set [z-3], x
-    
+
     set a, [z-2]
     set a, [a]
     set [a+2], [z-3]        ; slice end
-    
+
     set pc, led_lbrack_finish
 
 :led_lbrack_dict
     set push, 0
     jsr expression
     set [z-2], x
-        
+
     set push, x
     jsr eval
     set [z-2], x
@@ -2244,7 +2245,7 @@
     set push, TYPE_REFERENCE
     jsr array_create
     set [z-1], x
-    
+
     set push, [z+10]
     jsr eval
 
@@ -2255,7 +2256,7 @@
     set a, [z-1]
     set a, [a]
     set [a + REFERENCE_LEFT], x
-    
+
     jsr lexer_next
 
     ifn [lexer_token], token_name
@@ -2270,7 +2271,7 @@
     set [a + REFERENCE_RIGHT], x
 
     jsr lexer_next
-    
+
     set x, [z-1]
     set pc, postamble
 
@@ -2285,7 +2286,7 @@
 ;----------------------------------------------------------------
 :infix
 ; fastcall
-; return 
+; return
 ;   a: struct handle *left
 ;   b: struct handle *right
 ;   y: 0
@@ -2310,11 +2311,11 @@
     jsr eval
     set [z-2], x
     set b, x
-    
+
     set y, recover
 
     set pc, pop
-    
+
 ;----------------------------------------------------------------
 ; struct handle *led_comma(struct handle *left)
 ; tuple
@@ -2328,7 +2329,7 @@
     set [z-1], a
     ifb [a + HANDLE_TYPE], TYPE_TUPLE_COMMA
         set pc, led_comma_add
-        
+
     set push, 5
     set push, TYPE_TUPLE_COMMA
     jsr alloc
@@ -2337,7 +2338,7 @@
     set x, [x]
     set [x], 1
     set [x+1], a
-    
+
 :led_comma_add
     jsr lexer_next
 
@@ -2349,7 +2350,7 @@
     ife [z+9], expression_callback
         jsr expression
     ife [z+9], testlist_callback
-        jsr testlist    
+        jsr testlist
     set [z-2], x
 
     set push, [z-1]
@@ -2368,7 +2369,7 @@
         set pc, built_in__global_functions
     ifb [a+HANDLE_TYPE], TYPE_REFERENCE
         set pc, built_in__object_functions
-        
+
     set pc, led_lparen_user_defined
 
 :built_in__object_functions
@@ -2389,7 +2390,7 @@
 
     set a, [a + REFERENCE_RIGHT]
     set a, [a]
-    
+
     set b, [a]
     add a, 1
 
@@ -2398,13 +2399,13 @@
 
 :built_in__global_functions
     set a, [a]
-    
+
     set b, [a]
     ifg b, 7
         set pc, led_lparen_user_defined
 
     add a, 1
-    
+
     set x, [built_in_functions_by_len + b - 1]
 
     jsr built_in_matcher
@@ -2435,7 +2436,7 @@ DAT 0xffff
     set push, TYPE_DICT
     jsr alloc
     set [z-1], x
-    
+
     set push, x
     set push, STR_UNDERSCORE
     set push, a
@@ -2444,7 +2445,7 @@ DAT 0xffff
     set x, [z-1]
     set pc, postamble
 
-    
+
 ;----------------------------------------------------------------
 :built_in__list_append
 ;----------------------------------------------------------------
@@ -2486,7 +2487,7 @@ DAT TYPE_STR + TYPE_BOOL + TYPE_NONE + TYPE_INT + TYPE_FLOAT + TYPE_TUPLE + TYPE
 :built_in_id
 ;----------------------------------------------------------------
     jsr built_in_params
-        
+
     set push, [z-1]
     jsr uint16_to_int
 
@@ -2514,7 +2515,7 @@ DAT 0xffff
 
     set x, [z-1]
     set pc, postamble
-    
+
 ;----------------------------------------------------------------
 DAT 0xffff
 :built_in_range
@@ -2531,7 +2532,7 @@ DAT 0xffff
     set [z-2], [z-1]
     set [z-1], INT_0
 
-:built_in_range_2    
+:built_in_range_2
     ifg i, 2
         set pc, built_in_range_3
 
@@ -2570,7 +2571,7 @@ DAT 0xffff
     set push, [z-1]
     set push, [z-2]
     jsr val_cmp
-    
+
     ifn x, y
         set pc, built_in_range_break
 
@@ -2582,7 +2583,7 @@ DAT 0xffff
     set push, [z-3]
     jsr int_add
     set [z-1], x
-    
+
     set pc, built_in_range_loop
 
 :built_in_range_break
@@ -2600,11 +2601,11 @@ DAT 0
 
     set a, [heap_handle_start]
     sub a, [heap_free_start]
-    
+
     set push, a
     jsr uint16_to_int
 
-    set pc, postamble    
+    set pc, postamble
 
 ;----------------------------------------------------------------
 DAT 0
@@ -2620,7 +2621,7 @@ DAT 0
     jsr built_in_params
 
     set x, [current_scope]
-    set pc, postamble    
+    set pc, postamble
 
 ;----------------------------------------------------------------
 DAT 0
@@ -2629,7 +2630,7 @@ DAT 0
     jsr built_in_params
 
     set x, [global_scope]
-    set pc, postamble    
+    set pc, postamble
 
 ;----------------------------------------------------------------
 DAT 0
@@ -2643,13 +2644,13 @@ DAT TYPE_STR + TYPE_BOOL + TYPE_NONE + TYPE_INT + TYPE_FLOAT + TYPE_TUPLE + TYPE
     set push, [z-2]
     jsr val_cmp
     set a, x
-    
+
     set x, INT_0
     ife a, -1
         set x, INT_N1
     ife a, 1
         set x, INT_1
-    
+
     set pc, postamble
 
 ;----------------------------------------------------------------
@@ -2665,11 +2666,11 @@ DAT 0, TYPE_INT
     set push, 1
     set push, TYPE_STR
     jsr array_create
-    
+
     set b, [x]
     set [b+1], [a]
 
-    set pc, postamble    
+    set pc, postamble
 
 ;----------------------------------------------------------------
 DAT 0, TYPE_STR
@@ -2686,7 +2687,7 @@ DAT 0, TYPE_STR
     set push, [a+1]
     jsr uint16_to_int
 
-    set pc, postamble    
+    set pc, postamble
 
 ;----------------------------------------------------------------
 DAT 0xffff
@@ -2708,7 +2709,7 @@ DAT 0xffff
     set push, a
     jsr edit_main
 
-    set pc, postamble    
+    set pc, postamble
 
 ;----------------------------------------------------------------
 DAT 0xffff
@@ -2717,10 +2718,10 @@ DAT 0xffff
     jsr built_in_params
     ifg i, 0
         set pc, built_in_rnd_1
-        
+
     set a, FLOAT_0
     set b, FLOAT_1
-    
+
     set pc, built_in_rnd_finish
 
 :built_in_rnd_1
@@ -2760,7 +2761,7 @@ DAT 0xffff
 
     set push, a
     set push, b
-    jsr y    
+    jsr y
 
     set pc, postamble
 
@@ -2778,7 +2779,7 @@ DAT 0, TYPE_INT + TYPE_FLOAT
     ifb [a + HANDLE_TYPE], TYPE_FLOAT
         jsr float__abs
 
-    set pc, postamble    
+    set pc, postamble
 
 ;----------------------------------------------------------------
 DAT 0, TYPE_STR + TYPE_TUPLE + TYPE_DICT + TYPE_LIST
@@ -2792,7 +2793,7 @@ DAT 0, TYPE_STR + TYPE_TUPLE + TYPE_DICT + TYPE_LIST
     set push, [a]
     jsr uint16_to_int
 
-    set pc, postamble    
+    set pc, postamble
 
 ;----------------------------------------------------------------
 DAT 0, TYPE_STR + TYPE_BOOL + TYPE_NONE + TYPE_INT + TYPE_FLOAT + TYPE_TUPLE + TYPE_LIST + TYPE_DICT
@@ -2804,7 +2805,7 @@ DAT 0, TYPE_STR + TYPE_BOOL + TYPE_NONE + TYPE_INT + TYPE_FLOAT + TYPE_TUPLE + T
     set push, [x + HANDLE_TYPE]
     jsr uint16_to_int
 
-    set pc, postamble    
+    set pc, postamble
 
 ;----------------------------------------------------------------
 DAT 0
@@ -2835,7 +2836,7 @@ DAT 0, TYPE_STR
     set push, [z-1]
     jsr floppy__file__read
 
-    set pc, postamble    
+    set pc, postamble
 
 ;----------------------------------------------------------------
 DAT 0, TYPE_STR, TYPE_STR + TYPE_BOOL + TYPE_NONE + TYPE_INT + TYPE_FLOAT + TYPE_TUPLE + TYPE_LIST + TYPE_DICT
@@ -2858,7 +2859,7 @@ DAT 0, TYPE_STR
     set push, [z-1]
     jsr floppy__file__delete
 
-    set pc, postamble    
+    set pc, postamble
 
 ;----------------------------------------------------------------
 DAT 0, TYPE_STR + TYPE_BOOL + TYPE_INT + TYPE_FLOAT
@@ -2931,7 +2932,7 @@ DAT 0, TYPE_STR + TYPE_BOOL + TYPE_INT + TYPE_FLOAT
 :built_in_float_float
     set x, a
     set pc, postamble
-    
+
 ;----------------------------------------------------------------
 DAT 0, TYPE_STR + TYPE_BOOL + TYPE_NONE + TYPE_INT + TYPE_FLOAT + TYPE_TUPLE + TYPE_LIST + TYPE_DICT
 :built_in_repr
@@ -2944,7 +2945,7 @@ DAT 0, TYPE_STR + TYPE_BOOL + TYPE_NONE + TYPE_INT + TYPE_FLOAT + TYPE_TUPLE + T
     set push, built_in_repr_builder
     jsr repr
 
-    set x, [z-2]    
+    set x, [z-2]
     set pc, postamble
 
 :built_in_repr_builder
@@ -2974,7 +2975,7 @@ DAT 0, TYPE_INT
     set push, built_in_repr_builder
     jsr int_to_hex
 
-    set x, [z-2]    
+    set x, [z-2]
     set pc, postamble
 
 ;----------------------------------------------------------------
@@ -2993,7 +2994,7 @@ DAT 0, TYPE_STR + TYPE_BOOL + TYPE_NONE + TYPE_INT + TYPE_FLOAT + TYPE_TUPLE + T
     set push, built_in_repr_builder
     jsr repr
 
-    set x, [z-2]    
+    set x, [z-2]
     set pc, postamble
 
 ;----------------------------------------------------------------
@@ -3023,11 +3024,11 @@ DAT 0
     set push, 1
     set push, TYPE_STR
     jsr array_create
-    
+
     set a, [x]
     set [a+1], c
 
-    set pc, postamble    
+    set pc, postamble
 
 ;----------------------------------------------------------------
 DAT 0xffff
@@ -3036,17 +3037,17 @@ DAT 0xffff
     jsr built_in_params
     ife i, 1
         set pc, built_in_key_1
-    
+
     ifn i, 0
         jsr recover
         #doc Wrong number of arguments for key()
 
     set a, 1              ; store next key mode
     hwi [keyboard]
-    
+
     set x, INT_0
     ife c, 0
-        set pc, postamble 
+        set pc, postamble
 
     set push, c
     jsr uint16_to_int
@@ -3057,11 +3058,11 @@ DAT 0xffff
     set a, [z-1]
     ifb [a + HANDLE_TYPE], TYPE_INT
         set pc, built_in_key_1_int
-        
+
     ifc [a + HANDLE_TYPE], TYPE_STR
         jsr recover
         #doc Wrong argument type for key(a)
-        
+
     set a, [a]
     ifn [a], 1
         jsr recover
@@ -3078,7 +3079,7 @@ DAT 0xffff
 :built_in_key_1_key
     set a, 2              ; store next key mode
     hwi [keyboard]
-    
+
     set x, BOOL_TRUE
     ife c, 0
         set x, BOOL_FALSE
@@ -3108,7 +3109,7 @@ DAT 0xffff
     set push, [z-1]
     set push, x
     jsr sort
-    
+
     set pc, postamble
 
 ;----------------------------------------------------------------
@@ -3126,12 +3127,12 @@ DAT 0xffff
     ifc [x + HANDLE_TYPE], TYPE_INT
         jsr recover
         #doc Illegal argument type for cursor([x, y])
-        
+
     set push, x
     jsr int_to_int16
 
     ifb x, 0x8000
-        set x, 0        
+        set x, 0
     ifg x, SCREEN_COLS - 1
         set x, SCREEN_COLS - 1
 
@@ -3141,22 +3142,22 @@ DAT 0xffff
     ifc [x + HANDLE_TYPE], TYPE_GROUP_INTEGER
         jsr recover
         #doc Illegal argument type for cursor([x, y])
-        
+
     set push, x
     jsr int_to_int16
 
     ifb x, 0x8000
-        set x, 0        
+        set x, 0
     ifg x, SCREEN_ROWS - 1
         set x, SCREEN_ROWS - 1
 
     set push, x
 
     jsr screen_move_cursor
-    
+
 :built_in_cursor_coords
     jsr screen__get_cursor
-    
+
     set pc, postamble
 
 ;----------------------------------------------------------------
@@ -3183,11 +3184,11 @@ DAT 0, TYPE_INT, TYPE_INT
     set push, 1
     set push, TYPE_STR
     jsr array_create
-    
+
     set a, [x]
     set [a+1], c
 
-    set pc, postamble        
+    set pc, postamble
 
 ;----------------------------------------------------------------
 DAT 0, TYPE_INT, TYPE_INT, TYPE_STR
@@ -3224,7 +3225,7 @@ DAT 0, TYPE_INT
 :built_in_call
 ;----------------------------------------------------------------
     jsr built_in_params
-    
+
     set push, [z-1]
     jsr int_to_int16
 
@@ -3256,7 +3257,7 @@ DAT 0xffff  ; disable parameter checks
 
     ife i, 2
         set pc, built_in_peek_str
-        
+
     ifn i, 1
         jsr recover
         #doc Wrong number of arguments for peek(start[, end])
@@ -3310,7 +3311,7 @@ DAT 0, TYPE_INT, TYPE_INT + TYPE_STR
     set push, x
     jsr int_to_int16
     set [j], x
-    
+
     set pc, postamble_none
 
 :built_in_poke_str
@@ -3325,7 +3326,7 @@ DAT 0, TYPE_INT, TYPE_INT + TYPE_STR
 
     std [j], [i]
     set pc, built_in_poke_str_loop
-    
+
 ;----------------------------------------------------------------
 DAT 0, TYPE_INT
 :built_in_read
@@ -3339,7 +3340,7 @@ DAT 0, TYPE_INT
     jsr floppy__sector__read
 
     set pc, postamble_none
-    
+
 ;----------------------------------------------------------------
 DAT 0, TYPE_INT
 :built_in_write
@@ -3711,12 +3712,12 @@ DAT 0, TYPE_INT
     ; pop a
     jsr uint16_to_int
     set [z-2], x
-    
+
     set push, x
     set push, INT_16
     jsr int_lshift
 
-    ; pop b    
+    ; pop b
     set a, [x]
     add a, [a]
     set [a], pop
@@ -3726,21 +3727,21 @@ DAT 0, TYPE_INT
     set a, [a]
     set [a+1], x
 
-    ; pop c    
+    ; pop c
     jsr uint16_to_int
     set a, [z-1]
     set a, [a]
     set [a+2], x
-    
+
     ; pop x
     jsr uint16_to_int
     set [z-2], x
-    
+
     set push, x
     set push, INT_16
     jsr int_lshift
 
-    ; pop y    
+    ; pop y
     set a, [x]
     add a, [a]
     set [a], pop
@@ -3768,7 +3769,7 @@ DAT 0, TYPE_GROUP_INTEGER, TYPE_GROUP_INTEGER
     set push, x
 
     jsr screen__scroll
-    
+
     set pc, postamble_none
 
 ;----------------------------------------------------------------
@@ -3795,7 +3796,7 @@ DAT 0, TYPE_GROUP_INTEGER, TYPE_GROUP_INTEGER
     set push, x
     jsr eval
     set [a], x
-    
+
 
     ife [lexer_token], token_comma
         set pc, built_in_params_loop
@@ -3859,6 +3860,3 @@ DAT 0, TYPE_GROUP_INTEGER, TYPE_GROUP_INTEGER
     set [REGISTER_I], i
     set [REGISTER_J], j
     set pc, pop
-
-
-
