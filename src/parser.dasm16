@@ -276,9 +276,16 @@
 
     jsr lexer_next        ; skip raise
 
+    set x, NONE
+    ife [lexer_token], token_newline
+        set pc, std_raise_except
+    ife [lexer_token], token_eof
+        set pc, std_raise_except
+
     set push, 0
     jsr expression
 
+:std_raise_except
     set z, [try_fp]
     set sp, [try_sp]
     set [try_fp], pop
@@ -291,7 +298,7 @@
     set push, token_except          ; verify except
     jsr lexer_advance
 
-    ife lexer_token, token_colon
+    ife [lexer_token], token_colon
         set pc, std_raise_finish
 
     ; get the testlist (left side)
