@@ -145,12 +145,13 @@ a 1
 b 2
 </pre>
 
---
+---
 
 <h5 id="1.2">Development status</h5>
 
 <h6>Current features</h6>
- - Pure interpreted language
+
+- Pure interpreted language
    - Python inspired grammar
    - Garbage collection
    - Dynamic typing
@@ -171,14 +172,16 @@ b 2
  - Functions: HIC select, status, read and transmit functions for TechCompliant HIC hardware
 
 <h6>Next in development</h6>
+
  - Github issue tracker contains a list of development items
  - Support for other TechCompliant hardware
 
---
+---
 
 <h5 id="1.3">Special Thanks</h5>
 
 Following sources were proven to be invaluable sources for information:
+
  - Let's Build a Compiler, by Jack Crenshaw: http://compilers.iecc.com/crenshaw/
  - Top Down Operator Precedence, by Douglas Crockford: http://javascript.crockford.com/tdop/tdop.html
  - Simple Top-Down Parsing in Python, by Fredrik Lundh: http://effbot.org/zone/simple-top-down-parsing.html
@@ -211,17 +214,17 @@ language *inside* DCPU.
 
 The latest version of Admiral release is available from github:
 
- - https://github.com/orlof/dcpu-admiral/releases
+    https://github.com/orlof/dcpu-admiral/releases
 
 The admiral.bin is the precompiled binary file that should run in emulators.
 
 However, if you only want a quick peek at the Admiral, the easies way to try it is with Admiral Emulator:
 
- - https://github.com/orlof/admiral-emu/releases
+    https://github.com/orlof/admiral-emu/releases
 
 Note that Admiral Emulator contains old version of Admiral and is not maintained at the moment.
 
---
+---
 
 <h5 id="2.2">Development</h5>
 
@@ -246,10 +249,10 @@ someone other than me starts using them ;)
 
 <h4 id="3">Usage</h4>
 
-<h5 id="3.1">Interactive Shell</h4>
+<h5 id="3.1">Interactive Shell</h5>
 
-When Admiral starts, it will show the Admiral title header in LEM screen. Header shows the Admiral version number and the amount of
-available heap memory. After the header Admiral shows an interactive prompt '>' and waits for your input.
+When Admiral starts, it will show the Admiral title header in LEM screen. Header shows Admiral's version number and the amount of
+available heap memory. After the header Admiral shows an interactive prompt '>' and waits for user input.
 
 Now you can already execute one line statements in Admiral's interactive shell.
 
@@ -287,11 +290,10 @@ The equal sign ('=') is used to assign a value to a variable.
 >width*height
 </pre>
 
-Admiral treats an assignment as both an expression and as a statement. As an expression, its
-value is the value assigned to the variable. This is done to allow multiple assignments in a
-single statement, such as
+Admiral assignment is also an expression that returns the assigned value. It allows the assignment chaining in a single statement, such as
+
 <pre>
->x=y=z=0  # Zero x, y and z
+>x = y = z = 0  # Zero x, y and z
 >print x,y,z
 0 0 0
 </pre>
@@ -318,11 +320,11 @@ CTRL-y pastes clipboard to any application by writing the clipboard to key buffe
 
 <h5 id="3.3">Exception Handling</h4>
 
-Admiral has an exception mechanism for user level exceptions. These exceptions have nothing to do with system level errors that always exit the currently active code and return back to interpreter with four number hexadecimal error code.
+Admiral has an exception handling mechanism for user level exceptions. These exceptions have nothing to do with system level errors that always exit the currently active code and return back to interpreter with four number hexadecimal error code.
 
 Later releases may integrate some runtime system level errors to exception handling mechanism.
 
-The simplest way to handle exceptions is with a "try-except" block:
+The simplest way to use exceptions is with a "try-except" block:
 
 <pre>
 x, y = 5, 0
@@ -334,7 +336,7 @@ except e:
  return 0
 </pre>
 
-Admiral does not have different exception types. You always catch them all - re-raising exceptions must be done in except handler explicitly.
+Except statement always catch all exceptions. If you want to pass-through some exceptions, you must explicitly re-raise the exception in except block.
 
 <h5 id="3.4">Text Editor</h4>
 
@@ -452,7 +454,8 @@ Admiral provides some built-in data types i.e. dict, list, tuple, str, int, floa
 
 Admiral supports two types of numbers: integers and floats.
 
-Integers in Admiral have unlimited length. Floats use 16 bits for exponents and 32 bits for base (mantissa).
+ - unlimited length integers, and
+ - floating point numbers with 16 bit exponent and 32 bit for base (mantissa)
 
 <pre>
 ># Integer division returns the number closer to 0:
@@ -462,7 +465,7 @@ Integers in Admiral have unlimited length. Floats use 16 bits for exponents and 
 -2
 </pre>
 
-There is full support for operators with mixed types as Admiral converts integer operands to floating point automatically:
+There is full support for operators with mixed types as Admiral converts integer operands to floating point numbers automatically:
 
 <pre>
 >print 3 * 3.75 / 1.5
@@ -475,8 +478,7 @@ Floating points support also special values of nan, inf, -inf, 0.0 and -0.0.
 
 <h5 id="4.2">String</h5>
 
-Besides numbers, Admiral can also manipulate strings, which can be expressed in several ways. They can be
-enclosed in single quotes or double quotes:
+Besides numbers, Admiral can also manipulate strings, which can be expressed in several ways. They can be enclosed in single quotes or double quotes:
 
 <pre>
 >'spam eggs'
@@ -901,13 +903,13 @@ while not getchar()=='y': pass
 raise_stmt ::=  "raise" [expression]
 </pre>
 
-The raise statement allows the programmer to force a specified exception to occur. For example:
+The raise statement allows the programmer to force an exception to occur. For example:
 
 <pre>
->raise "Illegal Argument"
+>raise "IllegalArgument"
 </pre>
 
-If an expression is not present, None is substituted.
+If an expression is not present after "raise", None is substituted.
 
 <h6>return</h6>
 <pre>
@@ -979,47 +981,34 @@ Deletion of attribute reference removes the attribute from the primary object in
 cls_stmt ::=  "cls"
 </pre>
 
-cls (for clear screen) is a command used by the command line interpreter to clear the LEM1802
-screen and restore cursor to top left -corner position.
+"cls" (for clear screen) clears the LEM1802 screen and restores cursor to top left -corner position.
 
 <h6>reset</h6>
 <pre>
 reset_stmt ::=  "reset"
 </pre>
 
-routine that resets the Admiral interpreter and peripheral devices (as if it were turned off and then
-on again). This command retains the data that is stored into global scope!
+Resets the Admiral interpreter and peripheral devices (as if it were turned off and then on again). This command retains the data that is stored into global scope!
 
 <h6>run</h6>
+
 <pre>
 run_stmt ::=  "run" [filename [args] ]
 filename ::=  expression
 args ::= expression*
 </pre>
 
-routine that loads Admiral object serialization graph from file and executes it with given arguments.
-if filename is omitted, "MAIN" is used. Object serialization graph can be either dict or string.
-String object is executed directly and in dict object execution start point is value associated
-with key "main".
+Run loads the named object serialization graph from file and executes it with given arguments. If filename is omitted, "MAIN" is used. Object serialization graph can be either dict or string. String object is executed directly and in dict object execution start point is the value associated with key "main".
 
 <h5 id="5.2">Compound statements</h5>
 
-Compound statements contain other statements; they affect or control the execution of those other
-statements in some way. In general, compound statements span multiple lines, although in simple
-incarnations a whole compound statement may be contained in one line.
+Compound statements contain other statements; they affect or control the execution of those other statements in some way. In general, compound statements span multiple lines, although in simple incarnations a whole compound statement may be contained in one line.
 
 The if, while and for statements implement traditional control flow constructs.
 
-Compound statements consist of one or more ‘clauses.’ A clause consists of a header and a ‘suite.’
-Each clause header begins with a uniquely identifying keyword and ends with a colon. A suite is a group
-of statements controlled by a clause. A suite can be one simple statements on the same line as the header,
-following the header’s colon, or it can be one or more indented statements on subsequent lines. Only
-the latter form of suite can contain nested compound statements, mostly because it wouldn’t be clear
-to which if clause else clause would belong.
+Compound statements consist of one or more ‘clauses.’ A clause consists of a header and a ‘suite.’ Each clause header begins with a uniquely identifying keyword and ends with a colon. A suite is a group of statements controlled by a clause. A suite can be one simple statements on the same line as the header, following the header’s colon, or it can be one or more indented statements on subsequent lines. Only the latter form of suite can contain nested compound statements, mostly because it wouldn’t be clear to which if clause else clause would belong.
 
-All compound statements are executed in a block scope. Compound statements can use the enclosing scope
-(i.e. read and assign values to variables that are alrady defined in the enclosing scope) but all variables
-that are defined in the compound statement are discarded when control exits the compound statement's block scope.
+All compound statements are executed in the enclosing scope.
 
 NOTE: To help fitting source code into LEM 32x12 screen, INDENT and DEDENT MUST always BE a SINGLE SPACE!
 
@@ -1031,8 +1020,6 @@ The if statement is used for conditional execution:
 try_stmt ::=  "try" ":" suite
               "except" target-list ":" suite
 </pre>
-
-It is possible to write programs that handle exceptions.
 
 The try statement works as follows.
 
@@ -1064,10 +1051,7 @@ if_stmt ::=  "if" expression ":" suite
              ["else" ":" suite]
 </pre>
 
-It selects exactly one of the suites by evaluating the expressions one by one until one is found to be
-true (see section Boolean operations for the definition of true and false); then that suite is executed
-(and no other part of the if statement is executed or evaluated). If all expressions are false, the
-suite of the else clause, if present, is executed.
+It selects exactly one of the suites by evaluating the expressions one by one until one is found to be true (see section Boolean operations for the definition of true and false); then that suite is executed (and no other part of the if statement is executed or evaluated). If all expressions are false, the suite of the else clause, if present, is executed.
 
 <h6>while</h6>
 
@@ -1077,11 +1061,9 @@ The while statement is used for repeated execution as long as an expression is t
 while_stmt ::=  "while" expression ":" suite
 </pre>
 
-This repeatedly tests the expression and, if it is true, executes the suite; if the expression
-is false (which may be the first time it is tested) the loop terminates.
+This repeatedly tests the expression and, if it is true, executes the suite; if the expression is false (which may be the first time it is tested) the loop terminates.
 
-A break statement executed in the suite terminates the loop. A continue statement executed in the suite
-skips the rest of the suite and goes back to testing the expression.
+A break statement executed in the suite terminates the loop. A continue statement executed in the suite skips the rest of the suite and goes back to testing the expression.
 
 <h6>for</h6>
 
@@ -1091,20 +1073,19 @@ The for statement is used to iterate over the elements of a string, tuple, list 
 for_stmt ::=  "for" target_list "in" expression_list ":" suite
 </pre>
 
-The expression list is evaluated once. The suite is then executed once for each item provided by the
-expression list in the order of ascending indices. Each item in turn is assigned to the target list
-using the standard rules for assignments, and then the suite is executed. When the items are exhausted
-the loop terminates.
+The expression list is evaluated once. The suite is then executed once for each item provided by the expression list in the order of ascending indices. Each item in turn is assigned to the target list using the standard rules for assignments, and then the suite is executed. When the items are exhausted the loop terminates.
 
-A break statement executed in the suite terminates the loop. A continue statement executed in the suite
-skips the rest of the suite and continues with the next item, or terminates if there was no next item.
+A break statement executed in the suite terminates the loop. A continue statement executed in the suite skips the rest of the suite and continues with the next item, or terminates if there was no next item.
 
 The suite may assign to the variable(s) in the target list; this does not affect the next item assigned to it.
 
 Hint: the built-in function range() returns a sequence of integers suitable to emulate the effect of Pascal’s
-for i := a to b do; e.g., range(3) returns the list [0, 1, 2].
 
---
+    for i := a to b do;
+
+e.g., range(3) returns the list [0, 1, 2].
+
+---
 
 <h4 id="6">Global functions</h4>
 
@@ -1638,7 +1619,7 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
   <dt id="call">call(addr)</dt>
   <dd>
     <p>
-      Hands the CPU over to a the machine language subroutine at a specific address. Typical value for addr is the start of the floppy drive buffer that provides 512 words of space that is used only when Admiral executes floppy commands. Floppy commands will overwrite the buffer area completely. Floppy drive buffer address is stored in memory location 0xfffe and can be read with peek(0xfffe).
+      Hands the CPU over to a the machine language subroutine at a specific address. Typical values for addr are the start of the floppy drive buffer and start of the stack memory. Floppy drive buffer provides 512 words of space that is used only when Admiral executes floppy commands. Floppy commands will overwrite the buffer area completely. Floppy drive buffer address is stored in memory location 0xfffe and can be read with peek(0xfffe).
     </p>
     <p>
       Given address should be in the range 0 thru 65535, or 0x0000 thru 0xFFFF. If the given address is outside these
@@ -1806,7 +1787,7 @@ NOTES
      - round 3: a=6, b=3
  - Slicing is not supported as assignment left side
    - e.g. "a[1:2] = 1,2" is NOT working!
- - Boolean operators both sides are always evaluated
+ - Both sides of boolean operators are always evaluated
    - e.g. "if true or (a+=1):" will increment a with every evaluation
  - INDENT and DEDENT must be exactly one space
 
@@ -1853,7 +1834,7 @@ foobar
 print "The End"
 </pre>
 
-foobar would not yeld error, as it is not used for anything. However,
+foobar would not yield error, as it is not used for anything. However,
 
 <pre>
 >f=edit()
@@ -1862,17 +1843,25 @@ foobar+1
 print "The End"
 </pre>
 
-will yeld error, as unknown IDENT (foobar) cannot be evaluated for addition operator.
+will yield error, as unknown IDENT (foobar) cannot be evaluated for addition operator.
 
 PYTHON FEATURES MISSING (INCOMPLETE LIST)
 
  - 'def' function definitions
+  - use strings as functions instead
  - 'class' class definitions
+  - use prototype objects instead
  - 'lambda' functions
  - generators
+  - this would be useful, but would grow the interpreter size while only optimizing some special cases
  - list comprehension e.g.  [x**2 for x in range(10)]
- - '*args' and '*kwargs'
+  - these would be reasonable, but code size just adds up...
+ - args and kwargs
+  - makes no sense as functions are not declared
  - % string operator
+  - I would love this, but just too much code
  - 'yield'
+  - No thanks
  - 'try' - 'except' exception handling
+  - Admiral has this, but only for exceptions explicitly raised by user code
  - lot of built-in functions
