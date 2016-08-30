@@ -1,0 +1,45 @@
+util_disc.bin
+
+util
+  Usable helper functions
+  u=load("util")
+
+  u.hw()
+    Print a list of connected hardware
+
+  u.dir()
+    Print a disc directory
+
+math
+  Some mathematical functions
+  m=load("math")
+
+  Functions:
+    m.cos(float)
+    m.sin(float)
+    m.tan(float)
+    m.sqrt(float)
+
+ide2
+  Software development editor
+  ide=load("ide2")
+  ide.main(dict)
+
+  Keys:
+    UP: up
+    DOWN: down
+    ENTER: edit
+    q: quit
+    h: help
+    d: delete
+    r: rename
+    c: copy
+
+    CTRL+X: quit editor and save
+    CTRL+C: quit editor without saving
+
+comp
+  DCPU assembler compiler. Compiler assembler to memory area starting from org.
+
+  comp=load("comp")
+  comp.compile(org=addr,src=str)
