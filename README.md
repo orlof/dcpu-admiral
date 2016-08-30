@@ -135,6 +135,8 @@ Example: variable swap
 >a=1
 >b=2
 >a,b=b,a
+>print a,b
+2 1
 </pre>
 
 Example: dictionary printing
@@ -202,7 +204,7 @@ language *inside* DCPU.
  - umbibium´s CBM64 Basic: https://github.com/unbibium/dcpu-cbmbasic
    - Amazing port of Commodore 64 BASIC and KERNAL to the DCPU-16
  - hellige´s goforth: https://github.com/hellige/dcpu
-   - I know nothing about forth, so the DCPU role in this project is a mystery for me :)
+   - I know nothing about forth, so the DCPU role in this project is a mystery to me :)
  - Vendan's Forth https://github.com/andyleap/Forth
    - Another Forth, but in active development
 
@@ -232,8 +234,7 @@ All source code is available in Github:
 
     https://github.com/orlof/dcpu-admiral
 
-Since the collapse of 0x10c, most of the DCPU development tools have been abandoned. Admiral used to work with
-all the major tools e.g. DevCPU, DCPU toolchain, Organic & Lettuce, F1DE...
+Since the collapse of 0x10c, most of the DCPU development tools have been abandoned. Admiral used to work with all the major tools e.g. DevCPU, DCPU toolchain, Organic & Lettuce, F1DE...
 
 Today I use my self-made assembler and debugger:
 
@@ -242,8 +243,7 @@ Today I use my self-made assembler and debugger:
  - https://github.com/orlof/dcpu-debugger
    - Java 1.8, graphical UI
 
-Those are pretty sophisticated and field proven tools, but will lack proper releases and packaging until
-someone other than me starts using them ;)
+Those are pretty sophisticated and field proven tools, but will lack proper releases and packaging until someone other than me starts using them ;)
 
 --
 
@@ -251,8 +251,13 @@ someone other than me starts using them ;)
 
 <h5 id="3.1">Interactive Shell</h5>
 
-When Admiral starts, it will show the Admiral title header in LEM screen. Header shows Admiral's version number and the amount of
-available heap memory. After the header Admiral shows an interactive prompt '>' and waits for user input.
+When Admiral starts, it will show the Admiral title header in LEM screen. Header shows Admiral's version number and the amount of available heap memory. After the header Admiral shows an interactive prompt '>' and waits for user input.
+
+<pre>
+  ***  DCPU ADMIRAL  0.6c  ***
+64K RAM SYSTEM  43360 WORDS free
+>
+</pre>
 
 Now you can already execute one line statements in Admiral's interactive shell.
 
@@ -287,7 +292,8 @@ The equal sign ('=') is used to assign a value to a variable.
 <pre>
 >width=20
 >height=5*9
->width*height
+>print width*height
+900
 </pre>
 
 Admiral assignment is also an expression that returns the assigned value. It allows the assignment chaining in a single statement, such as
@@ -394,8 +400,7 @@ get_danger_level(type='Monster', 'XXXL')
 
 Positional arguments are automatically assigned to argv[] array from left to right order.
 
-You can set default value for keyword argument with the following one line idiom in the beginning
-of the function:
+You can set default value for keyword argument with the following one line idiom in the beginning of the function:
 
 <pre>
 if "type" not in locals(): type='Gigalosaurus'
@@ -405,7 +410,7 @@ Admiral has a set of built-in functions that are listed in following chapters. U
 
 E.g. len() and mem() are global built-in functions, while str.encrypt() is a built-in class functions.
 
-Admiral programmer can write global functions and dict class functions. Functions to other class types cannot be added. Global functions are variables that have string value and class functions can be defined for dicts by adding function with str key.
+Admiral programmer can write global functions and dict instance functions. Functions to other class types cannot be added. Global functions are variables that have string value and class functions can be defined for dicts by adding function with str key.
 
 Example: global user function
 <pre>
@@ -424,7 +429,7 @@ Hello
 
 <h5 id="3.6">Prototypes</h4>
 
-Dicts create() method that can be used to create new dicts that are based on the prototype:
+Dict.create() can be used to create new dicts that are based on the prototype:
 
 <pre>
 >ship={}                  # create prototype object (i.e. dict)
@@ -442,7 +447,7 @@ me.spd+=me.acceleration  # function modifies object field
 0                         # and prototype's fields are intact
 </pre>
 
-Dict created with dict.create() inherits its properties from prototype. Prototype dict is used to read values if property is not defined in dict itself. Note that prototype values are not copied at creation time, and changes in prototype values are reflected to the created dict unless it has already defined the value itself. However, writing values to created dict never modify the prototype dict.
+Dict created with dict.create() inherits its properties from prototype. Prototype dict is used to read values if property is not defined in dict itself. Prototype values are not copied at creation time, and changes in prototype values are reflected to the created dict unless it defines the same value itself. However, writing values to created dict never modifies the prototype dict.
 
 --
 
@@ -455,7 +460,7 @@ Admiral provides some built-in data types i.e. dict, list, tuple, str, int, floa
 Admiral supports two types of numbers: integers and floats.
 
  - unlimited length integers, and
- - floating point numbers with 16 bit exponent and 32 bit for base (mantissa)
+ - floating point numbers with 16 bit exponent and 32 bit base (mantissa)
 
 <pre>
 ># Integer division returns the number closer to 0:
@@ -490,8 +495,7 @@ repr() function generates strings in single quotes.
 
 String literals cannot span multiple lines.
 
-The str class can be used to handle 16-bit binary data and DCPU 7-bit text. Some str functions such as
-replace or split will not work with binary data. (That will be addressed in later releases)
+The str class can be used to handle 16-bit binary data and DCPU 7-bit text. Some str functions such as replace or split will not work with binary data. (That will be addressed in later releases)
 
 Strings can be concatenated (glued together) with the + operator, and repeated with *:
 <pre>
@@ -502,9 +506,7 @@ HelpA
 *HelpAHelpAHelpAHelpAHelpA*
 </pre>
 
-Strings can be subscripted (indexed); like in C, the first character of a string has subscript (index) 0.
-There is no separate character type; a character is simply a string of size one. Like in Python, substrings can
-be specified with the slice notation: two indices separated by a colon.
+Strings can be subscripted (indexed); like in C, the first character of a string has subscript (index) 0. There is no separate character type; a character is simply a string of size one. Like in Python, substrings can be specified with the slice notation: two indices separated by a colon.
 
 <pre>
 >print word[4]
@@ -515,8 +517,7 @@ He
 lp
 </pre>
 
-Slice indices have useful defaults; an omitted first index defaults to zero, an omitted second index defaults
-to the size of the string being sliced.
+Slice indices have useful defaults; an omitted first index defaults to zero, an omitted second index defaults to the size of the string being sliced.
 <pre>
 >print word[:2]    # The first two characters
 He
@@ -524,8 +525,7 @@ He
 lpA
 </pre>
 
-Unlike a C string, Admiral strings cannot be changed. Assigning to an indexed position in the string results
-in an error.
+Unlike a C string, Admiral strings cannot be changed. Assigning to an indexed position in the string results in an error.
 
 However, creating a new string with the combined content is easy:
 <pre>
@@ -543,8 +543,7 @@ HelpA
 HelpA
 </pre>
 
-Degenerate slice indices are handled gracefully: an index that is too large is replaced by the string size,
-an upper bound smaller than the lower bound returns an empty string.
+Degenerate slice indices are handled gracefully: an index that is too large is replaced by the string size, an upper bound smaller than the lower bound returns an empty string.
 
 <pre>
 >print word[1:100]
@@ -622,12 +621,10 @@ Current strings do not support escape characters or output formatting. That will
   <dt>str.find(sub[, start[, end]])</dt>
   <dd>
     <p>
-      Return the lowest index in the string where substring sub is found, such that sub is contained in the slice
-      s[start:end]. Optional arguments start and end are interpreted as in slice notation. Return -1 if sub is not found.
+      Return the lowest index in the string where substring sub is found, such that sub is contained in the slice s[start:end]. Optional arguments start and end are interpreted as in slice notation. Return -1 if sub is not found.
     </p>
     <p>
-      The find() method should be used only if you need to know the position of sub. To check if sub is a substring
-      or not, use the in operator:
+      The find() method should be used only if you need to know the position of sub. To check if sub is a substring or not, use the in operator:
       <pre>
           >"mi" in "Admiral"
           True
@@ -649,28 +646,30 @@ Current strings do not support escape characters or output formatting. That will
   <dt>str.split([sep])</dt>
   <dd>
     <p>
-      Return a list of the words in the string, using sep as the delimiter string. Consecutive delimiters are not
-      grouped together and are deemed to delimit empty strings:
+      Return a list of the words in the string, using sep as the delimiter string. Consecutive delimiters are not grouped together and are deemed to delimit empty strings:
+
       <pre>
           >'1,,2'.split(',')
           ['1','','2'])
       </pre>
+
       The sep argument may consist of multiple characters
+
       <pre>
           >'1<>2<>3'.split('<>')
           ['1','2','3']).
       </pre>
+
       Splitting an empty string with a specified separator returns [''].
     </p>
     <p>
-      If sep is not specified, a different splitting algorithm is applied: runs of consecutive whitespace are regarded
-      as a single separator, and the result will contain no empty strings at the start or end if the string has leading
-      or trailing whitespace. Consequently, splitting an empty string or a string consisting of just whitespace with
-      a None separator returns [].
+      If sep is not specified, a different splitting algorithm is applied: runs of consecutive whitespace are regarded as a single separator, and the result will contain no empty strings at the start or end if the string has leading or trailing whitespace. Consequently, splitting an empty string or a string consisting of just whitespace with a None separator returns [].
+
       <pre>
           >' 1  2   3  '.split()
           ['1','2','3']
       </pre>
+
     </p>
   </dd>
 </dl>
@@ -679,8 +678,7 @@ Current strings do not support escape characters or output formatting. That will
   <dt>str.endswith(suffix)</dt>
   <dd>
     <p>
-      Return True if the string ends with the specified suffix, otherwise return False. suffix can also be a tuple
-      of suffixes to look for.
+      Return True if the string ends with the specified suffix, otherwise return False. suffix can also be a tuple of suffixes to look for.
     </p>
   </dd>
 </dl>
@@ -689,8 +687,7 @@ Current strings do not support escape characters or output formatting. That will
   <dt>str.startswith(prefix)</dt>
   <dd>
     <p>
-      Return True if string starts with the prefix, otherwise return False. prefix can also be a tuple of prefixes to
-      look for.
+      Return True if string starts with the prefix, otherwise return False. prefix can also be a tuple of prefixes to look for.
     </p>
   </dd>
 </dl>
@@ -715,13 +712,9 @@ Current strings do not support escape characters or output formatting. That will
 
 <h5 id="4.3">Dictionary</h5>
 
-Another useful data type built into Admiral is the dictionary. Dictionaries are sometimes found in other languages
-as “associative memories” or “associative arrays”. Unlike sequences, which are indexed by a range of numbers,
-dictionaries are indexed by keys, which can be strings or numbers. Tuples can not be used as keys as they can
-contain other mutable types.
+Another useful data type built into Admiral is the dictionary. Dictionaries are sometimes found in other languages as “associative memories” or “associative arrays”. Unlike sequences, which are indexed by a range of numbers, dictionaries are indexed by keys, which can be strings or numbers. Tuples can not be used as keys as they can contain other mutable types.
 
-It is best to think of a dictionary as an unordered set of key: value pairs, with the requirement that the keys are
-unique (within one dictionary). A pair of braces creates an empty dictionary: {}.
+It is best to think of a dictionary as an unordered set of key: value pairs, with the requirement that the keys are unique (within one dictionary). A pair of braces creates an empty dictionary: {}.
 
 <pre>
 >d = {}
@@ -740,8 +733,7 @@ this is also the way dictionaries are written on output.
 {1: 2, 'Hi': [5,4,3,2,1]}
 </pre>
 
-The main operations on a dictionary are storing a value with some key and extracting the value given the key. Admiral
-supports multiple formats to store key-value pair:
+The main operations on a dictionary are storing a value with some key and extracting the value given the key. Admiral supports multiple formats to store key-value pair:
 
 <pre>
 >d={}
@@ -752,8 +744,7 @@ supports multiple formats to store key-value pair:
 {1: 3, 'one':1, 'two': 2}
 </pre>
 
-It is also possible to delete a key:value pair with del. If you store using a key that is already in use, the old
-value associated with that key is forgotten. It is an error to extract a value using a non-existent key.
+It is also possible to delete a key:value pair with del. If you store using a key that is already in use, the old value associated with that key is forgotten. It is an error to extract a value using a non-existent key.
 
 <pre>
 >del d[1]
@@ -776,8 +767,7 @@ value associated with that key is forgotten. It is an error to extract a value u
   <dt>dict.me</dt>
   <dd>
     <p>
-      If function is called via dict reference e.g. dict.hello() then "me" keyword can be used to access
-      the properties of the referenced dict inside that function.
+      If function is called via dict reference e.g. dict.hello() then "me" keyword can be used to access the properties of the referenced dict inside that function.
       <pre>
       >d={'hello': 'print me.value', 'value':10}
       >d.hello()
@@ -789,8 +779,7 @@ value associated with that key is forgotten. It is an error to extract a value u
 
 <h5 id="4.4">List</h5>
 
-The list is a versatile datatype which can be written as a list of comma-separated values (items) between square brackets.
-Important thing about a list is that items in a list need not be of the same type.
+The list is a versatile datatype which can be written as a list of comma-separated values (items) between square brackets. Important thing about a list is that items in a list need not be of the same type.
 
 Creating a list is as simple as putting different comma-separated values between square brackets. For example −
 
@@ -802,8 +791,7 @@ Creating a list is as simple as putting different comma-separated values between
 
 Similar to string indices, list indices start at 0, and lists can be sliced, concatenated and so on.
 
-To access values in lists, use the square brackets for slicing along with the index or indices to obtain value available at
-that index. For example −
+To access values in lists, use the square brackets for slicing along with the index or indices to obtain value available at that index. For example −
 
 <pre>
 >print l1[0]
@@ -812,8 +800,7 @@ Sun
 [2,3,4,5]
 </pre>
 
-You can update single or multiple elements of lists by giving the index on the left-hand side of the assignment operator,
-and you can add to elements in a list with the append() method. For example −
+You can update single or multiple elements of lists by giving the index on the left-hand side of the assignment operator, and you can add to elements in a list with the append() method. For example −
 
 <pre>
 >l2[2]=2001
@@ -821,8 +808,7 @@ and you can add to elements in a list with the append() method. For example −
 2001
 </pre>
 
-To remove a list element, you can use the del statement, but you must know the index of the element which you are deleting.
-For example −
+To remove a list element, you can use the del statement, but you must know the index of the element which you are deleting. For example −
 
 <pre>
 >del l1[1];
@@ -830,8 +816,7 @@ For example −
 ['Sun',2085,16.7]
 </pre>
 
-Lists respond to the + and * operators much like strings; they mean concatenation and repetition here too, except that
-the result is a new list, not a string.
+Lists respond to the + and * operators much like strings; they mean concatenation and repetition here too, except that the result is a new list, not a string.
 
 <table cellpadding="1">
 <tr><th>Expression</th><th>Results</th><th>Description</th></tr>
@@ -857,8 +842,7 @@ the result is a new list, not a string.
   <dt>list.insert(int, obj)</dt>
   <dd>
     <p>
-      Insert an item at a given position. The first argument is the index of the element before which to insert,
-      so a.insert(0, x) inserts at the front of the list, and a.insert(len(a), x) is equivalent to a.append(x).
+      Insert an item at a given position. The first argument is the index of the element before which to insert, so a.insert(0, x) inserts at the front of the list, and a.insert(len(a), x) is equivalent to a.append(x).
     </p>
   </dd>
 </dl>
@@ -869,8 +853,7 @@ TODO
 
 <h5 id="4.6">Boolean</h5>
 
-Admiral uses boolean variables to evaluate conditions. The boolean values true and false are returned when an
-expression is compared or evaluated.
+Admiral uses boolean variables to evaluate conditions. The boolean values true and false are returned when an expression is compared or evaluated.
 
 <h5 id="4.7">None</h5>
 
@@ -891,8 +874,7 @@ Simple statements are comprised within a single line.
 pass_stmt ::=  "pass"
 </pre>
 
-pass is a null operation — when it is executed, nothing happens. It is useful as a placeholder when
-a statement is required syntactically, but no code needs to be executed, for example:
+pass is a null operation — when it is executed, nothing happens. It is useful as a placeholder when a statement is required syntactically, but no code needs to be executed, for example:
 
 <pre>
 while not getchar()=='y': pass
@@ -916,8 +898,7 @@ If an expression is not present after "raise", None is substituted.
 return_stmt ::=  "return" [expression]
 </pre>
 
-return may only occur in a function. If an expression is present, it is evaluated, else None is substituted.
-return leaves the current function call with the expression (or None) as return value.
+return may only occur in a function. If an expression is present, it is evaluated, else None is substituted. return leaves the current function call with the expression (or None) as return value.
 
 <h6>break</h6>
 <pre>
@@ -931,18 +912,14 @@ break may only occur syntactically nested in a for or while loop. break terminat
 continue_stmt ::=  "continue"
 </pre>
 
-continue may only occur syntactically nested in a for or while loop. It continues with the next cycle of
-the nearest enclosing loop.
+continue may only occur syntactically nested in a for or while loop. It continues with the next cycle of the nearest enclosing loop.
 
 <h6>print</h6>
 <pre>
 print_stmt ::=  "print" [expression ([","] expression)* ]
 </pre>
 
-print evaluates each expression in turn and writes the resulting object to LEM screen. If an object is not
-a string, it is first converted to a string using the rules for string conversions. A space is written
-between each object separated by comma. You can also leave out the comma, but then items are written without
-separator.
+print evaluates each expression in turn and writes the resulting object to LEM screen. If an object is not a string, it is first converted to a string using the rules for string conversions. A space is written between each object separated by comma. You can also leave out the comma, but then items are written without separator.
 
 e.g.
 <pre>
@@ -956,8 +933,7 @@ HelloWorld
 My name is Orlof.
 </pre>
 
-Usage of plus operator to concatenate string in print statement is not recommended as it is much slower
-than using comma or implicit concatenation.
+Usage of plus operator to concatenate string in print statement is not recommended as it is much slower than using comma or implicit concatenation.
 
 <pre>
 >print "This", "is", "good"
@@ -971,8 +947,7 @@ This is BAD!
 del_stmt ::=  "del" target_list
 </pre>
 
-Deletion removes the binding of that name from the local or global namespace. If the name is unbound,
-an error will be raised.
+Deletion removes the binding of that name from the local or global namespace. If the name is unbound, an error will be raised.
 
 Deletion of attribute reference removes the attribute from the primary object involved
 
@@ -1024,8 +999,8 @@ try_stmt ::=  "try" ":" suite
 The try statement works as follows.
 
 - First, the try clause (the statement(s) between the try and except keywords) is executed.
-- If no exception occurs, the except clause is skipped and execution of the try statement is finished.
-- If an exception occurs during execution of the try clause, the rest of the clause is skipped. Then the except clause is executed, and then execution continues after the try statement.
+- If raise statement is not executed inside the try block, the except clause is skipped and execution of the try statement is finished.
+- If raise statement is executed inside the try block, the rest of the clause is skipped. Then the except clause is executed, and then execution continues after the try statement.
 - A try statement may have only one except clause. To specify handlers for different exceptions you must inspect the expect parameters to distinguish between different error conditions.
 
 If you need to determine whether an exception was raised but don’t intend to handle it, you can re-raise the exception:
@@ -1213,11 +1188,7 @@ e.g., range(3) returns the list [0, 1, 2].
   <dt id="range">range(start, end[, step])</dt>
   <dd>
     <p>
-      This is a versatile function to create lists containing arithmetic progressions. It is most often used in for loops.
-      The arguments must be plain integers. If the step argument is omitted, it defaults to 1. If the start argument is
-      omitted, it defaults to 0. The full form returns a list of plain integers [start, start + step, start + 2 * step, ...].
-      If step is positive, the last element is the largest start + i * step less than stop; if step is negative, the last
-      element is the smallest start + i * step greater than stop. step must not be zero.
+      This is a versatile function to create lists containing arithmetic progressions. It is most often used in for loops. The arguments must be plain integers. If the step argument is omitted, it defaults to 1. If the start argument is omitted, it defaults to 0. The full form returns a list of plain integers [start, start + step, start + 2 * step, ...]. If step is positive, the last element is the largest start + i * step less than stop; if step is negative, the last element is the smallest start + i * step greater than stop. step must not be zero.
     </p>
   </dd>
 </dl>
@@ -1277,8 +1248,7 @@ e.g., range(3) returns the list [0, 1, 2].
   <dt id="ord">ord(char)</dt>
   <dd>
     <p>
-      Given a string of length one, return the value of the byte. For example, ord('a') returns the integer 97. This is the
-      inverse of chr().
+      Given a string of length one, return the value of the byte. For example, ord('a') returns the integer 97. This is the inverse of chr().
     </p>
   </dd>
 </dl>
@@ -1287,8 +1257,7 @@ e.g., range(3) returns the list [0, 1, 2].
   <dt id="chr">chr(i)</dt>
   <dd>
     <p>
-      Return a string of one character whose ASCII code is the integer i. For example, chr(97) returns the string 'a'.
-      This is the inverse of ord().
+      Return a string of one character whose ASCII code is the integer i. For example, chr(97) returns the string 'a'. This is the inverse of ord().
     </p>
   </dd>
 </dl>
@@ -1306,8 +1275,7 @@ e.g., range(3) returns the list [0, 1, 2].
   <dt id="key">key([int])</dt>
   <dd>
     <p>
-      Without argument return immediately the next key typed from keyboard buffer, or 0 if the buffer is empty. If int is
-      specified return true if the specified key is down or false otherwise.
+      Without argument return immediately the next key typed from keyboard buffer, or 0 if the buffer is empty. If int is specified return true if the specified key is down or false otherwise.
     </p>
   </dd>
 </dl>
@@ -1318,8 +1286,7 @@ e.g., range(3) returns the list [0, 1, 2].
   <dt id="input">input([str])</dt>
   <dd>
     <p>
-      If str argument is present, it is written to standard output without a trailing newline. The function
-      then reads a line from input, converts it to a string (stripping a trailing newline), and returns that.
+      If str argument is present, it is written to standard output without a trailing newline. The function then reads a line from input, converts it to a string (stripping a trailing newline), and returns that.
     </p>
   </dd>
 </dl>
@@ -1328,10 +1295,7 @@ e.g., range(3) returns the list [0, 1, 2].
   <dt id="edit">edit([str])</dt>
   <dd>
     <p>
-      Opens interactive text editor. If the input argument is present, editor is initialized with input string.
-      Editor can be used to modify the contents. Editing can be canceled by typing (press and release) CTRL followed
-      by typing 'c', or confirmed by typing CTRL and 'x'. The function then converts editor contents (confirm) or the
-      original input string (cancel) to a string, and returns that.
+      Opens interactive text editor. If the input argument is present, editor is initialized with input string. Editor can be used to modify the contents. Editing can be canceled by typing (press and release) CTRL followed by typing 'c', or confirmed by typing CTRL and 'x'. The function then converts editor contents (confirm) or the original input string (cancel) to a string, and returns that.
     </p>
   </dd>
 </dl>
@@ -1340,8 +1304,7 @@ e.g., range(3) returns the list [0, 1, 2].
   <dt id="repr">repr(obj)</dt>
   <dd>
     <p>
-      Return a string containing a printable representation of an object. This is similar to str funtion, but surrounds
-      string type values in quotes.
+      Return a string containing a printable representation of an object. This is similar to str funtion, but surrounds string type values in quotes.
     </p>
   </dd>
 </dl>
@@ -1458,10 +1421,7 @@ e.g., range(3) returns the list [0, 1, 2].
   <dt id="float">float(x)</dt>
   <dd>
     <p>
-      Convert a string or a number to floating point. If the argument is a string, it must
-      contain a possibly signed decimal or floating point number. The argument may also be
-      [+|-]nan or [+|-]inf. Otherwise, the argument may be a plain integer or a floating
-      point number, and a floating point number with the same value is returned.
+      Convert a string or a number to floating point. If the argument is a string, it must contain a possibly signed decimal or floating point number. The argument may also be [+|-]nan or [+|-]inf. Otherwise, the argument may be a plain integer or a floating point number, and a floating point number with the same value is returned.
     </p>
   </dd>
 </dl>
@@ -1470,8 +1430,7 @@ e.g., range(3) returns the list [0, 1, 2].
   <dt id="str">str(x)</dt>
   <dd>
     <p>
-      Return a string containing an object representation of obj. For strings, this
-      returns the string itself.
+      Return a string containing an object representation of obj. For strings, this returns the string itself.
     </p>
   </dd>
 </dl>
@@ -1532,8 +1491,7 @@ HIC is a bi-directional multipurpose data port. Transmissions in either directio
   <dt>bool hsel(int port)</dt>
   <dd>
     <p>
-      Returns the lowest port which has data available or -1 if no data is available.
-      If port number is specified hsel returns true if data is available in the port, false otherwise.
+      Returns the lowest port which has data available or -1 if no data is available. If port number is specified hsel returns true if data is available in the port, false otherwise.
     </p>
   </dd>
 </dl>
@@ -1622,16 +1580,13 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
       Hands the CPU over to a the machine language subroutine at a specific address. Typical values for addr are the start of the floppy drive buffer and start of the stack memory. Floppy drive buffer provides 512 words of space that is used only when Admiral executes floppy commands. Floppy commands will overwrite the buffer area completely. Floppy drive buffer address is stored in memory location 0xfffe and can be read with peek(0xfffe).
     </p>
     <p>
-      Given address should be in the range 0 thru 65535, or 0x0000 thru 0xFFFF. If the given address is outside these
-      limits, Admiral will use LSW as address.
+      Given address should be in the range 0 thru 65535, or 0x0000 thru 0xFFFF. If the given address is outside these limits, Admiral will use LSW as address.
     </p>
     <p>
-      Parameters can be passed between Admiral and subroutine via registers. Before calling the specified address
-      Admiral “loads” a, b, c, x, y, z, i and j registers with the words stored at storage addresses (see table below).
+      Parameters can be passed between Admiral and subroutine via registers. Before calling the specified address Admiral “loads” a, b, c, x, y, z, i and j registers with the words stored at storage addresses (see table below).
     </p>
     <p>
-      If or when the routine at the specified address returns control to Admiral (via an RTS instruction), Admiral
-      immediately saves the contents of the registers back into the storage addresses memory range: This can be used
+      If or when the routine at the specified address returns control to Admiral (via an RTS instruction), Admiral immediately saves the contents of the registers back into the storage addresses memory range: This can be used
       to transfer results from the machine language routine to Admiral for further processing.
 
       Storage addresses:
@@ -1655,13 +1610,10 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
   <dt id="peek">peek(addr[, len])</dt>
   <dd>
     <p>
-      Returns the memory contents of the specified address, which must be in the range 0x0000 through 0xffff.
-      The int value returned will be in the range from 0x0000 thru 0xffff. If the address given exceeds the limits
-      of the memory map, Admiral will use the LSW of the address.
+      Returns the memory contents of the specified address, which must be in the range 0x0000 through 0xffff. The int value returned will be in the range from 0x0000 thru 0xffff. If the address given exceeds the limits of the memory map, Admiral will use the LSW of the address.
     </p>
     <p>
-      The second form with 'length' argument returns a string that contains 'length' words copied from the memory
-      area that starts from the given address.
+      The second form with 'length' argument returns a string that contains 'length' words copied from the memory area that starts from the given address.
     </p>
   </dd>
 </dl>
@@ -1670,12 +1622,10 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
   <dt id="poke">poke(addr, val)</dt>
   <dd>
     <p>
-      Changes the content of the memory. New value can be specified either as an integer or string. Integer form
-      stores LSW to given addr and str form copies the str starting from the given addr.
+      Changes the content of the memory. New value can be specified either as an integer or string. Integer form stores LSW to given addr and str form copies the str starting from the given addr.
     </p>
     <p>
-      Caution: A misplaced POKE may cause the DCPU to lock up, or garble or delete the program currently in memory.
-      To restore a locked-up DCPU one has to reboot the DCPU, thereby losing any program or data in RAM!
+      Caution: A misplaced POKE may cause the DCPU to lock up, or garble or delete the program currently in memory. To restore a locked-up DCPU one has to reboot the DCPU, thereby losing any program or data in RAM!
     </p>
   </dd>
 </dl>
@@ -1710,13 +1660,10 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
       Sends the interrupt to hardware n.
     </p>
     <p>
-      Parameters can be passed between Admiral and interrupt via registers. Before interrupt Admiral “loads”
-      a, b, c, x, y, z, i and j registers with the words stored at storage addresses (see call()).
+      Parameters can be passed between Admiral and interrupt via registers. Before interrupt Admiral “loads” a, b, c, x, y, z, i and j registers with the words stored at storage addresses (see call()).
     </p>
     <p>
-      If or when the interrupt returns control, Admiral immediately saves the contents of the registers back
-      into the storage addresses memory range: This can be used to transfer results from the interrupt to
-      Admiral for further processing.
+      If or when the interrupt returns control, Admiral immediately saves the contents of the registers back into the storage addresses memory range: This can be used to transfer results from the interrupt to Admiral for further processing.
     </p>
   </dd>
 </dl>
@@ -1725,8 +1672,7 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
   <dt id="read">read(int)</dt>
   <dd>
     <p>
-      Reads a single sector from floppy and stores it to floppy buffer (0xd980 - 0xdb7f in current build).
-      This method is provided for integrating with non-Admiral floppy formats.
+      Reads a single sector from floppy and stores it to floppy buffer (0xd980 - 0xdb7f in current build). This method is provided for integrating with non-Admiral floppy formats.
     </p>
   </dd>
 </dl>
@@ -1735,8 +1681,7 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
   <dt id="write">write(int)</dt>
   <dd>
     <p>
-      Writes a single sector to floppy from floppy buffer (0xd980 - 0xdb7f in current build).
-      This method is provided for integrating with non-Admiral floppy formats.
+      Writes a single sector to floppy from floppy buffer (0xd980 - 0xdb7f in current build). This method is provided for integrating with non-Admiral floppy formats.
     </p>
   </dd>
 </dl>
@@ -1819,13 +1764,11 @@ ASSIGNMENTS
 </pre>
 
 Currently Admiral does not support assigning to slices:
-i.e. a[1:3]=(1,2,3) is not working.
-If that REALLY is a language feature that anyone would use, I will consider adding it :-)
+i.e. a[1:3]=(1,2,3) is not working. If that REALLY is a language feature that anyone would use, I will consider adding it :-)
 
 UNKNOWN IDENTS IN FUNCTIONS
 
-Currently Admiral does not produce error if unknown variable name is present in function body, but it is not
-evaluated. E.g.
+Currently Admiral does not produce error if unknown variable name is present in function body, but it is not evaluated. E.g.
 
 <pre>
 >f=edit()
