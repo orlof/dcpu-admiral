@@ -18,24 +18,28 @@
 ;----------------------------------------------------------------
 :current_screen dat screen_first
 
-:screen_first    dat MEM_SCREEN_START, MEM_SCREEN_START + 0x180, MEM_SCREEN_START
-                dat MEM_SCREEN_START + 0x180, MEM_SCREEN_START + 0x300, MEM_SCREEN_START + 0x180
-:screen_last    dat MEM_SCREEN_START + 0x300, MEM_SCREEN_START + 0x480, MEM_SCREEN_START + 0x300
-
+:screen_first
+    dat text_video_ram_0
+    dat text_video_ram_0 + SCREEN_MEM__VIDEO_SIZE
+    dat text_video_ram_0
+:screen_last
+    dat text_video_ram_1
+    dat text_video_ram_1 + SCREEN_MEM__VIDEO_SIZE
+    dat text_video_ram_1
 
 ;----------------------------------------------------------------
 ; GLOBAL FD VARIABLES
 ;----------------------------------------------------------------
-:floppy__file__position                    dat 0
-:floppy__buffer__position                dat 0
+:floppy__file__position                 dat 0
+:floppy__buffer__position               dat 0
 
 :floppy__free
-:floppy__free__head                        DAT 0
-:floppy__free__tail                        DAT 0
+:floppy__free__head                     DAT 0
+:floppy__free__tail                     DAT 0
 
 :floppy__dir
-:floppy__dir__head                        DAT 0
-:floppy__dir__tail                        DAT 0
+:floppy__dir__head                      DAT 0
+:floppy__dir__tail                      DAT 0
 
 ;----------------------------------------------------------------
 ; RANDOM NUMBER GENERATORS
@@ -63,7 +67,7 @@
 ;----------------------------------------------------------------
 ; GLOBAL HEAP MANAGEMENT VARIABLES
 ;----------------------------------------------------------------
-:heap_counter         DAT HEAP_GC_TRIGGER
+:heap_counter       DAT HEAP_GC_TRIGGER
 :heap_free_start    DAT MEM_HEAP_START
 
 :heap_handle_start  DAT MEM_HEAP_END
@@ -74,12 +78,12 @@
 ;----------------------------------------------------------------
 ; GLOBAL LEXER VARIABLES
 ;----------------------------------------------------------------
-:lexer_string       dat 0
+:lexer_string           dat 0
 :lexer_target_indent    dat 0
 :lexer_current_indent   dat 0
-:lexer_token        dat 0
-:lexer_start        dat 0
-:lexer_end      dat 0
+:lexer_token            dat 0
+:lexer_start            dat 0
+:lexer_end              dat 0
 
 ;----------------------------------------------------------------
 ; GLOBAL EDITOR VARIABLES
@@ -106,11 +110,11 @@
 ;----------------------------------------------------------------
 ;----------------------------------------------------------------
 ; current history line 0-4
-:line_editor__buf_index        dat            0
-:line_editor__start_addr    dat            0
-:line_editor__current_addr    dat            0
-:line_editor__end_addr        dat            0
-:line_editor__last_char        dat            0
+:line_editor__buf_index         dat            0
+:line_editor__start_addr        dat            0
+:line_editor__current_addr      dat            0
+:line_editor__end_addr          dat            0
+:line_editor__last_char         dat            0
 
 ;----------------------------------------------------------------
 ; DICT HELPERS

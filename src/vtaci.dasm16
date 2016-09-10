@@ -1,0 +1,46 @@
+; At this point, I'd like to take a moment to speak to you about the VTACI
+; device. VTACI is not a good device. VTACI is not even a bad device. Calling
+; it such would be an insult to other bad devices, such as SPED or LEM. No, VTACI
+; is an abysmal device. Having worked on this code for several months now, my
+; hate for VTACI has grown to a raging fire that burns with the fierce passion
+; of a million suns.
+;
+; There are two ways to design a device. It can use interrupts or polling. Some
+; devices even choose a third path and design a direct memory access for constant
+; size memory areas. VTACI, however, makes incompatibility an art. Why an earth, 
+; does it suddenly decide that it is a good idea to use direct memory access for
+; dynamically sized structures? Why does it set the origin bit in a structure
+; with nothing to do with origin vectors. It even specifies its own floating point
+; format, which is not even a floating point, but not a fixed point either. Either
+; one of these formats would be fine. A sane device would pick one, but VTACI,
+; of course, has designed its own.
+;
+; Earlier, I tried to understand the latest specs for the VTACI device.
+; This specification is a sacred tome of misleading disinformation. I can only
+; imagine that the specification is so ambigious because scientists in Rin Yu
+; Research Group are so intensely ashamed of having created this abomination
+; that they are purposedly trying to obscure the functions.
+;
+; VTACI is not my favourite device.
+
+:vtaci__calibrate
+    set a, 1
+    hwi [vtaci]
+:vtaci__init
+    set a, 2
+    hwi [vtaci]
+    ife a, 1
+        set pc, vtaci__init
+    ife a, 2
+        set pc, vtaci__calibrate
+    ife a, 0xffff
+        set pc, vtaci__damaged
+
+    set pc, pop
+
+:vtaci__damaged
+    set a, 0
+    hwi [vtaci]
+
+    jsr recover
+    #doc vtaci__init(): device is damage or crashed, need to power off and on to fix
