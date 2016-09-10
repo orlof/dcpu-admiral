@@ -1,17 +1,17 @@
 ;----------------------------------------------------------------
 ; GLOBAL INTERPRETER VARIABLES
 ;----------------------------------------------------------------
-:global_scope   dat 0
-:current_scope  dat 0
+:global_scope       dat 0
+:current_scope      dat 0
 
-:history        dat 0
+:history            dat 0
 
-:recovery_fp    dat 0
-:recovery_sp    dat 0
+:recovery_fp        dat 0
+:recovery_sp        dat 0
 
-:clipboard_state dat 0
-:try_fp         dat 0
-:try_sp         dat 0
+:clipboard_state    dat 0
+:try_fp             dat 0
+:try_sp             dat 0
 
 ;----------------------------------------------------------------
 ; GLOBAL DISPLAY VARIABLES

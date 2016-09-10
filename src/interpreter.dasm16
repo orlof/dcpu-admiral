@@ -2,10 +2,10 @@
     set z, 0
     set sp, 0
 
-    set i, THE_END
+    set i, MEM_CODE_END
     set j, 0xffff
     jsr mem_clear
-    
+
     set push, REGISTER_A
     set push, MEM_FLOPPY_START
     set push, MEM_STACK_START

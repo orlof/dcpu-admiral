@@ -23,23 +23,23 @@
 ;----------------------------------------------------------------
     set push, a
     set push, b
-    
+
     set a, 0
     set b, [current_screen]
     set b, [b]
     hwi [monitor]
-    
+
     set b, pop
     set a, pop
-    
+
     set pc, pop
-     
+
 ;----------------------------------------------------------------
 :screen_toggle_cursor
 ; fastcall
 ;----------------------------------------------------------------
     set x, [current_screen]                ; struct screen *cur
-    set x, [x + SCREEN__CURSOR]    
+    set x, [x + SCREEN__CURSOR]
     xor [x], 0xff80                        ; change colors
     set pc, pop
 
@@ -51,7 +51,7 @@
 ;----------------------------------------------------------------
     set x, [current_screen]
     set [x+SCREEN__CURSOR], [x+SCREEN__START]
-    
+
     mul [sp+1], SCREEN_COLS
     add [x+SCREEN__CURSOR], [sp+1]
     add [x+SCREEN__CURSOR], [sp+2]
@@ -90,18 +90,18 @@
         set b, -1
     ife [z+10], 0
         ifa [z+11], 0
-            set b, -1    
+            set b, -1
 
     ; x = -dx
-    sub x, x
+    set x, 0
     sub x, [z+11]
 
     ; y = -dy
-    sub y, y
-    sub y, [z+10]    
+    set y, 0
+    sub y, [z+10]
 
     ; reset count
-    sub c, c
+    set c, 0
 
     set a, [current_screen]
 
@@ -141,12 +141,12 @@
 
     ; set the current location
     set [i], a
-    
+
     ; advance loop
     add x, b
     add i, b
     add j, b
-    
+
     add c, 1
     ife c, 0x180
         set pc, postamble
@@ -164,14 +164,14 @@
     sub x, a
 
     set pc, screen__scroll__loop
-    
+
 ;----------------------------------------------------------------
 ; void screen__get(int16 x, int16 y)
 ;----------------------------------------------------------------
 :screen__get
     mul [sp+1], SCREEN_COLS
     add [sp+1], [sp+2]
-    
+
     set x, [current_screen]
     add [sp+1], [x + SCREEN__START]
 
@@ -182,19 +182,19 @@
     set [sp], pop
     set [sp], pop
     set pc, pop
-    
+
 ;----------------------------------------------------------------
 ; void screen__set(int16 x, int16 y, uint16 char)
 ;----------------------------------------------------------------
 :screen__set
     mul [sp+2], SCREEN_COLS
     add [sp+2], [sp+3]
-    
+
     set x, [current_screen]
     add [sp+2], [x + SCREEN__START]
-    
+
     bor [sp+1], FONT_COLOR
-    
+
     set x, [sp+2]
     set [x], [sp+1]        ; set new content
 
@@ -202,7 +202,7 @@
     set [sp], pop
     set [sp], pop
     set pc, pop
-    
+
 ;----------------------------------------------------------------
 ; struct handle *screen__get_cursor()
 ;----------------------------------------------------------------
@@ -220,17 +220,17 @@
     jsr array_create
     set [z-1], x
     set b, [x]
-    
+
     set c, a
     mod c, SCREEN_COLS
-    
+
     set push, c
     jsr uint16_to_int
     set [b+1], x
 
     set c, a
     div c, SCREEN_COLS
-    
+
     set push, c
     jsr uint16_to_int
     set [b+2], x
@@ -251,7 +251,7 @@
 
     set i, [a + SCREEN__START]
     set a, [a + SCREEN__END]
-    
+
 :screen_clear_loop
     set [i], SCREEN_BLANK_CHAR
     ifl i, a
@@ -272,7 +272,7 @@
     set push, a
     set push, i
     set push, j
-    
+
     ;set x, 0
 
     set a, [current_screen]
@@ -280,18 +280,20 @@
 
     ife [c + lexer_table], lexer_char_newline
         set pc, add_char_newline
-    
+
     ife c, KEY_BS
         set pc, add_char_backspace
 
     set [i], c
     bor [i], FONT_COLOR
     sti pc, add_char_scroll
-    
+
 :add_char_newline
+    sub i, [a + SCREEN__START]
     and i, 0xffe0
+    add i, [a + SCREEN__START]
     add i, SCREEN_COLS
-    
+
 :add_char_scroll
     set [a + SCREEN__CURSOR], i
 
@@ -300,26 +302,26 @@
 
     ;set x, SCREEN_COLS
     sub [a + SCREEN__CURSOR], SCREEN_COLS
-    
+
     set i, [a + SCREEN__START]
     set j, [a + SCREEN__START]
     add j, SCREEN_COLS
-    
+
 :add_char_copy
     sti [i], [j]
     ifl j, [a + SCREEN__END]
         set pc, add_char_copy
-    
+
 :add_char_clear
     sti [i], SCREEN_BLANK_CHAR
     ifl i, [a + SCREEN__END]
         set pc, add_char_clear
-    
+
 :add_char_finish
     set j, pop
     set i, pop
     set a, pop
-    
+
     set pc, pop
 
 :add_char_backspace

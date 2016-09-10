@@ -2,21 +2,24 @@
 ; MEMORY LAYOUT
 ; the optimal value for MEM_CODE_SIZE is len(admiral.bin)/2
 ;----------------------------------------------------------------
-#define MEM_STACK_SIZE         0x1000
-#define MEM_STACK_END          0x10000
-#define MEM_STACK_START        MEM_STACK_END - MEM_STACK_SIZE
+#define MEM_STACK_SIZE          0x1000
+#define MEM_STACK_END           0x10000
+#define MEM_STACK_START         MEM_STACK_END - MEM_STACK_SIZE
 
-#define MEM_HEAP_START         MEM_CODE_END
-#define MEM_HEAP_END           MEM_STACK_START
+#define MEM_HEAP_START          MEM_CODE_END
+#define MEM_HEAP_END            MEM_STACK_START
 
-#define REGISTER_A             MEM_FLOPPY_END - 8
-#define REGISTER_B             MEM_FLOPPY_END - 7
-#define REGISTER_C             MEM_FLOPPY_END - 6
-#define REGISTER_X             MEM_FLOPPY_END - 5
-#define REGISTER_Y             MEM_FLOPPY_END - 4
-#define REGISTER_Z             MEM_FLOPPY_END - 3
-#define REGISTER_I             MEM_FLOPPY_END - 2
-#define REGISTER_J             MEM_FLOPPY_END - 1
+#define MEM_FLOPPY_START        floppy_ram_start
+#define MEM_FLOPPY_END          floppy_ram_end
+
+#define REGISTER_A              MEM_CODE_END - 8
+#define REGISTER_B              MEM_CODE_END - 7
+#define REGISTER_C              MEM_CODE_END - 6
+#define REGISTER_X              MEM_CODE_END - 5
+#define REGISTER_Y              MEM_CODE_END - 4
+#define REGISTER_Z              MEM_CODE_END - 3
+#define REGISTER_I              MEM_CODE_END - 2
+#define REGISTER_J              MEM_CODE_END - 1
 
 ;----------------------------------------------------------------
 ; DATA TYPES
@@ -103,9 +106,7 @@
 #define FLOPPY__MBR__DIR_TAIL            MEM_FLOPPY_START + 3
 
 ; video memory definitions
-#define SCREEN_MEM__FONT_SIZE           256
 #define SCREEN_MEM__VIDEO_SIZE          384
-#define SCREEN_MEM__PALETTE_SIZE        16
 
 ; data sector definitions
 #define FLOPPY__SECTOR__NEXT            MEM_FLOPPY_START
