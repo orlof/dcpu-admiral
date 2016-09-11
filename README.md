@@ -172,7 +172,7 @@ b 2
  - Functions: poke(), peek() and call() for low level memory access
  - Functions: hwn(), hwq() and hwi() for low level hardware access
  - Functions: HIC select, status, read and transmit functions for TechCompliant HIC hardware
- - Experimental hi-res 62x48 ;) graphics mode: show() image, point(), line()
+ - Experimental hi-res 62x48 ;) graphics mode: show() image, plot(), line()
 
 <h6>Next in development</h6>
 
@@ -1157,7 +1157,7 @@ e.g., range(3) returns the list [0, 1, 2].
   <li>Hi-res graphics functions (experimental)
     <ul>
       <li><a href="#hires">hires()</a></li>
-      <li><a href="#point">point()</a></li>
+      <li><a href="#plot">plot()</a></li>
       <li><a href="#line">line()</a></li>
       <li><a href="#show">show()</a></li>
     </ul>
