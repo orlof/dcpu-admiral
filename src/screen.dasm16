@@ -243,23 +243,28 @@
 ;----------------------------------------------------------------
 :screen_clear
     set push, a
+    set push, b
     set push, i
     set push, j
 
     set a, [current_screen]
+    set b, SCREEN_BLANK_CHAR
+    ife a, screen_hires
+        set b, 0xf000
     set [a + SCREEN__CURSOR], [a + SCREEN__START]
 
     set i, [a + SCREEN__START]
     set a, [a + SCREEN__END]
 
 :screen_clear_loop
-    set [i], SCREEN_BLANK_CHAR
+    set [i], b
     ifl i, a
         sti pc, screen_clear_loop
 
 :screen_clear_finish
     set j, pop
     set i, pop
+    set b, pop
     set a, pop
 
     set pc, pop

@@ -14,6 +14,7 @@
 #include "screen.dasm16"
 #include "dict2.dasm16"
 #include "floppy.dasm16"
+#include "hires.dasm16"
 #include "crypt.dasm16"
 #include "videoram.dasm16"
 #include "floppyram.dasm16"
