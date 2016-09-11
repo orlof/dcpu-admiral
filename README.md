@@ -1784,16 +1784,16 @@ NOTES
    - e.g. "if true or (a+=1):" will increment a with every evaluation
  - INDENT and DEDENT must be exactly one space
 
-ADMIRAL MEMORY LAYOUT
+ADMIRAL MEMORY LAYOUT - NEEDS UPDATE
 
 Admiral reserves the whole DCPU memory for its use. Memory is divided into segments:
 
 <table cellpadding="1">
 <tr><th>Segment</th><th>Default size</th><th>Default location</th><th>Description</th></tr>
 <tr><td>Stack</td><td>4.096</td><td>0xf000 - 0xffff</td><td>Admiral call stack to store registers and arguments</td></tr>
-<tr><td>Video Memory</td><td>1.152</td><td>0xeb80 - 0xefff</td><td>Video memory for LEM</td></tr>
-<tr><td>Floppy Buffer</td><td>512</td><td>0xe980 - 0xeb7f</td><td>Memory buffer used by floppy operations, default memory area for machine language subroutine calls</td></tr>
 <tr><td>Heap</td><td>46.207</td><td>0x3500 - 0xe97f</td><td>Admiral heap for variables and objects</td></tr>
+<tr><td>Floppy Buffer</td><td>512</td><td>0x???? - 0x????</td><td>Memory buffer used by floppy operations, default memory area for machine language subroutine calls</td></tr>
+<tr><td>Video Memory (moved between system and heap)</td><td>1.024</td><td>0x???? - 0x????</td><td>Video memory for LEM</td></tr>
 <tr><td>System</td><td>13.568</td><td>0x0000 - 0x34ff</td><td>Admiral interpreter, data and subroutines</td></tr>
 </table>
 
