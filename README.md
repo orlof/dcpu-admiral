@@ -153,7 +153,7 @@ b 2
 
 <h6>Current features</h6>
 
-- Pure interpreted language
+ - Pure interpreted language
    - Python inspired grammar
    - Garbage collection
    - Dynamic typing
@@ -169,9 +169,10 @@ b 2
  - Dict implementation with binary search
  - Nice starting set of built-in functions
  - Interactive command prompt with line editing
- - Functions: poke(), peek() and call() for low level access
+ - Functions: poke(), peek() and call() for low level memory access
  - Functions: hwn(), hwq() and hwi() for low level hardware access
  - Functions: HIC select, status, read and transmit functions for TechCompliant HIC hardware
+ - Experimental hi-res 62x48 ;) graphics mode: show() image, point(), line()
 
 <h6>Next in development</h6>
 
@@ -1153,6 +1154,14 @@ e.g., range(3) returns the list [0, 1, 2].
       <li><a href="#write">write()</a></li>
     </ul>
   </li>
+  <li>Hi-res graphics functions (experimental)
+    <ul>
+      <li><a href="#hires">hires()</a></li>
+      <li><a href="#point">point()</a></li>
+      <li><a href="#line">line()</a></li>
+      <li><a href="#show">show()</a></li>
+    </ul>
+  </li>
 </ul>
 
 <h5>GENERIC FUNCTIONS</h5>
@@ -1685,6 +1694,45 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
     </p>
   </dd>
 </dl>
+
+<h5>HARDWARE FUNCTIONS</h5>
+
+<dl>
+  <dt id="hires">hires(boolean enable)</dt>
+  <dd>
+    <p>
+      Initializes a high-resolution graphics mode or returns to normal text mode.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="show">show(int sector)</dt>
+  <dd>
+    <p>
+      Shows LEM graphics image from specified floppy sector.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="plot">plot(int x, int y, int color)</dt>
+  <dd>
+    <p>
+      Draws a pixel.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="line">line(int x0, int y0, int x1, int y1, int color)</dt>
+  <dd>
+    <p>
+      Draws a line.
+    </p>
+  </dd>
+</dl>
+
 
 <h4 id="7">Appendixes</h4>
 

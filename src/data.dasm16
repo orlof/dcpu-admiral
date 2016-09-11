@@ -374,9 +374,8 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
 :built_in_functions_4
     dat 5, "bool", built_in_bool
     dat 5, "call", built_in_call
-    dat 5, "edit", built_in_edit
-    dat 5, "exit", built_in_exit
     dat 5, "getc", built_in_getchar
+    dat 5, "plot", built_in_plot
     dat 5, "line", built_in_line
     dat 5, "load", built_in_load
     dat 5, "peek", built_in_peek
@@ -390,9 +389,10 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 5, "type", built_in_type
     dat 5, "wget", built_in_win_get
     dat 5, "wset", built_in_win_set
+    dat 5, "edit", built_in_edit
+    dat 5, "exit", built_in_exit
     dat 1, led_lparen_user_defined
 :built_in_functions_5
-    dat 6, "point", built_in_point
     dat 6, "color", built_in_color
     dat 6, "range", built_in_range
     dat 6, "float", built_in_float

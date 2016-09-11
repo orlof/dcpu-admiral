@@ -1969,7 +1969,7 @@
 ;----------------------------------------------------------------
 :led_lparen
     set push, 1
-    set push, 4
+    set push, 5
     jsr preamble
 
     set pc, built_in
@@ -3819,7 +3819,7 @@ DAT 0, TYPE_INT
 
 ;----------------------------------------------------------------
 DAT 0, TYPE_INT, TYPE_INT, TYPE_INT
-:built_in_point
+:built_in_plot
 ;----------------------------------------------------------------
     jsr built_in_params
 
@@ -3840,7 +3840,7 @@ DAT 0, TYPE_INT, TYPE_INT, TYPE_INT
     set pc, postamble_none
 
 ;----------------------------------------------------------------
-DAT 0, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT
+DAT 0, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT
 :built_in_line
 ;----------------------------------------------------------------
     jsr built_in_params
@@ -3861,7 +3861,9 @@ DAT 0, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT
     jsr int_to_int16
     set push, x
 
-    set push, 15
+    set push, [z-5]
+    jsr int_to_int16
+    set push, x
 
     jsr hires__line
 
@@ -3902,7 +3904,7 @@ DAT 0, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT
 :built_in_params_loop
     jsr lexer_next    ; skip '(' or ','
 
-    ife i, 4
+    ife i, 5
         set pc, built_in_params_end
     ife [lexer_token], token_rparen
         set pc, built_in_params_end
