@@ -1,7 +1,18 @@
 :interpreter_main
     set z, 0
     set sp, 0
+    set [history], 0
+    set [clipboard_state], 0
+    set [try_fp], 0
+    set [try_sp], 0
+    set [heap_counter], HEAP_GC_TRIGGER
+    set [heap_free_start], MEM_HEAP_START
+    set [heap_handle_start], MEM_HEAP_END
+    set [heap_handle_head], 0
+    set [heap_handle_tail], heap_handle_head - HANDLE_NEXT
+    set [heap_handle_free], 0
 
+    set c, 0
     set i, MEM_CODE_END
     set j, 0xffff
     jsr mem_clear

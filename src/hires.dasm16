@@ -1,0 +1,259 @@
+;----------------------------------------------------------------
+:hires__init
+;----------------------------------------------------------------
+    set push, 0
+    set push, 0
+    jsr preamble
+
+    set a, 0
+    set b, hires_video_ram
+    hwi [monitor]
+
+    set a, 1
+    set b, hires_font_ram_glyphs
+    hwi [monitor]
+
+    set a, 2
+    set b, hires_palette_ram
+    hwi [monitor]
+
+    set i, palette_default
+    set j, hires_palette_ram
+
+    :hires__init__loop
+    sti [j], [i]
+    ifn i, palette_default + 16
+        set pc, hires__init__loop
+
+    set [current_screen], screen_hires
+    jsr screen_clear
+
+    set pc, postamble
+
+;----------------------------------------------------------------
+:hires__finish
+;----------------------------------------------------------------
+    set push, 0
+    set push, 0
+    jsr preamble
+
+    set a, 0
+    set b, text_video_ram_0
+    hwi [monitor]
+
+    set a, 1
+    set b, 0
+    hwi [monitor]
+
+    set a, 2
+    set b, 0
+    hwi [monitor]
+
+    set [current_screen], screen_first
+    jsr screen_clear
+
+    set pc, postamble
+
+;----------------------------------------------------------------
+:hires__line
+; (x0, y0, x1, y1, color)
+;----------------------------------------------------------------
+set push, 5
+set push, 0
+jsr preamble
+
+set x, [z+14]           ; x0
+set y, [z+13]           ; y0
+
+set a, [z+12]           ; dx
+sub a, x
+ifb a, 0x8000
+    mul a, -1
+
+set b, [z+11]           ; dy
+sub b, y
+ifb b, 0x8000
+    mul b, -1
+
+set i, -1               ; sx
+ifl x, [z+12]
+    set i, 1
+
+set j, -1               ; sy
+ifl y, [z+11]
+    set j, 1
+
+set c, b                ; err
+mul c, -1
+ifg a, b
+    set c, a
+
+asr c, 1
+
+set push, 0             ; e2
+
+:hires__line__loop
+    set push, x
+    set push, x
+    set push, y
+    set push, [z+10]
+    jsr hires__point
+    set x, pop
+
+    ife x, [z+12]
+        ife y, [z+11]
+            set pc, postamble
+
+    set [sp], c
+
+    mul a, -1
+    ifa [sp], a
+        jsr hires__line__update_x
+    mul a, -1
+
+    ifu [sp], b
+        jsr hires__line__update_y
+
+    set pc, hires__line__loop
+
+:hires__line__update_x
+    sub c, b
+    add x, i
+    set pc, pop
+
+:hires__line__update_y
+    add c, a
+    add y, j
+    set pc, pop
+
+; void line(int x0, int y0, int x1, int y1) {
+;
+;   int dx = abs(x1-x0), sx = x0<x1 ? 1 : -1;
+;   int dy = abs(y1-y0), sy = y0<y1 ? 1 : -1;
+;   int err = (dx>dy ? dx : -dy)/2, e2;
+;
+;   for(;;){
+;     setPixel(x0,y0);
+;     if (x0==x1 && y0==y1) break;
+;     e2 = err;
+;     if (e2 >-dx) { err -= dy; x0 += sx; }
+;     if (e2 < dy) { err += dx; y0 += sy; }
+;   }
+; }
+
+;----------------------------------------------------------------
+:hires__point
+; (x, y, color)
+;----------------------------------------------------------------
+    set push, 3
+    set push, 0
+    jsr preamble
+
+    mod [z + 12], 64
+    mod [z + 11], 48
+    and [z + 10], 0x000f
+
+    set x, [z + 12]
+    set y, [z + 11]
+    jsr hires__pixel_addr
+
+    set x, [z + 12]
+    set y, [z + 11]
+    jsr hires__pixel_bit
+
+    set c, [a]
+    shr c, 8
+    and c, 0x000f
+
+    ife b, 0x80
+        set pc, hires__set_pixel__8
+
+    ifn c, [z + 10]
+        ; if not bg -> set bit
+        set pc, hires__set_pixel__set
+
+    ; clear pixel
+    xor b, 0xffff
+    and [a], b
+
+    set pc, postamble
+
+:hires__set_pixel__set
+    ; set pixel
+    bor [a], b
+
+    set pc, postamble
+
+:hires__set_pixel__8
+    ife c, [z + 10]
+        ; if bg -> noop
+        set pc, postamble
+
+    set c, [a]
+    and c, 0x00ff
+    xor c, 0x007f
+
+    set b, [a]
+    and b, 0xf000
+    shr b, 4
+    bor c, b
+
+    set b, [a]
+    and b, 0x0f00
+    shl b, 4
+    bor c, b
+
+    set [a], c
+
+    set pc, postamble
+
+;----------------------------------------------------------------
+:hires__pixel_bit
+; fastcall: x, y -> b
+;----------------------------------------------------------------
+    set b, 0x80
+
+    and x, 1
+    shl x, 2
+    shr b, x
+
+    and y, 3
+    shr b, y
+
+    set pc, pop
+
+;----------------------------------------------------------------
+:hires__pixel_addr
+; fastcall: x, y -> a
+;----------------------------------------------------------------
+    set a, hires_video_ram
+
+    shr y, 2
+    shl y, 5
+    add a, y
+
+    shr x, 1
+    add a, x
+
+    set pc, pop
+
+;----------------------------------------------------------------
+:hires__load_lem_from_sector
+; sector
+;----------------------------------------------------------------
+    set push, 1
+    set push, 0
+    jsr preamble
+
+    set a, 2
+    set x, [z + 10]
+    set y, hires_palette_ram
+    hwi [floppy]
+
+    set a, 0
+    :hires__load_lem_from_sector__loop
+    hwi [floppy]
+    ifn b, 1
+        set pc, hires__load_lem_from_sector__loop
+
+    set pc, postamble
