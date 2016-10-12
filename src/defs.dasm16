@@ -224,10 +224,11 @@
 ;   uint16 *end;
 ;   uint16 *cursor;
 ; }
-#define SIZEOF_SCREEN        3
-#define SCREEN__START        0
-#define SCREEN__END            1
-#define SCREEN__CURSOR        2
+#define SIZEOF_SCREEN       4
+#define SCREEN__START       0
+#define SCREEN__END         1
+#define SCREEN__CURSOR      2
+#define SCREEN__PALETTE     3
 
 ; struct inode {
 ;   struct handle *sector;

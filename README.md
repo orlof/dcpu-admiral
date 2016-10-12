@@ -172,7 +172,7 @@ b 2
  - Functions: poke(), peek() and call() for low level memory access
  - Functions: hwn(), hwq() and hwi() for low level hardware access
  - Functions: HIC select, status, read and transmit functions for TechCompliant HIC hardware
- - Experimental hi-res 62x48 ;) graphics mode: show() image, plot(), line()
+ - Experimental hi-res 64x48 ;) graphics mode: show(), plot(), line()
 
 <h6>Next in development</h6>
 
@@ -432,6 +432,70 @@ Hello
 
 Dict.create() can be used to create new dicts that are based on the prototype:
 
+<pre>
+>ship={}                  # create prototype object (i.e. dict)
+>ship.spd=0               # assign value to prototype
+>ship.accelerate=edit()   # define function in prototype
+--------------------------
+me.spd+=me.acceleration  # function modifies object field
+--------------------------
+>shuttle=ship.create()    # create new object from prototype
+>shuttle.acceleration=8   # set value in new object
+>shuttle.accelerate()     # call new object's method (that is defined in prototype)
+>print shuttle.spd
+8                         # new objects field has changed...
+>print ship.spd
+0                         # and prototype's fields are intact
+</pre>
+
+Dict created with dict.create() inherits its properties from prototype. Prototype dict is used to read values if property is not defined in dict itself. Prototype values are not copied at creation time, and changes in prototype values are reflected to the created dict unless it defines the same value itself. However, writing values to created dict never modifies the prototype dict.
+
+<h5 id="3.7">Graphics</h4>
+
+Admiral has 64x48 pixel hi-res graphics mode. Display is made up of 32x12 cells. In hi-res mode each cell consist of 2x4 pixels and cell can display two colors out of customizable 16 color palette.
+
+Admiral reserves 768 words of memory for graphics ram.
+
+<table cellpadding="1">
+<tr><th>Size</th><th>Usage</th></tr>
+<tr><td>256</td><td>glyphs for hi-res graphics mode</td></tr>
+<tr><td>16</td><td>palette ram</td></tr>
+<tr><td>384</td><td>video ram</td></tr>
+<tr><td>112</td><td>not in use</td></tr>
+</table>
+
+Additional 512 words of of ram from floppy buffer can be used for double buffering or secondary screen. E.g. Admiral's internal text editor utilizes this secondary buffer to preserve the interpreter screen on the background.
+
+<table cellpadding="1">
+<tr><th>Size</th><th>Usage</th></tr>
+<tr><td>16</td><td>2nd palette ram</td></tr>
+<tr><td>384</td><td>2nd video ram</td></tr>
+<tr><td>112</td><td>not in use</td></tr>
+</table>
+
+Admiral has comprehensive graphics plotting commands. These commands enable you to plot points, draw lines, show images and modify colors without having to access memory locations.
+
+To put LEM into high-resolution graphics plotting mode, use command
+
+    hires(true)
+
+In this mode, all points are plotted pixel by pixel and it is not possible to write text to screen. To restore normal text mode, use command:
+
+    hires(false)
+
+Whether in hi-res or text mode, only two colors can be used in any one cell.
+
+Each of the 16 palette colors can be customized with palette command by specifying the rgb values (0-15).
+
+    palette(idx, red, green, blue)
+
+Index of the background color for the whole screen is set with color command:
+
+     color(idx)
+
+
+
+ This graphics memory contains 256 words of graphical glyphs for hi-res mode and 512 words  and additonal 512 words from floppy buffer can be utilized if seconds buffer for video ram is required.  
 <pre>
 >ship={}                  # create prototype object (i.e. dict)
 >ship.spd=0               # assign value to prototype

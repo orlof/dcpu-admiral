@@ -1,58 +1,30 @@
 ;----------------------------------------------------------------
 :hires__init
 ;----------------------------------------------------------------
-    set push, 0
-    set push, 0
-    jsr preamble
-
-    set a, 0
-    set b, hires_video_ram
-    hwi [monitor]
-
-    set a, 1
-    set b, hires_font_ram_glyphs
-    hwi [monitor]
-
-    set a, 2
-    set b, hires_palette_ram
-    hwi [monitor]
-
-    set i, palette_default
-    set j, hires_palette_ram
-
-    :hires__init__loop
-    sti [j], [i]
-    ifn i, palette_default + 16
-        set pc, hires__init__loop
-
-    set [current_screen], screen_hires
-    jsr screen_clear
-
-    set pc, postamble
+    set b, hires_font_ram
+    set pc, hires__mode
 
 ;----------------------------------------------------------------
 :hires__finish
+; WARNING this trash registers
 ;----------------------------------------------------------------
-    set push, 0
-    set push, 0
-    jsr preamble
+    set b, 0
 
-    set a, 0
-    set b, text_video_ram_0
-    hwi [monitor]
-
+:hires__mode
     set a, 1
-    set b, 0
     hwi [monitor]
 
-    set a, 2
-    set b, 0
-    hwi [monitor]
+    set i, palette_default
+    set j, palette_ram_0
 
-    set [current_screen], screen_first
+    :screen__restore_palette__loop
+    sti [j], [i]
+    ifn i, palette_default + 16
+        set pc, screen__restore_palette__loop
+
     jsr screen_clear
 
-    set pc, postamble
+    set pc, pop
 
 ;----------------------------------------------------------------
 :hires__line

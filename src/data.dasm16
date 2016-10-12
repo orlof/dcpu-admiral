@@ -19,17 +19,15 @@
 :current_screen dat screen_first
 
 :screen_first
-    dat text_video_ram_0
-    dat text_video_ram_0 + SCREEN_MEM__VIDEO_SIZE
-    dat text_video_ram_0
+    dat video_ram_0
+    dat video_ram_0 + SCREEN_MEM__VIDEO_SIZE
+    dat video_ram_0
+    dat palette_ram_0
 :screen_last
-    dat text_video_ram_1
-    dat text_video_ram_1 + SCREEN_MEM__VIDEO_SIZE
-    dat text_video_ram_1
-:screen_hires
-    dat hires_video_ram
-    dat hires_video_ram + SCREEN_MEM__VIDEO_SIZE
-    dat hires_video_ram
+    dat video_ram_1
+    dat video_ram_1 + SCREEN_MEM__VIDEO_SIZE
+    dat video_ram_1
+    dat palette_ram_1
 
 :palette_default
     dat 0x0000, 0x000a, 0x00a0, 0x00aa, 0x0a00, 0x0a0a, 0x0a50, 0x0aaa
