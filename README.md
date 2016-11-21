@@ -3,7 +3,7 @@
 <h1>ADMIRAL programming language for DCPU-16</h1>
 <h5><i>"PURE INTERPRETED LANGUAGE FOR THE FRINGE COLONIES"</i></h5>
 
-Admiral is an easy to learn all-in-one environment for DCPU. It requires no toolchains and includes an operating system and programming language. Programming language has efficient high-level syntax. Admiral’s elegant syntax and dynamic typing, together with its interpreted nature, make it an ideal language for scripting and rapid application development.
+Admiral is an easy to use all-in-one operating system for DCPU. It requires no toolchains and comes bundled with efficient high-level language. Admiral’s advanced technical solutions and elegant design, make it an ideal language for scripting and rapid application development.
 
 ---
 <h4>Table of contents</h4>
@@ -1765,7 +1765,25 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
   <dt id="hires">hires(boolean enable)</dt>
   <dd>
     <p>
-      Initializes a high-resolution graphics mode or returns to normal text mode.
+      Initializes a high-resolution graphics mode or returns to normal text mode, and clears the screen.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="plot">plot(int x, int y, boolean fg)</dt>
+  <dd>
+    <p>
+      Draws a pixel with foreground or background color.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="line">line(int x0, int y0, int x1, int y1, boolean fg)</dt>
+  <dd>
+    <p>
+      Draws a line with foreground or background color.
     </p>
   </dd>
 </dl>
@@ -1779,23 +1797,6 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
   </dd>
 </dl>
 
-<dl>
-  <dt id="plot">plot(int x, int y, int color)</dt>
-  <dd>
-    <p>
-      Draws a pixel.
-    </p>
-  </dd>
-</dl>
-
-<dl>
-  <dt id="line">line(int x0, int y0, int x1, int y1, int color)</dt>
-  <dd>
-    <p>
-      Draws a line.
-    </p>
-  </dd>
-</dl>
 
 
 <h4 id="7">Appendixes</h4>

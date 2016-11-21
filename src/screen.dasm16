@@ -29,10 +29,10 @@
     set b, [b]
     hwi [monitor]
 
-    set a, 2
-    set b, [current_screen]
-    set b, [b + SCREEN__PALETTE]
-    hwi [monitor]
+;    set a, 2
+;    set b, [current_screen]
+;    set b, [b + SCREEN__PALETTE]
+;    hwi [monitor]
 
     set b, pop
     set a, pop

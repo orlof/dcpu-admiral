@@ -17,9 +17,11 @@
     set j, 0xffff
     jsr mem_clear
 
-    set push, REGISTER_A
-    set push, MEM_FLOPPY_START
+    sub sp, 8                   ; room for registers a-j
     set push, MEM_STACK_START
+    set push, MEM_HEAP_START
+    set push, MEM_FLOPPY_START
+    set push, MEM_VIDEO_START
 
     set push, 0
     set push, 5

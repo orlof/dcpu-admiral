@@ -12,14 +12,17 @@
 #define MEM_FLOPPY_START        floppy_ram_start
 #define MEM_FLOPPY_END          floppy_ram_end
 
-#define REGISTER_A              MEM_CODE_END - 8
-#define REGISTER_B              MEM_CODE_END - 7
-#define REGISTER_C              MEM_CODE_END - 6
-#define REGISTER_X              MEM_CODE_END - 5
-#define REGISTER_Y              MEM_CODE_END - 4
-#define REGISTER_Z              MEM_CODE_END - 3
-#define REGISTER_I              MEM_CODE_END - 2
-#define REGISTER_J              MEM_CODE_END - 1
+#define MEM_VIDEO_START         video_ram_start
+#define MEM_VIDEO_END           video_ram_end
+
+#define REGISTER_A              0xfffa
+#define REGISTER_B              0xfffb
+#define REGISTER_C              0xfffc
+#define REGISTER_X              0xfffd
+#define REGISTER_Y              0xfffe
+#define REGISTER_Z              0xffff
+#define REGISTER_I              0xfff8
+#define REGISTER_J              0xfff9
 
 ;----------------------------------------------------------------
 ; DATA TYPES
@@ -224,11 +227,10 @@
 ;   uint16 *end;
 ;   uint16 *cursor;
 ; }
-#define SIZEOF_SCREEN       4
+#define SIZEOF_SCREEN       3
 #define SCREEN__START       0
 #define SCREEN__END         1
 #define SCREEN__CURSOR      2
-#define SCREEN__PALETTE     3
 
 ; struct inode {
 ;   struct handle *sector;

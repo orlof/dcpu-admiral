@@ -14,13 +14,13 @@
     set a, 1
     hwi [monitor]
 
-    set i, palette_default
-    set j, palette_ram_0
-
-    :screen__restore_palette__loop
-    sti [j], [i]
-    ifn i, palette_default + 16
-        set pc, screen__restore_palette__loop
+;    set i, palette_default
+;    set j, palette_ram_0
+;
+;    :screen__restore_palette__loop
+;    sti [j], [i]
+;    ifn i, palette_default + 16
+;        set pc, screen__restore_palette__loop
 
     jsr screen_clear
 
@@ -198,7 +198,7 @@ set push, 0             ; e2
 :hires__pixel_addr
 ; fastcall: x, y -> a
 ;----------------------------------------------------------------
-    set a, hires_video_ram
+    set a, video_ram_start
 
     shr y, 2
     shl y, 5

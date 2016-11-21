@@ -3818,7 +3818,7 @@ DAT 0, TYPE_INT
     set pc, postamble_none
 
 ;----------------------------------------------------------------
-DAT 0, TYPE_INT, TYPE_INT, TYPE_INT
+DAT 0, TYPE_INT, TYPE_INT, TYPE_BOOL
 :built_in_plot
 ;----------------------------------------------------------------
     jsr built_in_params
@@ -3831,16 +3831,16 @@ DAT 0, TYPE_INT, TYPE_INT, TYPE_INT
     jsr int_to_int16
     set push, x
 
-    set push, [z-3]
-    jsr int_to_int16
-    set push, x
+    set push, 0x0
+    ife BOOL_TRUE, [z-3]
+        set [sp], 0xf
 
     jsr hires__point
 
     set pc, postamble_none
 
 ;----------------------------------------------------------------
-DAT 0, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT
+DAT 0, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_BOOL
 :built_in_line
 ;----------------------------------------------------------------
     jsr built_in_params
@@ -3861,9 +3861,9 @@ DAT 0, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT
     jsr int_to_int16
     set push, x
 
-    set push, [z-5]
-    jsr int_to_int16
-    set push, x
+    set push, 0x0
+    ife BOOL_TRUE, [z-3]
+        set [sp], 0xf
 
     jsr hires__line
 

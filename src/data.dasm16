@@ -19,19 +19,14 @@
 :current_screen dat screen_first
 
 :screen_first
-    dat video_ram_0
-    dat video_ram_0 + SCREEN_MEM__VIDEO_SIZE
-    dat video_ram_0
-    dat palette_ram_0
+    dat video_ram_start
+    dat video_ram_start + SCREEN_MEM__VIDEO_SIZE
+    dat video_ram_start
 :screen_last
-    dat video_ram_1
-    dat video_ram_1 + SCREEN_MEM__VIDEO_SIZE
-    dat video_ram_1
-    dat palette_ram_1
+    dat floppy_ram_start
+    dat floppy_ram_start + SCREEN_MEM__VIDEO_SIZE
+    dat floppy_ram_start
 
-:palette_default
-    dat 0x0000, 0x000a, 0x00a0, 0x00aa, 0x0a00, 0x0a0a, 0x0a50, 0x0aaa
-    dat 0x0555, 0x055f, 0x05f5, 0x05ff, 0x0f55, 0x0f5f, 0x0ff5, 0x0fff
 ;----------------------------------------------------------------
 ; GLOBAL FD VARIABLES
 ;----------------------------------------------------------------
