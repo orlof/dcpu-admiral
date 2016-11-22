@@ -7,7 +7,7 @@
     jsr preamble
 
     ; initialize cursor to top left corner
-    ; these are screen coordinates (not column or line in text) as 
+    ; these are screen coordinates (not column or line in text) as
     ; screen scrolls in both axis
     set [cur_x], 0
     set [cur_y], 0
@@ -51,7 +51,7 @@
     add y, 1
     set pc, edit_copy_arg_to_buffer
 
-:edit_main_loop    
+:edit_main_loop
     jsr win_normalize
     jsr edit_win_draw
 
@@ -101,19 +101,19 @@
     sub c, [buf_start]
     add c, [gap_start]
     sub c, [gap_end]
-    
+
     set push, c
     set push, TYPE_STR
     jsr array_create
 
-    sti j, [x]    
+    sti j, [x]
     set i, [buf_start]
 
 :edit_copy_buffer_to_result
     ife i, [gap_start]
         set i, [gap_end]
     ife i, [buf_end]
-        set pc, postamble    
+        set pc, postamble
     sti [j], [i]
     set pc, edit_copy_buffer_to_result
 
@@ -123,12 +123,12 @@
     set a, [cur_line]
     jsr prevline
     set [cur_line], a
-    
+
     set b, [cur_x]
     add b, [win_shift]
     jsr pos_x
     set [cur_pos], a
-    
+
     set pc, edit_main_loop
 
     ; void k_up (void) {
@@ -147,12 +147,12 @@
     set a, [cur_line]
     jsr nextline
     set [cur_line], a
-    
+
     set b, [cur_x]
     add b, [win_shift]
     jsr pos_x
     set [cur_pos], a
-    
+
     set pc, edit_main_loop
 
     ; void k_down (void) {
@@ -200,12 +200,12 @@
     set push, x
 
     ife x, KEY_NEWLINE
-        set pc, edit_key_ctrl_k_loop_break    
+        set pc, edit_key_ctrl_k_loop_break
 
     set x, [cur_pos]
     ife [x], KEY_NEWLINE
         set pc, edit_key_ctrl_k_loop_break
-    set pc, edit_key_ctrl_k_loop       
+    set pc, edit_key_ctrl_k_loop
 
 :edit_key_ctrl_k_loop_break
     set x, y
@@ -265,7 +265,7 @@
 :edit_key_character
 ;----------------------------------------------------------------
     jsr edit_insert_char
-    
+
     ; void ins_ch (char ch) {
     ;    if (ins_mem (1))
     ;        text[cur_pos++] = ch;
@@ -276,7 +276,7 @@
 :edit_key_newline
     jsr edit_insert_char
 
-    set b, [cur_line]    
+    set b, [cur_line]
     set c, ' '
 :edit_key_newline_loop
     ifn [b], c
@@ -287,7 +287,7 @@
 
 ;----------------------------------------------------------------
 :edit_win_draw
-;----------------------------------------------------------------    
+;----------------------------------------------------------------
     set a, [current_screen]
     set i, [win_start]
     set j, [a + SCREEN__START]
@@ -323,13 +323,13 @@
     add c, 1
 
     set pc, edit_line_skip_start
-    
+
 :edit_line_chars
     set c, j
     add c, SCREEN_COLS
 
 :edit_line_chars_loop
-    set [j], SCREEN_BLANK_CHAR
+    set [j], [screen_blank]
     ife i, [buf_end]
         set pc, edit_line_chars_loop_1
     ife [i], KEY_NEWLINE
@@ -338,11 +338,11 @@
     set [j], [i]
     bor [j], FONT_COLOR
 
-    
+
     add i, 1
     ife i, [gap_start]
         set i, [gap_end]
-    
+
 :edit_line_chars_loop_1
     add j, 1
     ifl j, c
@@ -358,7 +358,7 @@
     add i, 1
     ife i, [gap_start]
         set i, [gap_end]
-        
+
     set pc, c
 
 ;----------------------------------------------------------------
@@ -366,7 +366,7 @@
 ;----------------------------------------------------------------
     set i, [gap_start]
     set j, [gap_end]
-    
+
 :edit_gap_move_loop
     ifl j, [cur_pos]
         sti [i], [j]
@@ -388,7 +388,7 @@
     ife [gap_start], [gap_end]
         set pc, pop
 
-    jsr edit_gap_move    
+    jsr edit_gap_move
 
     set a, [gap_start]
     set [a], c
@@ -404,7 +404,7 @@
         ife [gap_end], [buf_end]
             set pc, pop
 
-    jsr edit_gap_move    
+    jsr edit_gap_move
 
     set x, [cur_pos]
     set x, [x]
@@ -423,17 +423,17 @@
 
     ife a, [buf_start]
         set pc, pop
-        
+
     sub a, 1
-    
+
     ifn [a], KEY_NEWLINE
-        set pc, bol        
+        set pc, bol
 
     add a, 1
     ife a, [gap_start]
         set a, [gap_end]
 
-    set pc, pop    
+    set pc, pop
 
     ; int bol (int pos) {
     ;    while (pos && text[pos - 1] != '\n')
@@ -454,7 +454,7 @@
         set pc, pop
 
     ife [a], KEY_NEWLINE
-        set pc, pop        
+        set pc, pop
 
     add a, 1
     ife a, [gap_start]
@@ -481,7 +481,7 @@
     ife a, [gap_end]
         set a, [gap_start]
     sub a, 1
-        
+
     jsr bol
     set pc, pop
 
@@ -518,7 +518,7 @@
 ;   a: line beginning pointer
 ;   b: column
 ; return
-;   a: pointer to char in buf 
+;   a: pointer to char in buf
 ;----------------------------------------------------------------
     ife b, 0
         set pc, pop
@@ -531,7 +531,7 @@
     add a, 1
     ife a, [gap_start]
         set a, [gap_end]
-        
+
     set pc, pos_x
 
     ; int pos_x (int line, int xx) {
@@ -601,7 +601,7 @@
         set pc, win_normalize_1
     ifg [cur_line], [win_start]
         set pc, win_normalize_1
-    
+
     set a, [win_start]
     jsr prevline
     set [win_start], a
@@ -623,7 +623,7 @@
     jsr nextline                    ; i = nextline(i)
 
     add [cur_y], 1                    ; cur_y++
-    
+
     set pc, win_normalize_4
 
     ; for (; cur_y >= LINES; cur_y--)
@@ -635,36 +635,36 @@
         set pc, win_normalize_5
 
     ; bow_line = nextline (bow_line);
-    jsr nextline                    
+    jsr nextline
 
     sub [cur_y], 1                    ; cur_y--
     set pc, win_normalize_6
 
 :win_normalize_5
-    set [win_start], a        
+    set [win_start], a
 ;---
     set a, [cur_line]
     set b, [cur_pos]
     jsr win_x
     sub c, [win_shift]
     set [cur_x], c
-    
+
 :win_normalize_8
     ifc [cur_x], 0x8000
         set pc, win_normalize_7
-            
+
     add [cur_x], 8
     sub [win_shift], 8
-    
+
     set pc, win_normalize_8
-    
+
 :win_normalize_7
     ifl [cur_x], SCREEN_COLS
         set pc, pop
-    
+
     sub [cur_x], 8
     add [win_shift], 8
-    
+
     set pc, win_normalize_7
 
 ;----------------------------------------------------------------

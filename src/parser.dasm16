@@ -3784,20 +3784,9 @@ DAT 0, TYPE_BOOL
     jsr built_in_params
 
     ife [z-1], BOOL_TRUE
-        set pc, built_in_hires__on
-
-    ifn [current_screen], screen_hires
-        set pc, postamble_none
-
-    jsr hires__finish
-
-    set pc, postamble_none
-
-    :built_in_hires__on
-    ife [current_screen], screen_hires
-        set pc, postamble_none
-
-    jsr hires__init
+        jsr hires__init
+    ife [z-1], BOOL_FALSE
+        jsr hires__finish
 
     set pc, postamble_none
 

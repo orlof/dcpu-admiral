@@ -137,7 +137,7 @@
     ; j: current source memory location (unsigned)
 
     ; clear or copy
-    set a, SCREEN_BLANK_CHAR
+    set a, [screen_blank]
     ifa x, -1
         ifu x, SCREEN_COLS
             ifa y, -1
@@ -284,9 +284,7 @@
     set push, j
 
     set a, [current_screen]
-    set b, SCREEN_BLANK_CHAR
-    ife a, screen_hires
-        set b, 0xf000
+    set b, [screen_blank]
     set [a + SCREEN__CURSOR], [a + SCREEN__START]
 
     set i, [a + SCREEN__START]
@@ -354,7 +352,7 @@
         set pc, add_char_copy
 
 :add_char_clear
-    sti [i], SCREEN_BLANK_CHAR
+    sti [i], [screen_blank]
     ifl i, [a + SCREEN__END]
         set pc, add_char_clear
 
@@ -367,7 +365,7 @@
 
 :add_char_backspace
     ifn i, [a + SCREEN__START]
-        std [i-1], SCREEN_BLANK_CHAR
+        std [i-1], [screen_blank]
 
     set [a + SCREEN__CURSOR], i
     set pc, add_char_finish

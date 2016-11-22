@@ -1,6 +1,7 @@
 ;----------------------------------------------------------------
 :hires__init
 ;----------------------------------------------------------------
+    set [screen_blank], SCREEN_BLANK_PIX
     set b, hires_font_ram
     set pc, hires__mode
 
@@ -8,6 +9,7 @@
 :hires__finish
 ; WARNING this trash registers
 ;----------------------------------------------------------------
+    set [screen_blank], SCREEN_BLANK_CHAR
     set b, 0
 
 :hires__mode

@@ -21,7 +21,7 @@ math
     m.sqrt(float)
 
 ide2
-  Software development editor
+  Software development tool
   ide=load("ide2")
   ide.main(dict)
 
@@ -39,7 +39,7 @@ ide2
     CTRL+C: quit editor without saving
 
 comp
-  DCPU assembler compiler. Compiler assembler to memory area starting from org.
+  DCPU assembler compiler. Compiles assembler to memory area starting from org
 
   comp=load("comp")
   comp.compile(org=addr,src=str)

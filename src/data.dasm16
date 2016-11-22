@@ -16,6 +16,7 @@
 ;----------------------------------------------------------------
 ; GLOBAL DISPLAY VARIABLES
 ;----------------------------------------------------------------
+:screen_blank   dat SCREEN_BLANK_CHAR
 :current_screen dat screen_first
 
 :screen_first
