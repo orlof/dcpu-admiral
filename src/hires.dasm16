@@ -221,7 +221,7 @@ set push, 0             ; e2
 
     set a, 2
     set x, [z + 10]
-    set y, hires_palette_ram
+    set y, floppy_ram_start
     hwi [floppy]
 
     set a, 0
