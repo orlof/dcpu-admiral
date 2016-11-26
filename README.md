@@ -1781,7 +1781,7 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
 </dl>
 
 <dl>
-  <dt id="circle">line(int x, int y, int radius, boolean fg)</dt>
+  <dt id="circle">circle(int x, int y, int radius, boolean fg)</dt>
   <dd>
     <p>
       Draws a circle centered to x, y and given radius with foreground or background color.
