@@ -3832,6 +3832,63 @@ DAT 0, TYPE_INT, TYPE_INT, TYPE_BOOL
     set pc, postamble_none
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_INT, TYPE_INT
+:built_in_point
+;----------------------------------------------------------------
+    jsr built_in_params
+
+    set push, [z-1]
+    jsr int_to_int16
+    ifg x, 63
+        set pc, BOOL_FALSE
+    set push, x
+
+    set push, [z-2]
+    jsr int_to_int16
+    ifg x, 47
+        set pc, BOOL_FALSE
+    set push, x
+
+    jsr hires__get_point
+    set pc, postamble
+
+:built_in_point_false
+    set x, BOOL_FALSE
+    set pc, postamble
+
+;----------------------------------------------------------------
+DAT 0, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_BOOL
+:built_in_circle
+;----------------------------------------------------------------
+    jsr built_in_params
+
+    set push, [z-1]
+    jsr int_to_int16
+    ifg x, 63
+        set pc, postamble_none
+    set push, x
+
+    set push, [z-2]
+    jsr int_to_int16
+    ifg x, 47
+        set pc, postamble_none
+    set push, x
+
+    set push, [z-3]
+    jsr int_to_int16
+    ifg x, 63
+        set pc, postamble_none
+    set push, x
+
+    set push, 0x0
+    ife BOOL_TRUE, [z-4]
+        set [sp], 0xf
+
+    jsr hires__circle
+
+    set pc, postamble_none
+
+;----------------------------------------------------------------
 DAT 0, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_BOOL
 :built_in_line
 ;----------------------------------------------------------------

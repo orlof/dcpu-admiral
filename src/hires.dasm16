@@ -30,43 +30,142 @@
     set pc, pop
 
 ;----------------------------------------------------------------
+:hires__circle
+; (x, y, r, color)
+; all param values are verified < 64, cannot bug mem mgmt
+;----------------------------------------------------------------
+    set push, 4
+    set push, 0
+    jsr preamble
+
+    set a, [z+11]           ; x
+    set b, 0                ; y
+    set c, 0                ; err
+
+:hires__circle__loop
+    ifg b, a
+        set pc, postamble
+
+    ; (x0 + x, y0 + y);1
+    set i, [z+13]
+    add i, a
+
+    set j, [z+12]
+    add j, b
+    jsr hires__circle__plot
+
+    ; (x0 + x, y0 - y);2
+    set j, [z+12]
+    sub j, b
+    jsr hires__circle__plot
+
+    ; (x0 - x, y0 - y);3
+    set i, [z+13]
+    sub i, a
+    jsr hires__circle__plot
+
+    ; (x0 - x, y0 + y);4
+    set j, [z+12]
+    add j, b
+    jsr hires__circle__plot
+
+    ; (x0 + y, y0 + x);5
+    set i, [z+13]
+    add i, b
+
+    set j, [z+12]
+    add j, a
+    jsr hires__circle__plot
+
+    ; (x0 + y, y0 - x);6
+    set j, [z+12]
+    sub j, a
+    jsr hires__circle__plot
+
+    ; (x0 - y, y0 - x);7
+    set i, [z+13]
+    sub i, b
+    jsr hires__circle__plot
+
+    ; (x0 - y, y0 + x);8
+    set j, [z+12]
+    add j, a
+    jsr hires__circle__plot
+
+    add b, 1
+    set push, b
+    mli [sp], 2
+    add [sp], 1
+    add c, pop
+
+    set push, c
+    sub [sp], a
+    mli [sp], 2
+
+    ifb 0x8000, pop
+        set pc, hires__circle__loop
+
+    sub a, 1
+    set push, 1
+    set push, a
+    mli [sp], 2
+    sub [sp], pop
+    add c, pop
+
+    set pc, hires__circle__loop
+
+:hires__circle__plot
+    ifg i, 63
+        set pc, pop
+
+    ifg j, 47
+        set pc, pop
+
+    set push, i
+    set push, j
+    set push, [z+10]
+    jsr hires__point
+
+    set pc, pop
+
+;----------------------------------------------------------------
 :hires__line
 ; (x0, y0, x1, y1, color)
 ; all param values are verified < 64, cannot bug mem mgmt
 ;----------------------------------------------------------------
-set push, 5
-set push, 0
-jsr preamble
+    set push, 5
+    set push, 0
+    jsr preamble
 
-set x, [z+14]           ; x0
-set y, [z+13]           ; y0
+    set x, [z+14]           ; x0
+    set y, [z+13]           ; y0
 
-set a, [z+12]           ; dx
-sub a, x
-ifb a, 0x8000
-    mul a, -1
+    set a, [z+12]           ; dx
+    sub a, x
+    ifb a, 0x8000
+        mul a, -1
 
-set b, [z+11]           ; dy
-sub b, y
-ifb b, 0x8000
-    mul b, -1
+    set b, [z+11]           ; dy
+    sub b, y
+    ifb b, 0x8000
+        mul b, -1
 
-set i, -1               ; sx
-ifl x, [z+12]
-    set i, 1
+    set i, -1               ; sx
+    ifl x, [z+12]
+        set i, 1
 
-set j, -1               ; sy
-ifl y, [z+11]
-    set j, 1
+    set j, -1               ; sy
+    ifl y, [z+11]
+        set j, 1
 
-set c, b                ; err
-mul c, -1
-ifg a, b
-    set c, a
+    set c, b                ; err
+    mul c, -1
+    ifg a, b
+        set c, a
 
-asr c, 1
+    asr c, 1
 
-set push, 0             ; e2
+    set push, 0             ; e2
 
 :hires__line__loop
     set push, x
@@ -118,6 +217,39 @@ set push, 0             ; e2
 ; }
 
 ;----------------------------------------------------------------
+:hires__get_point
+; (x, y)
+; all param values are verified < 64, cannot bug mem mgmt
+;----------------------------------------------------------------
+    set push, 2
+    set push, 0
+    jsr preamble
+
+    set x, [z + 11]
+    set y, [z + 10]
+    jsr hires__pixel_addr
+
+    set x, [z + 11]
+    set y, [z + 10]
+    jsr hires__pixel_bit
+
+    set x, BOOL_FALSE
+    ifb [a], 0x0f00
+        set x, BOOL_TRUE
+
+    ife b, 0x80
+        set pc, postamble
+
+    ifc [a], b
+        set pc, postamble
+
+    set c, x
+    set x, BOOL_FALSE
+    ife c, BOOL_FALSE
+        set x, BOOL_TRUE
+    set pc, postamble
+
+;----------------------------------------------------------------
 :hires__point
 ; (x, y, color)
 ; all param values are verified < 64, cannot bug mem mgmt
@@ -126,8 +258,6 @@ set push, 0             ; e2
     set push, 0
     jsr preamble
 
-    mod [z + 12], 64
-    mod [z + 11], 48
     and [z + 10], 0x000f
 
     set x, [z + 12]

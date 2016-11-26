@@ -3,7 +3,7 @@
 <h1>ADMIRAL programming language for DCPU-16</h1>
 <h5><i>"PURE INTERPRETED LANGUAGE FOR THE FRINGE COLONIES"</i></h5>
 
-Admiral is an easy to use all-in-one operating system for DCPU. It requires no toolchains and comes bundled with efficient high-level language. Admiral’s advanced technical solutions and elegant design, make it an ideal language for scripting and rapid application development.
+Admiral is an easy to use all-in-one operating environment for DCPU. It requires no toolchains and comes bundled with efficient high-level programming language. Admiral’s advanced technical solutions and elegant design, make it an ideal language for scripting and rapid application development.
 
 ---
 <h4>Table of contents</h4>
@@ -85,6 +85,7 @@ Admiral is an easy to use all-in-one operating system for DCPU. It requires no t
  - Limitations set for performance reasons
    - Supports only single threaded execution - no multithreading
    - No support for virtual memory
+   - No support for LEM colors
 
 <h6>Examples</h6>
 
@@ -172,7 +173,8 @@ b 2
  - Functions: poke(), peek() and call() for low level memory access
  - Functions: hwn(), hwq() and hwi() for low level hardware access
  - Functions: HIC select, status, read and transmit functions for TechCompliant HIC hardware
- - Experimental hi-res 64x48 ;) graphics mode: show(), plot(), line()
+ - Experimental hi-res 64x48 ;) graphics mode: plot(), point(), line() and circle()
+   - I am still considering to remove fg parameter from line and circle. I cannot figure use-case for drawing with bg color.
 
 <h6>Next in development</h6>
 
@@ -1222,7 +1224,9 @@ e.g., range(3) returns the list [0, 1, 2].
     <ul>
       <li><a href="#hires">hires()</a></li>
       <li><a href="#plot">plot()</a></li>
+      <li><a href="#point">point()</a></li>
       <li><a href="#line">line()</a></li>
+      <li><a href="#circle">circle()</a></li>
       <li><a href="#show">show()</a></li>
     </ul>
   </li>
@@ -1780,10 +1784,28 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
 </dl>
 
 <dl>
+  <dt id="point">point(int x, int y)</dt>
+  <dd>
+    <p>
+      Returns true if pixel in given coordinates is set, otherwise returns false.
+    </p>
+  </dd>
+</dl>
+
+<dl>
   <dt id="line">line(int x0, int y0, int x1, int y1, boolean fg)</dt>
   <dd>
     <p>
       Draws a line with foreground or background color.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="circle">line(int x, int y, int radius, boolean fg)</dt>
+  <dd>
+    <p>
+      Draws a circle centered to x, y and given radius with foreground or background color.
     </p>
   </dd>
 </dl>
