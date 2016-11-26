@@ -43,3 +43,7 @@ comp
 
   comp=load("comp")
   comp.compile(org=addr,src=str)
+
+mov_play
+  Simple movie player. Can be tested with sw_disc.bin and 832 frames.
+  
