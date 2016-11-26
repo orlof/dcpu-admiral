@@ -454,30 +454,9 @@ Dict created with dict.create() inherits its properties from prototype. Prototyp
 
 <h5 id="3.7">Graphics</h4>
 
-Admiral has 64x48 pixel hi-res graphics mode. Display is made up of 32x12 cells. In hi-res mode each cell consist of 2x4 pixels and cell can display two colors out of customizable 16 color palette.
+Admiral has 64x48 pixel monochrome graphics mode and comprehensive graphics plotting commands. These commands enable you to set and get individual pixel states, and draw lines and circles without ever having to access memory locations.
 
-Admiral reserves 768 words of memory for graphics ram.
-
-<table cellpadding="1">
-<tr><th>Size</th><th>Usage</th></tr>
-<tr><td>256</td><td>glyphs for hi-res graphics mode</td></tr>
-<tr><td>16</td><td>palette ram</td></tr>
-<tr><td>384</td><td>video ram</td></tr>
-<tr><td>112</td><td>not in use</td></tr>
-</table>
-
-Additional 512 words of of ram from floppy buffer can be used for double buffering or secondary screen. E.g. Admiral's internal text editor utilizes this secondary buffer to preserve the interpreter screen on the background.
-
-<table cellpadding="1">
-<tr><th>Size</th><th>Usage</th></tr>
-<tr><td>16</td><td>2nd palette ram</td></tr>
-<tr><td>384</td><td>2nd video ram</td></tr>
-<tr><td>112</td><td>not in use</td></tr>
-</table>
-
-Admiral has comprehensive graphics plotting commands. These commands enable you to plot points, draw lines, show images and modify colors without having to access memory locations.
-
-To put LEM into high-resolution graphics plotting mode, use command
+To put LEM into high-resolution graphics mode, use command
 
     hires(true)
 
@@ -485,36 +464,36 @@ In this mode, all points are plotted pixel by pixel and it is not possible to wr
 
     hires(false)
 
-Whether in hi-res or text mode, only two colors can be used in any one cell.
+In graphics mode, you can draw to screen with drawing commands:
 
-Each of the 16 palette colors can be customized with palette command by specifying the rgb values (0-15).
-
-    palette(idx, red, green, blue)
-
-Index of the background color for the whole screen is set with color command:
-
-     color(idx)
-
-
-
- This graphics memory contains 256 words of graphical glyphs for hi-res mode and 512 words  and additonal 512 words from floppy buffer can be utilized if seconds buffer for video ram is required.  
 <pre>
->ship={}                  # create prototype object (i.e. dict)
->ship.spd=0               # assign value to prototype
->ship.accelerate=edit()   # define function in prototype
---------------------------
-me.spd+=me.acceleration  # function modifies object field
---------------------------
->shuttle=ship.create()    # create new object from prototype
->shuttle.acceleration=8   # set value in new object
->shuttle.accelerate()     # call new object's method (that is defined in prototype)
->print shuttle.spd
-8                         # new objects field has changed...
->print ship.spd
-0                         # and prototype's fields are intact
+hires(true)
+circle(32,24,20,true)
+circle(22,14,5,true)
+plot(22,14,true)
+circle(42,14,5,true)
+plot(42,14,true)
+line(16,34,48,34,true)
+getc()
+hires(false)
 </pre>
 
-Dict created with dict.create() inherits its properties from prototype. Prototype dict is used to read values if property is not defined in dict itself. Prototype values are not copied at creation time, and changes in prototype values are reflected to the created dict unless it defines the same value itself. However, writing values to created dict never modifies the prototype dict.
+Admiral does not support storing or restoring images without using poke and peek functions:
+
+<pre>
+hires(true)
+circle(32,24,20,true)
+img=peek(peek(0xfff4), 384)
+hires(false)
+print "Press any key"
+getc()
+hires(true)
+poke(peek(0xfff4), img)
+getc()
+hires(false)
+</pre>
+
+This way images can also be saved to floppy with normal string serialization methods.
 
 --
 
@@ -1903,7 +1882,7 @@ Admiral stores values of important memory addresses in defined memory locations:
 <tr><td>0xfff7</td><td>Stack memory start</td><td></td></tr>
 <tr><td>0xfff6</td><td>Heap memory start</td><td></td></tr>
 <tr><td>0xfff5</td><td>Floppy buffer start</td><td></td></tr>
-<tr><td>0xfff6</td><td>Video memory start</td><td></td></tr>
+<tr><td>0xfff4</td><td>Video memory start</td><td></td></tr>
 </table>
 
 The exact location and size of each segment depends on the Admiral build.
