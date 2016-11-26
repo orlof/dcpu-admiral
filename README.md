@@ -468,12 +468,12 @@ In graphics mode, you can draw to screen with drawing commands:
 
 <pre>
 hires(true)
-circle(32,24,20,true)
-circle(22,14,5,true)
+circle(32,24,20)
+circle(22,14,5)
 plot(22,14,true)
-circle(42,14,5,true)
+circle(42,14,5)
 plot(42,14,true)
-line(16,34,48,34,true)
+line(16,34,48,34)
 getc()
 hires(false)
 </pre>
@@ -482,7 +482,7 @@ Admiral does not support storing or restoring images without using poke and peek
 
 <pre>
 hires(true)
-circle(32,24,20,true)
+circle(32,24,20)
 img=peek(peek(0xfff4), 384)
 hires(false)
 print "Press any key"
@@ -1772,19 +1772,19 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
 </dl>
 
 <dl>
-  <dt id="line">line(int x0, int y0, int x1, int y1, boolean fg)</dt>
+  <dt id="line">line(int x0, int y0, int x1, int y1)</dt>
   <dd>
     <p>
-      Draws a line with foreground or background color.
+      Draws a line with foreground color.
     </p>
   </dd>
 </dl>
 
 <dl>
-  <dt id="circle">circle(int x, int y, int radius, boolean fg)</dt>
+  <dt id="circle">circle(int x, int y, int radius)</dt>
   <dd>
     <p>
-      Draws a circle centered to x, y and given radius with foreground or background color.
+      Draws a circle centered to x, y and given radius with foreground color.
     </p>
   </dd>
 </dl>

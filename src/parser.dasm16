@@ -1969,7 +1969,7 @@
 ;----------------------------------------------------------------
 :led_lparen
     set push, 1
-    set push, 5
+    set push, 4
     jsr preamble
 
     set pc, built_in
@@ -1987,7 +1987,7 @@
     jsr dict__set
 
     ; create tuple for arguments
-    set push, 5
+    set push, 4
     set push, TYPE_TUPLE
     jsr alloc
     set [z-4], x
@@ -3857,7 +3857,7 @@ DAT 0, TYPE_INT, TYPE_INT
     set pc, postamble
 
 ;----------------------------------------------------------------
-DAT 0, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_BOOL
+DAT 0, TYPE_INT, TYPE_INT, TYPE_INT
 :built_in_circle
 ;----------------------------------------------------------------
     jsr built_in_params
@@ -3880,16 +3880,14 @@ DAT 0, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_BOOL
         set pc, postamble_none
     set push, x
 
-    set push, 0x0
-    ife BOOL_TRUE, [z-4]
-        set [sp], 0xf
+    set push, 0x0f
 
     jsr hires__circle
 
     set pc, postamble_none
 
 ;----------------------------------------------------------------
-DAT 0, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_BOOL
+DAT 0, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT
 :built_in_line
 ;----------------------------------------------------------------
     jsr built_in_params
@@ -3918,9 +3916,7 @@ DAT 0, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_BOOL
         set pc, postamble_none
     set push, x
 
-    set push, 0x0
-    ife BOOL_TRUE, [z-5]
-        set [sp], 0xf
+    set push, 0x0f
 
     jsr hires__line
 
@@ -3961,7 +3957,7 @@ DAT 0, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_BOOL
 :built_in_params_loop
     jsr lexer_next    ; skip '(' or ','
 
-    ife i, 5
+    ife i, 4
         set pc, built_in_params_end
     ife [lexer_token], token_rparen
         set pc, built_in_params_end
