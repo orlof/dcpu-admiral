@@ -70,7 +70,7 @@ Admiral is an easy to use all-in-one operating environment for DCPU. It requires
    of collections (other than the total memory available)
 
 <h6>Implementation Principles</h6>
- - "First make it work. Then make it right. Then make it fast."
+ - "First have fun. Then make it work. Then make it right. Then make it fast."
  - Memory allocation targets:
    - 70% for heap
    - 5% for stack
@@ -454,7 +454,7 @@ Dict created with dict.create() inherits its properties from prototype. Prototyp
 
 <h5 id="3.7">Graphics</h4>
 
-Admiral has 64x48 pixel monochrome graphics mode and comprehensive graphics plotting commands. These commands enable you to set and get individual pixel states, and draw lines and circles without ever having to access memory locations.
+Admiral has 64x48 pixel monochrome graphics mode and a comprehensive set of graphics plotting commands. These commands enable you to set and get individual pixel states, and draw lines and circles without ever having to access memory locations.
 
 To put LEM into high-resolution graphics mode, use command
 
@@ -481,17 +481,23 @@ hires(false)
 Admiral does not support storing or restoring images without using poke and peek functions:
 
 <pre>
+# Draw image and store it in string
 hires(true)
 circle(32,24,20,true)
 img=peek(peek(0xfff4), 384)
 hires(false)
+
 print "Press any key"
 getc()
+
+# restore image from string
 hires(true)
 poke(peek(0xfff4), img)
 getc()
 hires(false)
 </pre>
+
+NOTE During startup, Admiral initializes 0xfff4 memory location to point to start of video memory and the size of LEM 1802 video memory buffer is 384 words.
 
 This way images can also be saved to floppy with normal string serialization methods.
 
@@ -846,7 +852,7 @@ Sun
 [2,3,4,5]
 </pre>
 
-You can update single or multiple elements of lists by giving the index on the left-hand side of the assignment operator, and you can add to elements in a list with the append() method. For example −
+You can update single element of lists by giving the index on the left-hand side of the assignment operator, and you can add to elements in a list with the append() method. For example −
 
 <pre>
 >l2[2]=2001
@@ -895,7 +901,29 @@ Lists respond to the + and * operators much like strings; they mean concatenatio
 
 <h5 id="4.5">Tuple</h5>
 
-TODO
+A tuple is an immutable sequence of values. Tuples are similar to lists. The differences between tuples and lists are, the tuples cannot be changed unlike lists and tuples use parentheses, whereas lists use square brackets.
+
+Creating a tuple is as simple as putting different comma-separated values. Optionally you can put these comma-separated values between parentheses also. For example −
+
+<pre>
+t1 = ('admiral', 'orlof', 2892, true)
+t2 = (1, 2, 3, 4, 5)
+t3 = "a", "b", "c", "d"
+</pre>
+
+The empty tuple is written as two parentheses containing nothing −
+
+<pre>
+empty = ()
+</pre>
+
+To write a tuple containing a single value you have to include a comma, even though there is only one value −
+
+<pre>
+single = (50,)
+</pre>
+
+Like string indices, tuple indices start at 0, and they can be sliced, concatenated, and so on.
 
 <h5 id="4.6">Boolean</h5>
 
@@ -1002,7 +1030,7 @@ Deletion of attribute reference removes the attribute from the primary object in
 cls_stmt ::=  "cls"
 </pre>
 
-"cls" (for clear screen) clears the LEM1802 screen and restores cursor to top left -corner position.
+"cls" (for clear screen) clears the LEM1802 screen and restores cursor to top left -corner position. "cls" also works in hi-res mode.
 
 <h6>reset</h6>
 <pre>
@@ -1293,7 +1321,7 @@ e.g., range(3) returns the list [0, 1, 2].
   <dt id="rnd">rnd([start[, end]])</dt>
   <dd>
     <p>
-      Return the next pseudorandom number. TODO
+      Return the next pseudorandom number.
     </p>
   </dd>
 </dl>
@@ -1728,7 +1756,7 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
   <dt id="read">read(int)</dt>
   <dd>
     <p>
-      Reads a single sector from floppy and stores it to floppy buffer (0xd980 - 0xdb7f in current build). This method is provided for integrating with non-Admiral floppy formats.
+      Reads a single sector from floppy and stores it to floppy buffer "start = peek(0xfff7)". This method is provided for integrating with non-Admiral floppy formats.
     </p>
   </dd>
 </dl>
@@ -1737,7 +1765,7 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
   <dt id="write">write(int)</dt>
   <dd>
     <p>
-      Writes a single sector to floppy from floppy buffer (0xd980 - 0xdb7f in current build). This method is provided for integrating with non-Admiral floppy formats.
+      Writes a single sector to floppy from floppy buffer "start=peek(0xfff7)". This method is provided for integrating with non-Admiral floppy formats.
     </p>
   </dd>
 </dl>
@@ -1808,7 +1836,9 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
        sector += 1
       hires(false)
       </pre>
-      full double buffering not possible as video ram and palette ram are changed in sequence.
+      (Similar code is available in util_disc.bin with file name "mov_play")
+
+      Full double buffering is not possible as LEM does not support changing video- and palette- ram simultaneously.
     </p>
   </dd>
 </dl>
