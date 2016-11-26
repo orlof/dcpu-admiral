@@ -202,7 +202,7 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
 :STR_NZERO      DAT STR_NZERO+2, TYPE_STR, 4, "-0.0"
 :STR_NAN        DAT STR_NAN+2, TYPE_STR, 3, "nan"
 
-:STR_STARTUP    DAT STR_STARTUP + 2, TYPE_STR, 32, "  ***  DCPU ADMIRAL  0.70  ***  "
+:STR_STARTUP    DAT STR_STARTUP + 2, TYPE_STR, 32, "  ***  DCPU ADMIRAL  0.71  ***  "
 :STR_STARTUP2   DAT STR_STARTUP2 + 2, TYPE_STR, 16, "64K RAM SYSTEM  "
 :STR_STARTUP3   DAT STR_STARTUP3 + 2, TYPE_STR, 11, " WORDS FREE"
 :STR_PROMPT     DAT STR_PROMPT + 2, TYPE_STR, 1, ">"
@@ -387,7 +387,6 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 5, "exit", built_in_exit
     dat 1, led_lparen_user_defined
 :built_in_functions_5
-    dat 6, "color", built_in_color
     dat 6, "range", built_in_range
     dat 6, "float", built_in_float
     dat 6, "input", built_in_input

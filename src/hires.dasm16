@@ -16,13 +16,14 @@
     set a, 1
     hwi [monitor]
 
-;    set i, palette_default
-;    set j, palette_ram_0
-;
-;    :screen__restore_palette__loop
-;    sti [j], [i]
-;    ifn i, palette_default + 16
-;        set pc, screen__restore_palette__loop
+    set a, 0
+    set b, [current_screen]
+    set b, [b]
+    hwi [monitor]
+
+    set a, 2
+    set b, 0
+    hwi [monitor]
 
     jsr screen_clear
 
@@ -31,6 +32,7 @@
 ;----------------------------------------------------------------
 :hires__line
 ; (x0, y0, x1, y1, color)
+; all param values are verified < 64, cannot bug mem mgmt
 ;----------------------------------------------------------------
 set push, 5
 set push, 0
@@ -118,6 +120,7 @@ set push, 0             ; e2
 ;----------------------------------------------------------------
 :hires__point
 ; (x, y, color)
+; all param values are verified < 64, cannot bug mem mgmt
 ;----------------------------------------------------------------
     set push, 3
     set push, 0
@@ -215,13 +218,29 @@ set push, 0             ; e2
 :hires__load_lem_from_sector
 ; sector
 ;----------------------------------------------------------------
-    set push, 1
+    set push, 2
     set push, 0
     jsr preamble
 
+    ; MEM_MAP_FONT
+
+    set a, 1
+    set b, hires_font_ram
+    hwi [monitor]
+
+    ; load buffer
+
+    ; addr
+    set push, [z+11]
+    jsr int_to_int16
+    set y, x
+
+    ; sector
+    set push, [z+10]
+    jsr int_to_int16
+    mod x, 1440
+
     set a, 2
-    set x, [z + 10]
-    set y, floppy_ram_start
     hwi [floppy]
 
     set a, 0
@@ -229,5 +248,17 @@ set push, 0             ; e2
     hwi [floppy]
     ifn b, 1
         set pc, hires__load_lem_from_sector__loop
+
+    ; MEM_MAP_SCREEN
+
+    set b, y
+    add b, 16
+    hwi [monitor]
+
+    ; MEM_MAP_PALETTE
+
+    set a, 2
+    set b, y
+    hwi [monitor]
 
     set pc, postamble

@@ -1664,14 +1664,14 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
 
       Storage addresses:
       <pre>
-      a: [0xffff]
-      b: [0xffff] + 1
-      c: [0xffff] + 2
-      x: [0xffff] + 3
-      y: [0xffff] + 4
-      z: [0xffff] + 5
-      i: [0xffff] + 6
-      j: [0xffff] + 7
+      a: [0xfffa]
+      b: [0xfffb]
+      c: [0xfffc]
+      x: [0xfffd]
+      y: [0xfffe]
+      z: [0xffff]
+      i: [0xfff8]
+      j: [0xfff9]
       </pre>
 
       Subroutine can pollute registers a-j, but must restore stack and return with rts (set pc, pop).
@@ -1759,7 +1759,7 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
   </dd>
 </dl>
 
-<h5>HARDWARE FUNCTIONS</h5>
+<h5>GRAPHICS FUNCTIONS</h5>
 
 <dl>
   <dt id="hires">hires(boolean enable)</dt>
@@ -1789,10 +1789,25 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
 </dl>
 
 <dl>
-  <dt id="show">show(int sector)</dt>
+  <dt id="show">show(int video_addr, int sector)</dt>
   <dd>
     <p>
-      Shows LEM graphics image from specified floppy sector.
+      This is unsupported "easter-egg" command. Shows LEM graphics image from specified floppy sector.
+      Good locations for video_addr are e.g. floppy buffer in peek(0xfff5) and stack start in peek(0xfff7).
+      Use hires(false) to recover from show()
+      <pre>
+      show(peek(0xfff5, 0)
+      </pre>
+      For double buffered movie playback, you could try
+      <pre>
+      sector = 0
+      buf = [peek(0xfff5), peek(0xfff7)]
+      while sector<1440:
+       show(buf[sector & 1], sector))
+       sector += 1
+      hires(false)
+      </pre>
+      full double buffering not possible as video ram and palette ram are changed in sequence.
     </p>
   </dd>
 </dl>
@@ -1849,17 +1864,24 @@ NOTES
    - e.g. "if true or (a+=1):" will increment a with every evaluation
  - INDENT and DEDENT must be exactly one space
 
-ADMIRAL MEMORY LAYOUT - NEEDS UPDATE
+ADMIRAL MEMORY MAP
 
-Admiral reserves the whole DCPU memory for its use. Memory is divided into segments:
+Admiral stores values of important memory addresses in defined memory locations:
 
 <table cellpadding="1">
-<tr><th>Segment</th><th>Default size</th><th>Default location</th><th>Description</th></tr>
-<tr><td>Stack</td><td>4.096</td><td>0xf000 - 0xffff</td><td>Admiral call stack to store registers and arguments</td></tr>
-<tr><td>Heap</td><td>46.207</td><td>0x3500 - 0xe97f</td><td>Admiral heap for variables and objects</td></tr>
-<tr><td>Floppy Buffer</td><td>512</td><td>0x???? - 0x????</td><td>Memory buffer used by floppy operations, default memory area for machine language subroutine calls</td></tr>
-<tr><td>Video Memory (moved between system and heap)</td><td>1.024</td><td>0x???? - 0x????</td><td>Video memory for LEM</td></tr>
-<tr><td>System</td><td>13.568</td><td>0x0000 - 0x34ff</td><td>Admiral interpreter, data and subroutines</td></tr>
+<tr><th>Location</th><th>Address of</th><th>Description</th></tr>
+<tr><td>0xffff</td><td>Register Z</td><td></td></tr>
+<tr><td>0xfffe</td><td>Register Y</td><td></td></tr>
+<tr><td>0xfffd</td><td>Register X</td><td></td></tr>
+<tr><td>0xfffc</td><td>Register C</td><td></td></tr>
+<tr><td>0xfffb</td><td>Register B</td><td></td></tr>
+<tr><td>0xfffa</td><td>Register A</td><td></td></tr>
+<tr><td>0xfff9</td><td>Register J</td><td></td></tr>
+<tr><td>0xfff8</td><td>Register I</td><td></td></tr>
+<tr><td>0xfff7</td><td>Stack memory start</td><td></td></tr>
+<tr><td>0xfff6</td><td>Heap memory start</td><td></td></tr>
+<tr><td>0xfff5</td><td>Floppy buffer start</td><td></td></tr>
+<tr><td>0xfff6</td><td>Video memory start</td><td></td></tr>
 </table>
 
 The exact location and size of each segment depends on the Admiral build.

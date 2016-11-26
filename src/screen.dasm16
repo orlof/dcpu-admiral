@@ -211,33 +211,33 @@
 ;----------------------------------------------------------------
 ; void screen__set(int16 x, int16 y, uint16 color0, uint16 color1)
 ;----------------------------------------------------------------
-:screen__color
-    mul [sp+3], SCREEN_COLS
-    add [sp+3], [sp+4]
-
-    set x, [current_screen]
-    add [sp+3], [x + SCREEN__START]
-
-    ; combine colors to bg and fg bits
-    shl [sp+2], 12
-    shl [sp+1], 8
-    bor [sp+1], [sp+2]
-
-    ; combine with current pixels
-    set x, [sp+3]
-    set x, [x]
-    and x, 0x00ff
-    bor [sp+1], x
-
-    ; update video memory
-    set x, [sp+3]
-    set [x], [sp+1]        ; set new content
-
-    ; cleanup
-    set [sp+4], [sp]
-    add sp, 4
-
-    set pc, pop
+;:screen__color
+;    mul [sp+3], SCREEN_COLS
+;    add [sp+3], [sp+4]
+;
+;    set x, [current_screen]
+;    add [sp+3], [x + SCREEN__START]
+;
+;    ; combine colors to bg and fg bits
+;    shl [sp+2], 12
+;    shl [sp+1], 8
+;    bor [sp+1], [sp+2]
+;
+;    ; combine with current pixels
+;    set x, [sp+3]
+;    set x, [x]
+;    and x, 0x00ff
+;    bor [sp+1], x
+;
+;    ; update video memory
+;    set x, [sp+3]
+;    set [x], [sp+1]        ; set new content
+;
+;    ; cleanup
+;    set [sp+4], [sp]
+;    add sp, 4
+;
+;    set pc, pop
 
 ;----------------------------------------------------------------
 ; struct handle *screen__get_cursor()
