@@ -1,6 +1,6 @@
 ---
 
-<h1>ADMIRAL programming language for DCPU-16</h1>
+<h1>ADMIRAL - Operating Environment for DCPU-16</h1>
 <h5><i>"PURE INTERPRETED LANGUAGE FOR THE FRINGE COLONIES"</i></h5>
 
 Admiral is an easy to use all-in-one operating environment for DCPU. It requires no toolchains and comes bundled with efficient high-level programming language. Admiral’s advanced technical solutions and elegant design, make it an ideal language for scripting and rapid application development.
@@ -469,11 +469,11 @@ In graphics mode, you can draw to screen with drawing commands:
 <pre>
 hires(true)
 circle(32,24,20,true)
-circle(22,14,5,true)
-plot(22,14,true)
-circle(42,14,5,true)
-plot(42,14,true)
-line(16,34,48,34,true)
+circle(24,18,5,true)
+plot(24,18,true)
+circle(40,18,5,true)
+plot(40,18,true)
+line(20,34,48,30,true)
 getc()
 hires(false)
 </pre>
