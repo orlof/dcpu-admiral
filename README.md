@@ -174,7 +174,8 @@ b 2
  - Functions: hwn(), hwq() and hwi() for low level hardware access
  - Functions: HIC select, status, read and transmit functions for TechCompliant HIC hardware
  - Experimental hi-res 64x48 ;) graphics mode: plot(), point(), line() and circle()
-   - I am still considering to remove fg parameter from line and circle. I cannot figure use-case for drawing with bg color.
+   - Bresenham's line algorithm
+   - Midpoint circle algorithm optimized for integer-based math
 
 <h6>Next in development</h6>
 
@@ -456,7 +457,7 @@ Dict created with dict.create() inherits its properties from prototype. Prototyp
 
 Admiral has 64x48 pixel monochrome graphics mode and a comprehensive set of graphics plotting commands. These commands enable you to set and get individual pixel states, and draw lines and circles without ever having to access memory locations.
 
-To put LEM into high-resolution graphics mode, use command
+To put LEM into high-resolution graphics mode, use command:
 
     hires(true)
 
