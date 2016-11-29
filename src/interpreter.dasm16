@@ -1,4 +1,9 @@
 :interpreter_main
+    set c, 0
+    set i, MEM_CODE_END
+    set j, 0xffff
+    jsr mem_clear
+
     set z, 0
     set sp, 0xfff8                   ; room for registers a-j
     set [history], 0
@@ -11,11 +16,6 @@
     set [heap_handle_head], 0
     set [heap_handle_tail], heap_handle_head - HANDLE_NEXT
     set [heap_handle_free], 0
-
-    set c, 0
-    set i, MEM_CODE_END
-    set j, 0xffff
-    jsr mem_clear
 
     set push, MEM_STACK_START
     set push, MEM_HEAP_START
