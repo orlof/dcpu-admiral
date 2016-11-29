@@ -1,0 +1,273 @@
+:stmt
+    set c, token_name
+    ifg b, 8
+        set pc, pop
+
+    set pc, [stmt_table + b - 1]
+
+:stmt_table
+    dat stmt_1
+    dat stmt_2
+    dat stmt_3
+    dat stmt_4
+    dat stmt_5
+    dat stmt_6
+    dat stmt_7
+    dat stmt_8
+
+:stmt_1
+:stmt_7
+    set pc, pop
+
+:stmt_2
+    ife [i + 0], 'i'
+        set pc, stmt_2_i
+    ifn [i + 0], 'o'
+        set pc, pop
+    ife [i + 1], 'r'
+        set c, token_or
+    set pc, pop
+
+:stmt_2_i
+    ife [i + 1], 'f'
+        set pc, stmt_2_if
+    ife [i + 1], 'n'
+        set pc, stmt_2_in
+    ifn [i + 1], 's'
+        set pc, pop
+    set c, token_is
+    set pc, pop
+
+:stmt_2_if
+    set c, token_if
+    set pc, pop
+
+:stmt_2_in
+    set c, token_in
+    set pc, pop
+:stmt_3
+    ifl [i + 0], 'i'
+        set pc, stmt_3_a_to_f
+
+:stmt_3_i_to_t
+    ifl [i + 0], 'r'
+        set pc, stmt_3_i_to_n
+
+:stmt_3_r_to_t
+    ife [i + 0], 'r'
+        set pc, stmt_3_r
+    ifn [i + 0], 't'
+        set pc, pop
+    ife [i + 1], 'r'
+        ife [i + 2], 'y'
+            set c, token_try
+    set pc, pop
+
+:stmt_3_r
+    ife [i + 1], 'u'
+        ife [i + 2], 'n'
+            set c, token_run
+    set pc, pop
+
+:stmt_3_i_to_n
+    ife [i + 0], 'i'
+        set pc, stmt_3_i
+    ifn [i + 0], 'n'
+        set pc, pop
+    ife [i + 1], 'a'
+        set pc, stmt_3_na
+    ifn [i + 1], 'o'
+        set pc, pop
+    ife [i + 2], 't'
+        set c, token_not
+    set pc, pop
+
+:stmt_3_na
+    ife [i + 2], 'n'
+        set c, token_float
+    set pc, pop
+
+:stmt_3_i
+    ife [i + 1], 'n'
+        ife [i + 2], 'f'
+            set c, token_float
+    set pc, pop
+
+:stmt_3_a_to_f
+    ifl [i + 0], 'd'
+        set pc, stmt_3_a_to_c
+
+:stmt_3_d_to_f
+    ife [i + 0], 'd'
+        set pc, stmt_3_d
+    ifn [i + 0], 'f'
+        set pc, pop
+    ife [i + 1], 'o'
+        ife [i + 2], 'r'
+            set c, token_for
+    set pc, pop
+
+:stmt_3_d
+    ife [i + 1], 'e'
+        ife [i + 2], 'l'
+            set c, token_del
+    set pc, pop
+
+:stmt_3_a_to_c
+    ife [i + 0], 'a'
+        set pc, stmt_3_a
+    ifn [i + 0], 'c'
+        set pc, pop
+    ife [i + 1], 'l'
+        ife [i + 2], 's'
+            set c, token_cls
+    set pc, pop
+
+:stmt_3_a
+    ife [i + 1], 'n'
+        ife [i + 2], 'd'
+            set c, token_and
+    set pc, pop
+:stmt_4
+    ifl [i + 0], 'p'
+        set pc, stmt_4_e_to_n
+
+:stmt_4_p_to_t
+    ife [i + 0], 'p'
+        set pc, stmt_4_p
+    ifn [i + 0], 't'
+        set pc, pop
+    ife [i + 1], 'r'
+        ife [i + 2], 'u'
+            ife [i + 3], 'e'
+                set c, token_true
+    set pc, pop
+
+:stmt_4_p
+    ife [i + 1], 'a'
+        ife [i + 2], 's'
+            ife [i + 3], 's'
+                set c, token_pass
+    set pc, pop
+
+:stmt_4_e_to_n
+    ife [i + 0], 'e'
+        set pc, stmt_4_e
+    ifn [i + 0], 'n'
+        set pc, pop
+    ife [i + 1], 'o'
+        ife [i + 2], 'n'
+            ife [i + 3], 'e'
+                set c, token_none
+    set pc, pop
+
+:stmt_4_e
+    ifn [i + 1], 'l'
+        set pc, pop
+    ife [i + 2], 'i'
+        set pc, stmt_4_eli
+    ifn [i + 2], 's'
+        set pc, pop
+    ife [i + 3], 'e'
+        set c, token_else
+    set pc, pop
+
+:stmt_4_eli
+    ife [i + 3], 'f'
+        set c, token_elif
+    set pc, pop
+:stmt_5
+    ifl [i + 0], 'p'
+        set pc, stmt_5_b_to_f
+
+:stmt_5_p_to_w
+    ife [i + 0], 'p'
+        set pc, stmt_5_p
+    ife [i + 0], 'r'
+        set pc, stmt_5_r
+    ifn [i + 0], 'w'
+        set pc, pop
+    ife [i + 1], 'h'
+        ife [i + 2], 'i'
+            ife [i + 3], 'l'
+                ife [i + 4], 'e'
+                    set c, token_while
+    set pc, pop
+
+:stmt_5_p
+    ife [i + 1], 'r'
+        ife [i + 2], 'i'
+            ife [i + 3], 'n'
+                ife [i + 4], 't'
+                    set c, token_print
+    set pc, pop
+
+:stmt_5_r
+    ife [i + 1], 'a'
+        set pc, stmt_5_ra
+    ifn [i + 1], 'e'
+        set pc, pop
+    ife [i + 2], 's'
+        ife [i + 3], 'e'
+            ife [i + 4], 't'
+                set c, token_reset
+    set pc, pop
+
+:stmt_5_ra
+    ife [i + 2], 'i'
+        ife [i + 3], 's'
+            ife [i + 4], 'e'
+                set c, token_raise
+    set pc, pop
+
+:stmt_5_b_to_f
+    ife [i + 0], 'b'
+        set pc, stmt_5_b
+    ifn [i + 0], 'f'
+        set pc, pop
+    ife [i + 1], 'a'
+        ife [i + 2], 'l'
+            ife [i + 3], 's'
+                ife [i + 4], 'e'
+                    set c, token_false
+    set pc, pop
+
+:stmt_5_b
+    ife [i + 1], 'r'
+        ife [i + 2], 'e'
+            ife [i + 3], 'a'
+                ife [i + 4], 'k'
+                    set c, token_break
+    set pc, pop
+:stmt_6
+    ife [i + 0], 'e'
+        set pc, stmt_6_e
+    ifn [i + 0], 'r'
+        set pc, pop
+    ife [i + 1], 'e'
+        ife [i + 2], 't'
+            ife [i + 3], 'u'
+                ife [i + 4], 'r'
+                    ife [i + 5], 'n'
+                        set c, token_return
+    set pc, pop
+
+:stmt_6_e
+    ife [i + 1], 'x'
+        ife [i + 2], 'c'
+            ife [i + 3], 'e'
+                ife [i + 4], 'p'
+                    ife [i + 5], 't'
+                        set c, token_except
+    set pc, pop
+:stmt_8
+    ife [i + 0], 'c'
+        ife [i + 1], 'o'
+            ife [i + 2], 'n'
+                ife [i + 3], 't'
+                    ife [i + 4], 'i'
+                        ife [i + 5], 'n'
+                            ife [i + 6], 'u'
+                                ife [i + 7], 'e'
+                                    set c, token_continue
+    set pc, pop
