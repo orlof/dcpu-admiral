@@ -17,107 +17,109 @@
 :glob_func_1
     set pc, pop
 
+
 :glob_func_2
-    ife [i + 0], 'i'
+    ife [a + 0], 'i'
         set pc, glob_func_2_i
-    ifn [i + 0], 'r'
+    ifn [a + 0], 'r'
         set pc, pop
-    ife [i + 1], 'm'
+    ife [a + 1], 'm'
         set c, built_in_rm
     set pc, pop
 
 :glob_func_2_i
-    ife [i + 1], 'd'
+    ife [a + 1], 'd'
         set c, built_in_id
     set pc, pop
+
 :glob_func_3
-    ifl [i + 0], 'k'
+    ifl [a + 0], 'k'
         set pc, glob_func_3_a_to_i
 
 :glob_func_3_k_to_s
-    ifl [i + 0], 'o'
+    ifl [a + 0], 'o'
         set pc, glob_func_3_k_to_m
 
 :glob_func_3_o_to_s
-    ife [i + 0], 'o'
+    ife [a + 0], 'o'
         set pc, glob_func_3_o
-    ife [i + 0], 'r'
+    ife [a + 0], 'r'
         set pc, glob_func_3_r
-    ifn [i + 0], 's'
+    ifn [a + 0], 's'
         set pc, pop
-    ife [i + 1], 't'
-        ife [i + 2], 'r'
+    ife [a + 1], 't'
+        ife [a + 2], 'r'
             set c, built_in_str
     set pc, pop
 
 :glob_func_3_o
-    ife [i + 1], 'r'
-        ife [i + 2], 'd'
+    ife [a + 1], 'r'
+        ife [a + 2], 'd'
             set c, built_in_ord
     set pc, pop
 
 :glob_func_3_r
-    ife [i + 1], 'n'
-        ife [i + 2], 'd'
+    ife [a + 1], 'n'
+        ife [a + 2], 'd'
             set c, built_in_rnd
     set pc, pop
 
 :glob_func_3_k_to_m
-    ife [i + 0], 'k'
+    ife [a + 0], 'k'
         set pc, glob_func_3_k
-    ife [i + 0], 'l'
+    ife [a + 0], 'l'
         set pc, glob_func_3_l
-    ifn [i + 0], 'm'
+    ifn [a + 0], 'm'
         set pc, pop
-    ife [i + 1], 'e'
-        ife [i + 2], 'm'
+    ife [a + 1], 'e'
+        ife [a + 2], 'm'
             set c, built_in_mem
     set pc, pop
 
 :glob_func_3_k
-    ife [i + 1], 'e'
-        ife [i + 2], 'y'
+    ife [a + 1], 'e'
+        ife [a + 2], 'y'
             set c, built_in_key
     set pc, pop
 
 :glob_func_3_l
-    ife [i + 1], 'e'
-        ife [i + 2], 'n'
+    ife [a + 1], 'e'
+        ife [a + 2], 'n'
             set c, built_in_len
     set pc, pop
 
 :glob_func_3_a_to_i
-    ifl [i + 0], 'd'
+    ifl [a + 0], 'd'
         set pc, glob_func_3_a_to_c
 
 :glob_func_3_d_to_i
-    ife [i + 0], 'd'
+    ife [a + 0], 'd'
         set pc, glob_func_3_d
-    ife [i + 0], 'h'
+    ife [a + 0], 'h'
         set pc, glob_func_3_h
-    ifn [i + 0], 'i'
+    ifn [a + 0], 'i'
         set pc, pop
-    ife [i + 1], 'n'
-        ife [i + 2], 't'
+    ife [a + 1], 'n'
+        ife [a + 2], 't'
             set c, built_in_int
     set pc, pop
 
 :glob_func_3_d
-    ife [i + 1], 'i'
-        ife [i + 2], 'r'
+    ife [a + 1], 'i'
+        ife [a + 2], 'r'
             set c, built_in_dir
     set pc, pop
 
 :glob_func_3_h
-    ife [i + 1], 'e'
+    ife [a + 1], 'e'
         set pc, glob_func_3_he
-    ifn [i + 1], 'w'
+    ifn [a + 1], 'w'
         set pc, pop
-    ife [i + 2], 'i'
+    ife [a + 2], 'i'
         set pc, glob_func_3_hwi
-    ife [i + 2], 'n'
+    ife [a + 2], 'n'
         set pc, glob_func_3_hwn
-    ifn [i + 2], 'q'
+    ifn [a + 2], 'q'
         set pc, pop
     set c, built_in_hwq
     set pc, pop
@@ -131,410 +133,414 @@
     set pc, pop
 
 :glob_func_3_he
-    ife [i + 2], 'x'
+    ife [a + 2], 'x'
         set c, built_in_hex
     set pc, pop
 
 :glob_func_3_a_to_c
-    ife [i + 0], 'a'
+    ife [a + 0], 'a'
         set pc, glob_func_3_a
-    ifn [i + 0], 'c'
+    ifn [a + 0], 'c'
         set pc, pop
-    ife [i + 1], 'h'
+    ife [a + 1], 'h'
         set pc, glob_func_3_ch
-    ifn [i + 1], 'm'
+    ifn [a + 1], 'm'
         set pc, pop
-    ife [i + 2], 'p'
+    ife [a + 2], 'p'
         set c, built_in_cmp
     set pc, pop
 
 :glob_func_3_ch
-    ife [i + 2], 'r'
+    ife [a + 2], 'r'
         set c, built_in_chr
     set pc, pop
 
 :glob_func_3_a
-    ife [i + 1], 'b'
-        ife [i + 2], 's'
+    ife [a + 1], 'b'
+        ife [a + 2], 's'
             set c, built_in_abs
     set pc, pop
+
 :glob_func_4
-    ifl [i + 0], 'l'
+    ifl [a + 0], 'l'
         set pc, glob_func_4_b_to_h
 
 :glob_func_4_l_to_w
-    ifl [i + 0], 's'
+    ifl [a + 0], 's'
         set pc, glob_func_4_l_to_r
 
 :glob_func_4_s_to_w
-    ife [i + 0], 's'
+    ife [a + 0], 's'
         set pc, glob_func_4_s
-    ife [i + 0], 't'
+    ife [a + 0], 't'
         set pc, glob_func_4_t
-    ifn [i + 0], 'w'
+    ifn [a + 0], 'w'
         set pc, pop
-    ife [i + 1], 'g'
+    ife [a + 1], 'g'
         set pc, glob_func_4_wg
-    ifn [i + 1], 's'
+    ifn [a + 1], 's'
         set pc, pop
-    ife [i + 2], 'e'
-        ife [i + 3], 't'
+    ife [a + 2], 'e'
+        ife [a + 3], 't'
             set c, built_in_win_set
     set pc, pop
 
 :glob_func_4_wg
-    ife [i + 2], 'e'
-        ife [i + 3], 't'
+    ife [a + 2], 'e'
+        ife [a + 3], 't'
             set c, built_in_win_get
     set pc, pop
 
 :glob_func_4_s
-    ife [i + 1], 'a'
+    ife [a + 1], 'a'
         set pc, glob_func_4_sa
-    ife [i + 1], 'h'
+    ife [a + 1], 'h'
         set pc, glob_func_4_sh
-    ifn [i + 1], 'o'
+    ifn [a + 1], 'o'
         set pc, pop
-    ife [i + 2], 'r'
-        ife [i + 3], 't'
+    ife [a + 2], 'r'
+        ife [a + 3], 't'
             set c, built_in_sort
     set pc, pop
 
 :glob_func_4_sa
-    ife [i + 2], 'v'
-        ife [i + 3], 'e'
+    ife [a + 2], 'v'
+        ife [a + 3], 'e'
             set c, built_in_save
     set pc, pop
 
 :glob_func_4_sh
-    ife [i + 2], 'o'
-        ife [i + 3], 'w'
+    ife [a + 2], 'o'
+        ife [a + 3], 'w'
             set c, built_in_show
     set pc, pop
 
 :glob_func_4_t
-    ife [i + 1], 'y'
-        ife [i + 2], 'p'
-            ife [i + 3], 'e'
+    ife [a + 1], 'y'
+        ife [a + 2], 'p'
+            ife [a + 3], 'e'
                 set c, built_in_type
     set pc, pop
 
 :glob_func_4_l_to_r
-    ife [i + 0], 'l'
+    ife [a + 0], 'l'
         set pc, glob_func_4_l
-    ife [i + 0], 'p'
+    ife [a + 0], 'p'
         set pc, glob_func_4_p
-    ifn [i + 0], 'r'
+    ifn [a + 0], 'r'
         set pc, pop
-    ifn [i + 1], 'e'
+    ifn [a + 1], 'e'
         set pc, pop
-    ife [i + 2], 'a'
+    ife [a + 2], 'a'
         set pc, glob_func_4_rea
-    ifn [i + 2], 'p'
+    ifn [a + 2], 'p'
         set pc, pop
-    ife [i + 3], 'r'
+    ife [a + 3], 'r'
         set c, built_in_repr
     set pc, pop
 
 :glob_func_4_rea
-    ife [i + 3], 'd'
+    ife [a + 3], 'd'
         set c, built_in_read
     set pc, pop
 
 :glob_func_4_l
-    ife [i + 1], 'i'
+    ife [a + 1], 'i'
         set pc, glob_func_4_li
-    ifn [i + 1], 'o'
+    ifn [a + 1], 'o'
         set pc, pop
-    ife [i + 2], 'a'
-        ife [i + 3], 'd'
+    ife [a + 2], 'a'
+        ife [a + 3], 'd'
             set c, built_in_load
     set pc, pop
 
 :glob_func_4_li
-    ife [i + 2], 'n'
-        ife [i + 3], 'e'
+    ife [a + 2], 'n'
+        ife [a + 3], 'e'
             set c, built_in_line
     set pc, pop
 
 :glob_func_4_p
-    ife [i + 1], 'e'
+    ife [a + 1], 'e'
         set pc, glob_func_4_pe
-    ife [i + 1], 'l'
+    ife [a + 1], 'l'
         set pc, glob_func_4_pl
-    ifn [i + 1], 'o'
+    ifn [a + 1], 'o'
         set pc, pop
-    ife [i + 2], 'k'
-        ife [i + 3], 'e'
+    ife [a + 2], 'k'
+        ife [a + 3], 'e'
             set c, built_in_poke
     set pc, pop
 
 :glob_func_4_pe
-    ife [i + 2], 'e'
-        ife [i + 3], 'k'
+    ife [a + 2], 'e'
+        ife [a + 3], 'k'
             set c, built_in_peek
     set pc, pop
 
 :glob_func_4_pl
-    ife [i + 2], 'o'
-        ife [i + 3], 't'
+    ife [a + 2], 'o'
+        ife [a + 3], 't'
             set c, built_in_plot
     set pc, pop
 
 :glob_func_4_b_to_h
-    ifl [i + 0], 'e'
+    ifl [a + 0], 'e'
         set pc, glob_func_4_b_to_c
 
 :glob_func_4_e_to_h
-    ife [i + 0], 'e'
+    ife [a + 0], 'e'
         set pc, glob_func_4_e
-    ife [i + 0], 'g'
+    ife [a + 0], 'g'
         set pc, glob_func_4_g
-    ifn [i + 0], 'h'
+    ifn [a + 0], 'h'
         set pc, pop
-    ife [i + 1], 's'
-        ife [i + 2], 'e'
-            ife [i + 3], 'l'
+    ife [a + 1], 's'
+        ife [a + 2], 'e'
+            ife [a + 3], 'l'
                 set c, built_in_hsel
     set pc, pop
 
 :glob_func_4_e
-    ife [i + 1], 'd'
+    ife [a + 1], 'd'
         set pc, glob_func_4_ed
-    ifn [i + 1], 'x'
+    ifn [a + 1], 'x'
         set pc, pop
-    ife [i + 2], 'i'
-        ife [i + 3], 't'
+    ife [a + 2], 'i'
+        ife [a + 3], 't'
             set c, built_in_exit
     set pc, pop
 
 :glob_func_4_ed
-    ife [i + 2], 'i'
-        ife [i + 3], 't'
+    ife [a + 2], 'i'
+        ife [a + 3], 't'
             set c, built_in_edit
     set pc, pop
 
 :glob_func_4_g
-    ife [i + 1], 'e'
-        ife [i + 2], 't'
-            ife [i + 3], 'c'
+    ife [a + 1], 'e'
+        ife [a + 2], 't'
+            ife [a + 3], 'c'
                 set c, built_in_getchar
     set pc, pop
 
 :glob_func_4_b_to_c
-    ife [i + 0], 'b'
+    ife [a + 0], 'b'
         set pc, glob_func_4_b
-    ifn [i + 0], 'c'
+    ifn [a + 0], 'c'
         set pc, pop
-    ife [i + 1], 'a'
-        ife [i + 2], 'l'
-            ife [i + 3], 'l'
+    ife [a + 1], 'a'
+        ife [a + 2], 'l'
+            ife [a + 3], 'l'
                 set c, built_in_call
     set pc, pop
 
 :glob_func_4_b
-    ife [i + 1], 'o'
-        ife [i + 2], 'o'
-            ife [i + 3], 'l'
+    ife [a + 1], 'o'
+        ife [a + 2], 'o'
+            ife [a + 3], 'l'
                 set c, built_in_bool
     set pc, pop
+
 :glob_func_5
-    ifl [i + 0], 'p'
+    ifl [a + 0], 'p'
         set pc, glob_func_5_f_to_i
 
 :glob_func_5_p_to_w
-    ife [i + 0], 'p'
+    ife [a + 0], 'p'
         set pc, glob_func_5_p
-    ife [i + 0], 'r'
+    ife [a + 0], 'r'
         set pc, glob_func_5_r
-    ifn [i + 0], 'w'
+    ifn [a + 0], 'w'
         set pc, pop
-    ife [i + 1], 'r'
-        ife [i + 2], 'i'
-            ife [i + 3], 't'
-                ife [i + 4], 'e'
+    ife [a + 1], 'r'
+        ife [a + 2], 'i'
+            ife [a + 3], 't'
+                ife [a + 4], 'e'
                     set c, built_in_write
     set pc, pop
 
 :glob_func_5_p
-    ife [i + 1], 'o'
-        ife [i + 2], 'i'
-            ife [i + 3], 'n'
-                ife [i + 4], 't'
+    ife [a + 1], 'o'
+        ife [a + 2], 'i'
+            ife [a + 3], 'n'
+                ife [a + 4], 't'
                     set c, built_in_point
     set pc, pop
 
 :glob_func_5_r
-    ifl [i + 1], 'i'
+    ifl [a + 1], 'i'
         set pc, glob_func_5_ra_to_rc
 
-:glob_func_5_ri_to_rsr
-    ife [i + 1], 'i'
+:glob_func_5_ri_to_rs
+    ife [a + 1], 'i'
         set pc, glob_func_5_ri
-    ife [i + 1], 'r'
+    ife [a + 1], 'r'
         set pc, glob_func_5_rr
-    ifn [i + 1], 's'
+    ifn [a + 1], 's'
         set pc, pop
-    ife [i + 2], 'e'
-        ife [i + 3], 'n'
-            ife [i + 4], 'd'
+    ife [a + 2], 'e'
+        ife [a + 3], 'n'
+            ife [a + 4], 'd'
                 set c, built_in_rsend
     set pc, pop
 
 :glob_func_5_ri
-    ife [i + 2], 'n'
-        ife [i + 3], 'f'
-            ife [i + 4], 'o'
+    ife [a + 2], 'n'
+        ife [a + 3], 'f'
+            ife [a + 4], 'o'
                 set c, built_in_rinfo
     set pc, pop
 
 :glob_func_5_rr
-    ife [i + 2], 'e'
-        ife [i + 3], 'c'
-            ife [i + 4], 'v'
+    ife [a + 2], 'e'
+        ife [a + 3], 'c'
+            ife [a + 4], 'v'
                 set c, built_in_rrecv
     set pc, pop
 
-:glob_func_5_ra_to_rcr
-    ife [i + 1], 'a'
+:glob_func_5_ra_to_rc
+    ife [a + 1], 'a'
         set pc, glob_func_5_ra
-    ifn [i + 1], 'c'
+    ifn [a + 1], 'c'
         set pc, pop
-    ife [i + 2], 'o'
-        ife [i + 3], 'n'
-            ife [i + 4], 'f'
+    ife [a + 2], 'o'
+        ife [a + 3], 'n'
+            ife [a + 4], 'f'
                 set c, built_in_rconf
     set pc, pop
 
 :glob_func_5_ra
-    ife [i + 2], 'n'
-        ife [i + 3], 'g'
-            ife [i + 4], 'e'
+    ife [a + 2], 'n'
+        ife [a + 3], 'g'
+            ife [a + 4], 'e'
                 set c, built_in_range
     set pc, pop
 
 :glob_func_5_f_to_i
-    ife [i + 0], 'f'
+    ife [a + 0], 'f'
         set pc, glob_func_5_f
-    ife [i + 0], 'h'
+    ife [a + 0], 'h'
         set pc, glob_func_5_h
-    ifn [i + 0], 'i'
+    ifn [a + 0], 'i'
         set pc, pop
-    ife [i + 1], 'n'
-        ife [i + 2], 'p'
-            ife [i + 3], 'u'
-                ife [i + 4], 't'
+    ife [a + 1], 'n'
+        ife [a + 2], 'p'
+            ife [a + 3], 'u'
+                ife [a + 4], 't'
                     set c, built_in_input
     set pc, pop
 
 :glob_func_5_f
-    ife [i + 1], 'l'
-        ife [i + 2], 'o'
-            ife [i + 3], 'a'
-                ife [i + 4], 't'
+    ife [a + 1], 'l'
+        ife [a + 2], 'o'
+            ife [a + 3], 'a'
+                ife [a + 4], 't'
                     set c, built_in_float
     set pc, pop
 
 :glob_func_5_h
-    ife [i + 1], 'i'
+    ife [a + 1], 'i'
         set pc, glob_func_5_hi
-    ife [i + 1], 'r'
+    ife [a + 1], 'r'
         set pc, glob_func_5_hr
-    ifn [i + 1], 's'
+    ifn [a + 1], 's'
         set pc, pop
-    ife [i + 2], 'e'
-        ife [i + 3], 'n'
-            ife [i + 4], 'd'
+    ife [a + 2], 'e'
+        ife [a + 3], 'n'
+            ife [a + 4], 'd'
                 set c, built_in_hsend
     set pc, pop
 
 :glob_func_5_hi
-    ife [i + 2], 'n'
+    ife [a + 2], 'n'
         set pc, glob_func_5_hin
-    ifn [i + 2], 'r'
+    ifn [a + 2], 'r'
         set pc, pop
-    ife [i + 3], 'e'
-        ife [i + 4], 's'
+    ife [a + 3], 'e'
+        ife [a + 4], 's'
             set c, built_in_hires
     set pc, pop
 
 :glob_func_5_hin
-    ife [i + 3], 'f'
-        ife [i + 4], 'o'
+    ife [a + 3], 'f'
+        ife [a + 4], 'o'
             set c, built_in_hinfo
     set pc, pop
 
 :glob_func_5_hr
-    ife [i + 2], 'e'
-        ife [i + 3], 'c'
-            ife [i + 4], 'v'
+    ife [a + 2], 'e'
+        ife [a + 3], 'c'
+            ife [a + 4], 'v'
                 set c, built_in_hrecv
     set pc, pop
+
 :glob_func_6
-    ifl [i + 0], 'l'
+    ifl [a + 0], 'l'
         set pc, glob_func_6_c_to_f
 
 :glob_func_6_l_to_s
-    ife [i + 0], 'l'
+    ife [a + 0], 'l'
         set pc, glob_func_6_l
-    ifn [i + 0], 's'
+    ifn [a + 0], 's'
         set pc, pop
-    ife [i + 1], 'c'
-        ife [i + 2], 'r'
-            ife [i + 3], 'o'
-                ife [i + 4], 'l'
-                    ife [i + 5], 'l'
+    ife [a + 1], 'c'
+        ife [a + 2], 'r'
+            ife [a + 3], 'o'
+                ife [a + 4], 'l'
+                    ife [a + 5], 'l'
                         set c, built_in_scroll
     set pc, pop
 
 :glob_func_6_l
-    ife [i + 1], 'o'
-        ife [i + 2], 'c'
-            ife [i + 3], 'a'
-                ife [i + 4], 'l'
-                    ife [i + 5], 's'
+    ife [a + 1], 'o'
+        ife [a + 2], 'c'
+            ife [a + 3], 'a'
+                ife [a + 4], 'l'
+                    ife [a + 5], 's'
                         set c, built_in_locals
     set pc, pop
 
 :glob_func_6_c_to_f
-    ife [i + 0], 'c'
+    ife [a + 0], 'c'
         set pc, glob_func_6_c
-    ifn [i + 0], 'f'
+    ifn [a + 0], 'f'
         set pc, pop
-    ife [i + 1], 'o'
-        ife [i + 2], 'r'
-            ife [i + 3], 'm'
-                ife [i + 4], 'a'
-                    ife [i + 5], 't'
+    ife [a + 1], 'o'
+        ife [a + 2], 'r'
+            ife [a + 3], 'm'
+                ife [a + 4], 'a'
+                    ife [a + 5], 't'
                         set c, built_in_format
     set pc, pop
 
 :glob_func_6_c
-    ife [i + 1], 'i'
+    ife [a + 1], 'i'
         set pc, glob_func_6_ci
-    ifn [i + 1], 'u'
+    ifn [a + 1], 'u'
         set pc, pop
-    ife [i + 2], 'r'
-        ife [i + 3], 's'
-            ife [i + 4], 'o'
-                ife [i + 5], 'r'
+    ife [a + 2], 'r'
+        ife [a + 3], 's'
+            ife [a + 4], 'o'
+                ife [a + 5], 'r'
                     set c, built_in_cursor
     set pc, pop
 
 :glob_func_6_ci
-    ife [i + 2], 'r'
-        ife [i + 3], 'c'
-            ife [i + 4], 'l'
-                ife [i + 5], 'e'
+    ife [a + 2], 'r'
+        ife [a + 3], 'c'
+            ife [a + 4], 'l'
+                ife [a + 5], 'e'
                     set c, built_in_circle
     set pc, pop
+
 :glob_func_7
-    ife [i + 0], 'g'
-        ife [i + 1], 'l'
-            ife [i + 2], 'o'
-                ife [i + 3], 'b'
-                    ife [i + 4], 'a'
-                        ife [i + 5], 'l'
-                            ife [i + 6], 's'
+    ife [a + 0], 'g'
+        ife [a + 1], 'l'
+            ife [a + 2], 'o'
+                ife [a + 3], 'b'
+                    ife [a + 4], 'a'
+                        ife [a + 5], 'l'
+                            ife [a + 6], 's'
                                 set c, built_in_globals
     set pc, pop

@@ -1,0 +1,154 @@
+:str_func
+    set c, led_lparen_user_defined
+    ifg b, 10
+        set pc, pop
+
+    set pc, [str_func_table + b - 1]
+
+:str_func_table
+    dat str_func_1
+    dat str_func_2
+    dat str_func_3
+    dat str_func_4
+    dat str_func_5
+    dat str_func_6
+    dat str_func_7
+    dat str_func_8
+    dat str_func_9
+    dat str_func_10
+
+:str_func_1
+:str_func_2
+:str_func_3
+:str_func_6
+:str_func_9
+    set pc, pop
+
+
+:str_func_8
+    ife [a + 0], 'e'
+        ife [a + 1], 'n'
+            ife [a + 2], 'd'
+                ife [a + 3], 's'
+                    ife [a + 4], 'w'
+                        ife [a + 5], 'i'
+                            ife [a + 6], 't'
+                                ife [a + 7], 'h'
+                                    set c, built_in__str_endswith
+    set pc, pop
+
+:str_func_10
+    ife [a + 0], 's'
+        ife [a + 1], 't'
+            ife [a + 2], 'a'
+                ife [a + 3], 'r'
+                    ife [a + 4], 't'
+                        ife [a + 5], 's'
+                            ife [a + 6], 'w'
+                                ife [a + 7], 'i'
+                                    ife [a + 8], 't'
+                                        ife [a + 9], 'h'
+                                            set c, built_in__str_startswith
+    set pc, pop
+
+:str_func_4
+    ife [a + 0], 'f'
+        ife [a + 1], 'i'
+            ife [a + 2], 'n'
+                ife [a + 3], 'd'
+                    set c, built_in__str_find
+    set pc, pop
+
+:str_func_5
+    ife [a + 0], 'l'
+        set pc, str_func_5_l
+    ife [a + 0], 's'
+        set pc, str_func_5_s
+    ifn [a + 0], 'u'
+        set pc, pop
+    ife [a + 1], 'p'
+        ife [a + 2], 'p'
+            ife [a + 3], 'e'
+                ife [a + 4], 'r'
+                    set c, built_in__str_upper
+    set pc, pop
+
+:str_func_5_l
+    ife [a + 1], 'o'
+        ife [a + 2], 'w'
+            ife [a + 3], 'e'
+                ife [a + 4], 'r'
+                    set c, built_in__str_lower
+    set pc, pop
+
+:str_func_5_s
+    ife [a + 1], 'p'
+        ife [a + 2], 'l'
+            ife [a + 3], 'i'
+                ife [a + 4], 't'
+                    set c, built_in__str_split
+    set pc, pop
+
+:str_func_7
+    ifl [a + 0], 'i'
+        set pc, str_func_7_d_to_e
+
+:str_func_7_i_to_r
+    ife [a + 0], 'i'
+        set pc, str_func_7_i
+    ifn [a + 0], 'r'
+        set pc, pop
+    ife [a + 1], 'e'
+        ife [a + 2], 'p'
+            ife [a + 3], 'l'
+                ife [a + 4], 'a'
+                    ife [a + 5], 'c'
+                        ife [a + 6], 'e'
+                            set c, built_in__str_replace
+    set pc, pop
+
+:str_func_7_i
+    ifn [a + 1], 's'
+        set pc, pop
+    ife [a + 2], 'a'
+        set pc, str_func_7_isa
+    ifn [a + 2], 'd'
+        set pc, pop
+    ife [a + 3], 'i'
+        ife [a + 4], 'g'
+            ife [a + 5], 'i'
+                ife [a + 6], 't'
+                    set c, built_in__str_isdigit
+    set pc, pop
+
+:str_func_7_isa
+    ife [a + 3], 'l'
+        ife [a + 4], 'p'
+            ife [a + 5], 'h'
+                ife [a + 6], 'a'
+                    set c, built_in__str_isalpha
+    set pc, pop
+
+:str_func_7_d_to_e
+    ife [a + 0], 'd'
+        set pc, str_func_7_d
+    ifn [a + 0], 'e'
+        set pc, pop
+    ife [a + 1], 'n'
+        ife [a + 2], 'c'
+            ife [a + 3], 'r'
+                ife [a + 4], 'y'
+                    ife [a + 5], 'p'
+                        ife [a + 6], 't'
+                            set c, built_in__str_encrypt
+    set pc, pop
+
+:str_func_7_d
+    ife [a + 1], 'e'
+        ife [a + 2], 'c'
+            ife [a + 3], 'r'
+                ife [a + 4], 'y'
+                    ife [a + 5], 'p'
+                        ife [a + 6], 't'
+                            set c, built_in__str_decrypt
+    set pc, pop
