@@ -2382,16 +2382,7 @@
     set b, [a + REFERENCE_LEFT]
 
     ; ADD HERE OBJECT TYPES THAT HAVE METHODS
-    set x, 0
-    ifb [b + HANDLE_TYPE], TYPE_LIST
-        set x, built_in__list_methods
-    ifb [b + HANDLE_TYPE], TYPE_STR
-        set x, built_in__str_methods
-    ifb [b + HANDLE_TYPE], TYPE_DICT
-        set x, built_in__dict_methods
-
-    ife x, 0
-        set pc, led_lparen_user_defined
+    set x, [b + HANDLE_TYPE]
 
     set a, [a + REFERENCE_RIGHT]
     set a, [a]
@@ -2399,21 +2390,24 @@
     set b, [a]
     add a, 1
 
-    jsr built_in_matcher
+    set c, led_lparen_user_defined
+
+    ife x, TYPE_DICT
+        jsr dict_func
+    ife x, TYPE_LIST
+        jsr list_func
+    ife x, TYPE_STR
+        jsr str_func
+
     set pc, c
 
 :built_in__global_functions
     set a, [a]
 
     set b, [a]
-    ifg b, 7
-        set pc, led_lparen_user_defined
-
     add a, 1
 
-    set x, [built_in_functions_by_len + b - 1]
-
-    jsr built_in_matcher
+    jsr glob_func
     set pc, c
 
 ;----------------------------------------------------------------

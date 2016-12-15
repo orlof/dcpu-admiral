@@ -1,0 +1,29 @@
+:list_func
+    set c, led_lparen_user_defined
+    ife b, 6
+        set pc, list_func_6
+
+    set pc, pop
+
+
+:list_func_6
+    ife [a + 0], 'a'
+        set pc, list_func_6_a
+    ifn [a + 0], 'i'
+        set pc, pop
+    ife [a + 1], 'n'
+        ife [a + 2], 's'
+            ife [a + 3], 'e'
+                ife [a + 4], 'r'
+                    ife [a + 5], 't'
+                        set c, built_in__list_insert
+    set pc, pop
+
+:list_func_6_a
+    ife [a + 1], 'p'
+        ife [a + 2], 'p'
+            ife [a + 3], 'e'
+                ife [a + 4], 'n'
+                    ife [a + 5], 'd'
+                        set c, built_in__list_append
+    set pc, pop

@@ -1,0 +1,17 @@
+:dict_func
+    set c, led_lparen_user_defined
+    ife b, 6
+        set pc, dict_func_6
+
+    set pc, pop
+
+
+:dict_func_6
+    ife [a + 0], 'c'
+        ife [a + 1], 'r'
+            ife [a + 2], 'e'
+                ife [a + 3], 'a'
+                    ife [a + 4], 't'
+                        ife [a + 5], 'e'
+                            set c, built_in__dict_create
+    set pc, pop
