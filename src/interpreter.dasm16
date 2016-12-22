@@ -1,4 +1,5 @@
 :interpreter_main
+    set sp, 0
     set c, 0
     set i, MEM_CODE_END
     set j, 0xffff
