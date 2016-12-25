@@ -1,7 +1,15 @@
 ---
 
 <h1>ADMIRAL - Operating Environment for DCPU-16</h1>
-<h5><i>"PURE INTERPRETED LANGUAGE FOR THE FRINGE COLONIES"</i></h5>
+
+<i>
+yes, it's hard to write code with LEM resolution...<br>
+yes, it's hard to fit IDE, runtime and application software into 64k<br>
+...and yes, it is hard to modify reactor core routines in 374 seconds to stop meltdown!<br><br>
+
+But we have enlisted to the Verge Station, not because it is easy, but because it is hard!<br><br>
+
+PURE INTERPRETED LANGUAGE FOR THE FRINGE COLONIES</i>
 
 Admiral is an easy to use all-in-one operating environment for DCPU. It requires no toolchains and comes bundled with efficient high-level programming language. Admiral’s advanced technical solutions and elegant design, make it an ideal language for scripting and rapid application development.
 
