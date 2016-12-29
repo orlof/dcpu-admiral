@@ -106,14 +106,14 @@
 :recover
 ; fastcall
 ;----------------------------------------------------------------
+    ife [screen_blank], SCREEN_BLANK_PIX
+        jsr hires__finish
+
     set a, pop
     set z, [recovery_fp]
     set sp, [recovery_sp]
 
     set [current_scope], [global_scope]
-
-    ife [screen_blank], SCREEN_BLANK_PIX
-        jsr hires__finish
 
     set push, STR_ERROR
     jsr print
