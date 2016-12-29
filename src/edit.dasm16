@@ -6,6 +6,9 @@
     set push, 2
     jsr preamble
 
+    ; do nothing for run-stop key
+    ias 0
+
     ; initialize cursor to top left corner
     ; these are screen coordinates (not column or line in text) as
     ; screen scrolls in both axis
@@ -93,8 +96,11 @@
 :edit_main_finish
     jsr screen_prev
 
+    ; continue handling run-stop key
+    ias key_interrupt
+
     set x, [z+10]
-    ife c, KEY_CTRL_C
+    ifn c, KEY_CTRL_X
         set pc, postamble
 
     set c, [buf_end]
