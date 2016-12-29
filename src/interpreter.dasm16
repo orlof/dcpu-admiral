@@ -76,7 +76,17 @@
     set push, STR_STARTUP3
     jsr print
 
+    set a, 0
+    set b, 60
+    hwi [clock]
+
+    set a, 2
+    set b, 1
+    hwi [clock]
+
 :interpreter_loop
+    ias 0
+
     set push, STR_PROMPT
     jsr print
 
@@ -89,6 +99,8 @@
     jsr lexer_init
 
 :interpreter_loop_parse
+    ias key_interrupt
+
     jsr parser_stmt
     set [z-3], x
 
@@ -110,8 +122,6 @@
     ;     set pc, interpreter_loop_parse
 
     set pc, interpreter_loop
-
-
 
 ;----------------------------------------------------------------
 ; struct handle *scope_get(struct handle *dict, struct handle *key)
@@ -242,13 +252,6 @@
 
     set c, 10
     jsr screen_add_char
-
-;    jsr lexer__get_token_marker
-;    set push, x
-;    jsr print
-
-;    set c, 10
-;    jsr screen_add_char
 
     set pc, interpreter_loop
 

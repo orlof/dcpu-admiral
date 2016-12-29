@@ -3,6 +3,8 @@
 ; return pointer to allocated handle or zero if error
 ;----------------------------------------------------------------
 :realloc
+    iaq TRUE
+
     set push, 2
     set push, 0
     jsr preamble
@@ -15,6 +17,8 @@
 
     ; shrinking is easy
     set [c + HANDLE_SIZE], a
+
+    iaq FALSE
     set pc, postamble
 
 :realloc__grow
@@ -78,6 +82,8 @@
     set [heap_free_start], a                    ; update unallocated heap space pointer
 
     set x, c                                    ; return pointer to new handle
+
+    iaq FALSE
     set pc, postamble
 
 ;----------------------------------------------------------------
@@ -89,6 +95,7 @@
 ; [SP + 1] RTS
 ; [SP + 0] a
 :alloc
+    iaq TRUE
     set push, a
 
     ;------------------------------
@@ -142,6 +149,7 @@
     set [sp], pop                                ; remove arguments from stack
     set [sp], pop
 
+    iaq FALSE
     set pc, pop
 
 :alloc__handle__new
@@ -352,7 +360,7 @@
 ; mem_clear
 ; fill a memory area with a value.
 ;
-; input 
+; input
 ;  I start address, J end address, C fill word
 ;
 ; clobbers A, B, Y

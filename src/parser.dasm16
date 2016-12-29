@@ -2601,8 +2601,10 @@ DAT 0
 ;----------------------------------------------------------------
     jsr built_in_params
 
+    iaq TRUE
     jsr mark
     jsr compact
+    iaq FALSE
 
     set a, [heap_handle_start]
     sub a, [heap_free_start]

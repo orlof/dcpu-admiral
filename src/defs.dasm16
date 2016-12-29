@@ -93,6 +93,7 @@
 #define KEY_RIGHT       0x83
 #define KEY_SHIFT       0x90
 #define KEY_CTRL        0x91
+#define KEY_ALT         0x92
 #define KEY_CTRL_MASK   0x8000
 #define KEY_SHIFT_MASK  0x4000
 #define KEY_CTRL_X      0x8058

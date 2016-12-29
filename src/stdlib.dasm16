@@ -77,7 +77,7 @@
     set push, 1
     set push, 1
     jsr preamble
-    
+
     set x, [z+10]
 
     ifb [x + HANDLE_TYPE], TYPE_TUPLE_COMMA
@@ -112,14 +112,14 @@
     set i, 0
     set c, [a]
     set c, [c]
-    
+
 :eval_tuple_loop
     ife i, c
         set pc, eval_tuple_break
 
     set b, [a]
     add b, i
-    
+
     set push, [b+1]
     jsr eval
 
@@ -139,7 +139,7 @@
     set x, [x + REFERENCE_RIGHT]
     set [x + HANDLE_TYPE], TYPE_STR
     jsr scope_get
-    
+
     ife x, 0
         jsr recover
         #doc Unknown reference object
@@ -202,7 +202,7 @@
     jsr int_to_int16
     set push, x
 
-    jsr array_split    
+    jsr array_split
     set pc, postamble
 
 :eval_subscription_str
@@ -223,7 +223,7 @@
     set y, [b]
     ifb x, 0x8000
         add x, [y]
-        
+
     ifa x, [y]
         jsr recover
         #doc Illegal string subscription index
@@ -233,12 +233,12 @@
     ifu x, 0
         jsr recover
         #doc Illegal string subscription index
-        
+
     set push, x        ; start
 
     add x, 1        ; end
     set push, x
-    jsr array_split    
+    jsr array_split
 
     set pc, postamble
 
@@ -249,13 +249,13 @@
     set push, 1
     set push, 0
     jsr preamble
-    
+
     set a, [z+10]
     set b, [a]
 
     ife a, NONE
         set pc, boolean_false
-        
+
     set x, [a + HANDLE_TYPE]
 
     ifb x, TYPE_INT + TYPE_BOOL
@@ -277,7 +277,7 @@
 
     ife x, TYPE_STR
         set pc, boolean_str
-        
+
 :boolean_true
     set x, BOOL_TRUE
     set pc, postamble
@@ -302,7 +302,7 @@
     set push, 2
     set push, 1
     jsr preamble
-    
+
     set a, [z+11]
     set b, [z+10]
 
@@ -313,7 +313,7 @@
         set pc, sort_tuple
     ifb [a + HANDLE_TYPE], TYPE_LIST
         set pc, sort_list
-        
+
     jsr recover
     #doc Sort is available only for str, tuple and list
 
@@ -326,11 +326,11 @@
         set push, char_reverse_comparator
     ife b, BOOL_FALSE
         set push, char_comparator
-        
+
     jsr array_sort
     set x, [z-1]
     set pc, postamble
-    
+
 :char_comparator
     set x, FALSE
     ifl [sp+2], [sp+1]
@@ -359,7 +359,7 @@
         set push, array_reverse_comparator
     ife b, BOOL_FALSE
         set push, array_comparator
-        
+
     jsr array_sort
     set x, [z-1]
     set pc, postamble
@@ -368,7 +368,7 @@
     set i, pop
     jsr val_cmp
     set push, i
-    
+
     ife x, -1
         set pc, array_comparator_true
     set x, FALSE
@@ -381,7 +381,7 @@
     set i, pop
     jsr val_cmp
     set push, i
-    
+
     ife x, 1
         set pc, array_comparator_true
     set x, FALSE
@@ -394,7 +394,7 @@
     set push, 2
     set push, 2
     jsr preamble
-    
+
     set a, [z+11]
     set b, [z+10]
 
@@ -421,7 +421,7 @@
     ifb [y + HANDLE_TYPE], TYPE_DICT
         ifb [c + HANDLE_TYPE], TYPE_GROUP_IMMUTABLE
             set pc, assign_subscription_dict
-    
+
     ifb [y + HANDLE_TYPE], TYPE_LIST
         ifb [c + HANDLE_TYPE], TYPE_INT
             set pc, assign_subscription_list_int
@@ -457,7 +457,7 @@
     jsr dict__set
     set x, b
     set pc, postamble
-    
+
 :assign_name
     set push, [current_scope]
     set push, a
@@ -467,7 +467,7 @@
 
     set x, b
     set pc, postamble
-    
+
 :assign_tuple
     set i, 0
     set c, [a]
@@ -485,7 +485,7 @@
     set x, [a]
     add x, i
     set push, [x+1]
-    
+
     set x, [b]
     add x, i
     set push, [x+1]
@@ -509,7 +509,7 @@
     set push, 2
     set push, 1
     jsr preamble
-    
+
     set a, [z+11]
 
     set push, 1
@@ -536,10 +536,10 @@
     set push, b
     jsr y
     #doc Illegal left side of subscription
-    
+
     set x, b
     set pc, postamble
-    
+
 ;----------------------------------------------------------------
 ; void del(struct handle *item)
 ;----------------------------------------------------------------
@@ -547,7 +547,7 @@
     set push, 1
     set push, 1
     jsr preamble
-    
+
     set a, [z+10]
 
     ifb [a + HANDLE_TYPE], TYPE_NAME
@@ -561,15 +561,15 @@
     set b, [a + REFERENCE_LEFT]
     ifb [b + HANDLE_TYPE], TYPE_DICT
         set y, dict_del
-    
+
     set push, b                     ; LEFT
     set push, [a + REFERENCE_RIGHT] ; RIGHT
     jsr y
     #doc Wrong object type for delete
-    
+
     set x, NONE
     set pc, postamble
-    
+
 :del_name
     set push, [current_scope]
     set push, a
@@ -577,7 +577,7 @@
 
     set x, NONE
     set pc, postamble
-    
+
 ;----------------------------------------------------------------
 :cast_common_number_type
 ; fastcall
@@ -591,7 +591,7 @@
     ifb [a + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
         ifb [b + HANDLE_TYPE], TYPE_FLOAT
             set pc, itof_left
-    
+
     ifb [b + HANDLE_TYPE], TYPE_INT + TYPE_BOOL
         ifb [a + HANDLE_TYPE], TYPE_FLOAT
             set pc, itof_right
@@ -612,7 +612,7 @@
     set b, x
     set pc, pop
 
-        
+
 ;----------------------------------------------------------------
 ; utility subroutines to handle function setup and cleanup
 ;----------------------------------------------------------------
@@ -626,7 +626,7 @@
 :postamble
     set sp, z                ; free local vars and heap refs
     set z, pop                ; restore fp
-    
+
     set y, pop                ; restore registers
     set j, pop
     set i, pop
@@ -649,10 +649,10 @@
 
     set pc, pop                ; rts
 
-; preamble - subroutines must 
+; preamble - subroutines must
 ;  1. push number of subroutine arguments
-;  2. push number of required heap references 
-;  3. call preamble before doing ANYTHING else 
+;  2. push number of required heap references
+;  3. call preamble before doing ANYTHING else
 ;
 ; Stack after preamble
 ;         [preamble]
@@ -816,7 +816,7 @@
         ife b, 0x30cf
             set [keyboard], i
     ife a, 0xb402
-        ife b, 0x12d0
+        ife b, 0x12d1
             set [clock], i
     ife a, 0x24c5
         ife b, 0x4fd5
@@ -828,6 +828,23 @@
         ife b, 0xd005
             set [rci], i
     set pc, detect_hardware__loop
+
+:key_interrupt
+    set push, b
+    set push, c
+
+    set a, 2
+    set b, KEY_ALT
+    hwi [keyboard]
+
+    ifn c, 0
+        jsr recover
+        #doc keyboard interrupt
+
+    set c, pop
+    set b, pop
+
+    rfi x
 
 ;----------------------------------------------------------------
 :win_getchar
@@ -907,10 +924,10 @@
     set push, [z+10]
     jsr eval
     set [z-1], x
-    
+
     set push, [z-1]
     jsr print
-    
+
 :raw_input_no_prompt
 ;    set y, [cursor]
     set y, [current_screen]
@@ -919,8 +936,8 @@
 :next_char_loop
     ; start of input
     jsr screen_toggle_cursor
-    
-    ; Handle keyboard input  
+
+    ; Handle keyboard input
 :input_loop
     set a, 1                      ; store next key mode
     hwi [keyboard]
@@ -930,7 +947,7 @@
         set pc, input_loop
 
     jsr screen_toggle_cursor
-    
+
     ife c, KEY_NEWLINE
         set pc, finish
 
@@ -968,9 +985,9 @@
         set pc, postamble
     set [j], [i]
     and [j], 0x007f
-    
+
     std pc, finish_loop
-    
+
 ;----------------------------------------------------------------
 :built_in_matcher
 ; fastcall
@@ -1021,4 +1038,3 @@
 ;----------------------------------------------------------------
     set x, BOOL_FALSE
     set pc, postamble
-
