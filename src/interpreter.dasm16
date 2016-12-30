@@ -33,10 +33,11 @@
     jsr detect_hardware
 
     ; mandatory hardware
-    set a, [monitor]
-    and a, [keyboard]
-    and a, [clock]
-    ifn a, 0xffff
+    ife [monitor], 0xffff
+        set pc, halt
+    ife [keyboard], 0xffff
+        set pc, halt
+    ife [clock], 0xffff
         set pc, halt
 
     jsr screen_select
