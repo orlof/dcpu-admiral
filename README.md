@@ -139,7 +139,33 @@ return x                      # return value
 9
 </pre>
 
-Example: variable swap
+If you want to save that sqrt function to floppy disc, no problem.
+
+Just format an empty disc:
+<pre>
+>format()
+</pre>
+
+and save your object graph (this time only a single string) with a filename:
+<pre>
+>save("sqrt", sqrt)
+</pre>
+
+In some other day, to restore the function from floppy to memory just load it:
+<pre>
+>sqrt=load("sqrt")
+>print sqrt(81)
+9
+</pre>
+
+If single function is not enough for you (usually it isn't) just use
+dictionary to hold all your functions and data. You can save and load
+dictionaries just as easily as a simple string.
+
+Functions inside a dictionary can even access all the fields of their
+host dictionary with "me" -reference e.g. "me.do_it()"
+
+Lets have a look to another example: variable swap
 <pre>
 >a=1
 >b=2
@@ -148,7 +174,7 @@ Example: variable swap
 2 1
 </pre>
 
-Example: dictionary printing
+...and dictionary printing
 <pre>
 >d={'a':1,'b':2}
 >for k,v in d:print k, v
@@ -300,7 +326,7 @@ The Admiral interpreter acts as a simple calculator: you can type 'print' and an
 5
 </pre>
 
-If you accidenttaly enter e.g. infinite loop, execution can be stopped by pressing ALT (only available in generation 2 keyboards). 
+If you accidenttaly enter e.g. infinite loop, execution can be stopped by pressing ALT (only available in generation 2 keyboards).
 
 The equal sign ('=') is used to assign a value to a variable.
 <pre>
