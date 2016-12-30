@@ -40,8 +40,8 @@
         set pc, halt
     ife [keyboard], 0xffff
         set pc, halt
-    ife [clock], 0xffff
-        set pc, halt
+;    ife [clock], 0xffff
+;        set pc, halt
 
     jsr screen_select
     jsr screen_clear
@@ -88,13 +88,9 @@
     set push, STR_STARTUP3
     jsr print
 
-    set a, 0
-    set b, 60
-    hwi [clock]
-
-    set a, 2
+    set a, 3
     set b, 2
-    hwi [clock]
+    hwi [keyboard]
 
 :interpreter_loop
     ias 0
