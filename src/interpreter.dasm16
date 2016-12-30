@@ -93,7 +93,7 @@
     hwi [clock]
 
     set a, 2
-    set b, 1
+    set b, 2
     hwi [clock]
 
 :interpreter_loop

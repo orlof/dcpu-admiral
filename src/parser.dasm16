@@ -3841,53 +3841,58 @@ DAT 0
     jsr array_create
     set [z-1], x
     set j, [x]
+    add j, [j]
+
+    ; store fp
     set i, z
 
     set a, 0x10
-    hwi [clock]
+    hwi [timer]
 
-    ; hours
-    set push, x
-    set push, x
+    set push, b ; year
+    set push, c ; month
     shr [sp], 8
+    set push, c ; day
+    and [sp], 0xff
+    set push, x ; hours
+    shr [sp], 8
+    set push, x ; minutes
+    and [sp], 0xff
+    set push, y ; secs
+    set push, z ; ms
+
+    ; restore fp
+    set z, i
+
+    ; ms
     jsr uint16_to_int
-    set [j+4], x
+    std [j], x
+
+    ; secs
+    jsr uint16_to_int
+    std [j], x
 
     ; minutes
-    and [sp], 0xff
     jsr uint16_to_int
-    set [j+5], x
+    std [j], x
 
-    ; year
-    set push, b
+    ; hours
     jsr uint16_to_int
-    set [j+1], x
+    std [j], x
 
-    ; month
-    set push, c
-    shr [sp], 8
+    ; days
     jsr uint16_to_int
-    set [j+2], x
+    std [j], x
 
-    ; day
-    set push, c
-    and [sp], 0xff
+    ; months
     jsr uint16_to_int
-    set [j+3], x
+    std [j], x
 
-    ; year
-    set push, y
+    ; years
     jsr uint16_to_int
-    set [j+6], x
+    std [j], x
 
-    ; year
-    set push, z
-    jsr uint16_to_int
-    set [j+7], x
-
-    set z, i
     set x, [z-1]
-
     set pc, postamble
 
 ;----------------------------------------------------------------

@@ -322,6 +322,10 @@
     set push, c
     jsr list_get
 
+    ife x, 0
+        jsr recover
+        #doc Array index out of bounds
+
     set pc, postamble
 
 :eval_subscription_str_slice
