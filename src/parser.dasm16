@@ -3780,6 +3780,89 @@ DAT 0, TYPE_GROUP_INTEGER, TYPE_GROUP_INTEGER
     set pc, postamble_none
 
 ;----------------------------------------------------------------
+DAT 0, TYPE_INT
+:built_in_sleep
+;----------------------------------------------------------------
+    jsr built_in_params
+
+    set push, [z-1]
+        jsr int_to_int16
+
+    :built_in_sleep__loop
+        ife x, 0
+            set pc, postamble_none
+
+        set i, 19998
+        :built_in_sleep__sec_loop
+            ifn i, 0
+                std pc, built_in_sleep__sec_loop
+
+        sub x, 1
+        set pc, built_in_sleep__loop
+
+    set pc, postamble_none
+
+;----------------------------------------------------------------
+DAT 0
+:built_in_time
+;----------------------------------------------------------------
+    jsr built_in_params
+
+    set push, 7
+    set push, TYPE_TUPLE
+    jsr array_create
+    set [z-1], x
+    set j, [x]
+    set i, z
+
+    set a, 0x10
+    hwi [clock]
+
+    ; hours
+    set push, x
+    set push, x
+    shr [sp], 8
+    jsr uint16_to_int
+    set [j+4], x
+
+    ; minutes
+    and [sp], 0xff
+    jsr uint16_to_int
+    set [j+5], x
+
+    ; year
+    set push, b
+    jsr uint16_to_int
+    set [j+1], x
+
+    ; month
+    set push, c
+    shr [sp], 8
+    jsr uint16_to_int
+    set [j+2], x
+
+    ; day
+    set push, c
+    and [sp], 0xff
+    jsr uint16_to_int
+    set [j+3], x
+
+    ; year
+    set push, y
+    jsr uint16_to_int
+    set [j+6], x
+
+    ; year
+    set push, z
+    jsr uint16_to_int
+    set [j+7], x
+
+    set z, i
+    set x, [z-1]
+
+    set pc, postamble
+
+;----------------------------------------------------------------
 DAT 0, TYPE_BOOL
 :built_in_hires
 ;----------------------------------------------------------------

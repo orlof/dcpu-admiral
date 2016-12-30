@@ -385,6 +385,7 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 5, "wset", built_in_win_set
     dat 5, "edit", built_in_edit
     dat 5, "exit", built_in_exit
+    dat 5, "time", built_in_time
     dat 1, led_lparen_user_defined
 :built_in_functions_5
     dat 6, "range", built_in_range
@@ -400,6 +401,7 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 6, "rinfo", built_in_rinfo
     dat 6, "rconf", built_in_rconf
     dat 6, "hires", built_in_hires
+    dat 6, "sleep", built_in_sleep
     dat 1, led_lparen_user_defined
 :built_in_functions_6
     dat 7, "cursor", built_in_cursor

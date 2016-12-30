@@ -353,6 +353,7 @@
     jsr preamble
 
     ; MEM_MAP_FONT
+    set [screen_blank], SCREEN_BLANK_PIX
 
     set a, 1
     set b, hires_font_ram

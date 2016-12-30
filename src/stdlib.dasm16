@@ -986,8 +986,6 @@
 ; return
 ;   c: input character
 ;----------------------------------------------------------------
-; after 0x10c cancellation this keyboard input subroutine was
-; simplified to support only megastage DCPU
     ifn [clipboard_state], 0
         set pc, win_getchar_from_clipboard
 
