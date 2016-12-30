@@ -1234,6 +1234,8 @@ e.g., range(3) returns the list [0, 1, 2].
       <li><a href="#hwi">hwi()</a></li>
       <li><a href="#read">read()</a></li>
       <li><a href="#write">write()</a></li>
+      <li><a href="#sleep">sleep()</a></li>
+      <li><a href="#time">time()</a></li>
     </ul>
   </li>
   <li>Hi-res graphics functions (experimental)
@@ -1775,6 +1777,24 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
   <dd>
     <p>
       Writes a single sector to floppy from floppy buffer "start=peek(0xfff7)". This method is provided for integrating with non-Admiral floppy formats.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="time">time()</dt>
+  <dd>
+    <p>
+      Returns a tuple containing calendar time in format (year, month, day, hour, minute, seconds, ms). Only available if Generic Clock is replaced with v2 Generic Timer.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="sleep">sleep(int)</dt>
+  <dd>
+    <p>
+      Wait for specified amount of milliseconds. Only lowest 16 bits are used to define the wait time - thus giving maximum value of 0xffff.
     </p>
   </dd>
 </dl>
