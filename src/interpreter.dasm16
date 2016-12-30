@@ -32,6 +32,9 @@
 
     jsr detect_hardware
 
+    ife [clock], 0xffff
+        set [clock], [timer]
+
     ; mandatory hardware
     ife [monitor], 0xffff
         set pc, halt

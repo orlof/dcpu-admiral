@@ -3123,11 +3123,11 @@ DAT 0xffff
 
     ife x, NONE
         jsr recover
-        #doc Wrong number of arguments for sort()
+        #doc sort(): Wrong number of arguments error
 
     ifc [x + HANDLE_TYPE], TYPE_BOOL
         jsr recover
-        #doc Illegal argument type for sort()
+        #doc sort(): Illegal argument type error
 
     set push, [z-1]
     set push, x
@@ -3164,7 +3164,7 @@ DAT 0xffff
     set x, [z-2]
     ifc [x + HANDLE_TYPE], TYPE_GROUP_INTEGER
         jsr recover
-        #doc Illegal argument type for cursor([x, y])
+        #doc cursor(): Illegal argument type error
 
     set push, x
     jsr int_to_int16
@@ -3235,7 +3235,7 @@ DAT 0, TYPE_INT, TYPE_INT, TYPE_STR
     set x, [x]
     ifn [x], 1
         jsr recover
-        #doc winset(): argument is string, not a char error
+        #doc winset(): Argument string too long error
 
     set push, [x+1]
 
@@ -3273,7 +3273,7 @@ DAT 0xffff  ; disable parameter checks
     set x, [z-1]
     ifc [x + HANDLE_TYPE], TYPE_INT
         jsr recover
-        #doc Illegal argument type for peek(start[, end])
+        #doc peek(): Illegal argument type error
 
     set push, x
     jsr int_to_int16
@@ -3283,7 +3283,7 @@ DAT 0xffff  ; disable parameter checks
 
     ifn i, 1
         jsr recover
-        #doc Wrong number of arguments for peek(start[, end])
+        #doc peek(): Wrong number of arguments error
 
     set push, [x]
     jsr uint16_to_int
@@ -3297,7 +3297,7 @@ DAT 0xffff  ; disable parameter checks
     set x, [z-2]
     ifc [x + HANDLE_TYPE], TYPE_INT
         jsr recover
-        #doc Illegal argument type for peek(start[, end])
+        #doc peek(): Illegal argument type error
 
     set push, x
     jsr int_to_int16
@@ -3394,14 +3394,14 @@ DAT 0xffff  ; disable parameter validation
 
     ife [hic], 0xffff
         jsr recover
-        #doc HIC not found error in hsel()
+        #doc hsel(): HIC device not present error
 
     ife i, 1
         set pc, built_in_hsel_port
 
     ifn i, 0
         jsr recover
-        #doc Wrong number of arguments for hsel()
+        #doc hsel(): Wrong number of arguments error
 
     set a, 0
     set c, 0
@@ -3422,7 +3422,7 @@ DAT 0xffff  ; disable parameter validation
     set x, [z-1]
     ifc [x + HANDLE_TYPE], TYPE_INT
         jsr recover
-        #doc Illegal argument type for hsel()
+        #doc hsel(): Illegal argument type error
 
     set push, x
     jsr int_to_int16
@@ -3445,7 +3445,7 @@ DAT 0, TYPE_INT, TYPE_INT
 
     ife [rci], 0xffff
         jsr recover
-        #doc rconf(): Device not present error
+        #doc rconf(): RCI device not present error
 
     set push, [z-1]
     jsr int_to_int16
@@ -3472,7 +3472,7 @@ DAT 0, TYPE_INT
 
     ife [hic], 0xffff
         jsr recover
-        #doc hinfo(): Device not present error
+        #doc hinfo(): HIC device not present error
 
     set push, [z-1]
     jsr int_to_int16
@@ -3530,7 +3530,7 @@ DAT 0
 
     ife [rci], 0xffff
         jsr recover
-        #doc rinfo(): Device not present error
+        #doc rinfo(): RCI device not present error
 
     ; get the info from device
     set a, 0
@@ -3579,7 +3579,7 @@ DAT 0, TYPE_INT
 
     ife [hic], 0xffff
         jsr recover
-        #doc hrecv(): Device not present error
+        #doc hrecv(): HIC device not present error
 
     set push, [z-1]
     jsr int_to_int16
@@ -3589,7 +3589,7 @@ DAT 0, TYPE_INT
     hwi [hic]
     ife c, 0x0002
         jsr recover
-        #doc Fail, Receive error in hrecv()
+        #doc hrecv(): HIC fail, receive error
 
     set x, NONE
     ife c, 0x0003
@@ -3608,7 +3608,7 @@ DAT 0
 
     ife [rci], 0xffff
         jsr recover
-        #doc rrecv(): Device not present error
+        #doc rrecv(): RCI device not present error
 
     set a, 0x0001
     set b, MEM_FLOPPY_START
@@ -3642,7 +3642,7 @@ DAT 0, TYPE_INT, TYPE_INT
 
     ife [hic], 0xffff
         jsr recover
-        #doc hsend(): Device not present error
+        #doc hsend(): HIC device not present error
 
     set push, [z-1]
     jsr int_to_int16
@@ -3656,7 +3656,7 @@ DAT 0, TYPE_INT, TYPE_INT
     hwi [hic]
     ifg c, 0x0001
         jsr recover
-        #doc Transmit buffer overflow, port is not connected or HIC is busy error in hsend()
+        #doc hsend(): Transmit buffer overflow, port is not connected or HIC is busy error
 
     set pc, postamble_none
 
@@ -3668,7 +3668,7 @@ DAT 0, TYPE_STR
 
     ife [rci], 0xffff
         jsr recover
-        #doc rsend(): Device not present error
+        #doc rsend(): RCI device not present error
 
     set a, 2
     set b, [z-1]
@@ -3831,6 +3831,10 @@ DAT 0
 :built_in_time
 ;----------------------------------------------------------------
     jsr built_in_params
+
+    ife [timer], 0xffff
+        jsr recover
+        #doc time(): Timer device not present error
 
     set push, 7
     set push, TYPE_TUPLE
