@@ -9,25 +9,42 @@
 ;  void write(sector)
 ;----------------------------------------------------------------
 ; SECTOR 0: MBR
-; 
-; SECTOR 0 always contains the following 4 words.
-; 
-; 0x0000 MBR_FREE_HEAD  The first sector in free-sectors-list (1-1439)
-; 0x0001 MBR_FREE_TAIL  The last sector in free-sectors-list (1-1439) 
-; 0x0002 MBR_DIR_HEAD   The first sector in directory-dict (1-1439)
-; 0x0003 MBR_DIR_TAIL   The last sector in directory-dict (1-1439)
-; 
+;
+; SECTOR 0 always contains only the following 4 words.
+;
+; WORD          NAME           DESCRIPTION
+; 0x0000        MBR_FREE_HEAD  The first sector in free-sectors-list (1-1439)
+; 0x0001        MBR_FREE_TAIL  The last sector in free-sectors-list (1-1439)
+; 0x0002        MBR_DIR_HEAD   The first sector in directory-dict (1-1439)
+; 0x0003        MBR_DIR_TAIL   The last sector in directory-dict (1-1439)
+; 0x0004-0x01ff NOT IN USE     Not in use
+;
 ; SECTOR 1-1439: DATA
-; 
-; 0x0000 SECTOR_NEXT    Next data sector (1-1439)
+;
+; WORD          NAME           DESCRIPTION
+; 0x0000        SECTOR_NEXT    Next data sector (1-1439)
 ; 0x0001-0x01ff DATA    Serialized object data
-; 
+;
+; SECTOR 1-1439: FREE
+;
+; WORD          NAME           DESCRIPTION
+; 0x0000        SECTOR_NEXT    Next free sector (1-1439)
+; 0x0001-0x01ff NOT IN USE     Not in use
+;
 ; Serialization Format
-; 
-; 0x0001 ID    (if 0 -> no more items in graph)
-; 0x0002 TYPE
-; 0x0003 SIZE
-;        DATA
+;
+; 0x0001        ID    (if 0 -> no more items in graph)
+; 0x0002        TYPE
+;                 TYPE_NONE           0x0080
+;                 TYPE_FLOAT          0x0040
+;                 TYPE_INT            0x0020
+;                 TYPE_BOOL           0x0010
+;                 TYPE_STR            0x0008
+;                 TYPE_TUPLE          0x0004
+;                 TYPE_LIST           0x0002
+;                 TYPE_DICT           0x0001
+; 0x0003        SIZE OF DATA
+; 0x0004-       DATA
 ;----------------------------------------------------------------
 
 ;----------------------------------------------------------------
@@ -44,7 +61,7 @@
     ifn b, FLOPPY__STATE__READY
         jsr recover
         #doc Floppy is not ready error
-    
+
     ;---------------------------------------
     ; initialize mbr
     ;---------------------------------------
@@ -52,7 +69,7 @@
     set [floppy__free__tail], 1439
     set [floppy__dir__head], 1
     set [floppy__dir__tail], 1
-    
+
     ;---------------------------------------
     ; initialize data sectors
     ;---------------------------------------
@@ -63,7 +80,7 @@
         set j, 0
 
     set [FLOPPY__SECTOR__NEXT], j
-    
+
     set push, i
     jsr floppy__sector__write
 
@@ -82,10 +99,10 @@
     jsr floppy__item__write
 
     jsr floppy__mbr__write
-    
+
     set x, [z-1]
     set pc, postamble
-    
+
 ;----------------------------------------------------------------
 ; extern struct handle *floppy__dir__read(void)
 ;----------------------------------------------------------------
@@ -111,7 +128,7 @@
     set push, 2
     set push, 2
     jsr preamble
-    
+
     ; read mbr
     jsr floppy__mbr__read
 
@@ -130,7 +147,7 @@
     set push, x
     set push, [z+11]
     jsr dict_get
-    
+
     ife x, 0
         set pc, floppy__file__write__update_dir
 
@@ -163,7 +180,7 @@
     set push, 1
     set push, 1
     jsr preamble
-    
+
     ; read mbr
     jsr floppy__mbr__read
 
@@ -172,12 +189,12 @@
     set push, [floppy__dir__tail]
     jsr floppy__item__read
     set [z-1], x
-    
+
     ; filename IN dir?
     set push, x
     set push, [z+10]
     jsr dict_get
-    
+
     ife x, 0
         jsr recover
         #doc File not found error
@@ -195,7 +212,7 @@
     set push, 1
     set push, 2
     jsr preamble
-    
+
     ; read mbr
     jsr floppy__mbr__read
 
@@ -204,7 +221,7 @@
     set push, [floppy__dir__tail]
     jsr floppy__item__read
     set [z-1], x
-    
+
     ; filename IN dir?
     set push, x
     set push, [z+10]
@@ -218,7 +235,7 @@
     set push, x
     set push, floppy__file__free
     jsr floppy__inode__wrapper
-    
+
     ; update dir
     set push, [z-1]
     set push, [z+10]
@@ -257,7 +274,7 @@
     set push, [y + INODE__SECTOR__HEAD]        ; struct handle *int
     jsr int_to_int16
     set [floppy__dir__head], x                ; uint16 dir_head
-    
+
     set push, [y + INODE__SECTOR__TAIL]        ; struct handle *int
     jsr int_to_int16
     set [floppy__dir__tail], x                ; uint16 dir_head
@@ -288,7 +305,7 @@
 
     set push, FLOPPY__MBR__SECTOR
     jsr floppy__sector__write
-    
+
     set pc, pop
 
 ;----------------------------------------------------------------
@@ -318,7 +335,7 @@
     set push, 1
     set push, 0
     jsr preamble
-    
+
     ;---------------------------------------
     ; initiate read
     ;---------------------------------------
@@ -353,14 +370,14 @@
     set push, 2
     set push, 0
     jsr preamble
-    
+
     set a, [z + 11]                            ; struct handle *inode
     set a, [a]                                ; struct inode *
 
     set push, [a + INODE__SECTOR__HEAD]        ; struct handle *int
     jsr int_to_int16
     set push, x                                ; uint16 sector_head
-    
+
     set push, [a + INODE__SECTOR__TAIL]        ; struct handle *int
     jsr int_to_int16
     set push, x                                ; uint16 sector_tail
@@ -402,7 +419,7 @@
     ; write file to free space
     ;---------------------------------------
     set a, [floppy__free__head]                ; inode.head
-    
+
     set push, a
     jsr floppy__file__open
 
@@ -417,7 +434,7 @@
     ; terminate file
     ;---------------------------------------
     jsr floppy__file__close
-    
+
     ;---------------------------------------
     ; return struct handle *inode (sector, size)
     ;---------------------------------------
@@ -431,15 +448,15 @@
     set push, a                    ; inode.head
     jsr uint16_to_int
     set [y + INODE__SECTOR__HEAD], x
-    
+
     set push, b                    ; inode.tail
     jsr uint16_to_int
     set [y + INODE__SECTOR__TAIL], x
-    
+
     set push, c                    ; inode.size
     jsr uint16_to_int
     set [y + INODE__SIZE], x
-    
+
     set x, [z-1]
     set pc, postamble
 
@@ -450,7 +467,7 @@
     set push, 1
     set push, 0
     jsr preamble
-    
+
     set a, sp                    ; done.end
     set b, sp
 
@@ -477,7 +494,7 @@
     ; write SIZE (actual)
     ;---------------------------------------
     set y, [y]                  ; move y to data
- 
+
     set j, [y]                    ; array size
     add j, 1
 
@@ -493,11 +510,11 @@
     set i, y
     ifc c, TYPE_FLOAT
         add i, 1
-    
+
     add y, j
 
 :floppy__item__serialize__data__loop
-    ife i, y                    
+    ife i, y
         ifl sp, b
             set pc, floppy__item__serialize__next_item
 
@@ -523,7 +540,7 @@
 
     ; no match found
     set push, [i]
-    
+
     sti pc, floppy__item__serialize__data__loop
 
 :floppy__item__serialize__finish
@@ -564,10 +581,10 @@
     jsr floppy__word__read            ; id
     ife x, 0
         set pc, floppy__item__deserialize__finish
-    
-    set a, x    
+
+    set a, x
     jsr floppy__item__deserialize_search
-    
+
     jsr floppy__word__read            ; type
     set b, x
     jsr floppy__word__read            ; size
@@ -588,7 +605,7 @@
     ; push root item to stack
     set push, x
     set push, a
-    
+
     set pc, floppy__item__deserialize__data
 
 :floppy__item__deserialize__none
@@ -620,7 +637,7 @@
     ; i points to next unset item
     ; c points to one past arrays last item
     ; b type
-    
+
 :floppy__item__deserialize__array_loop
     ife i, c
         set pc, floppy__item__deserialize__next_item
@@ -630,7 +647,7 @@
         set pc, floppy__item__deserialize__add_item
 
     set [i], x
-    
+
     sti pc, floppy__item__deserialize__array_loop
 
 :floppy__item__deserialize__add_item
@@ -641,21 +658,21 @@
 
     ; set known item id
     set [i], [j+1]
-    
+
     sti pc, floppy__item__deserialize__array_loop
 
 :floppy__item__deserialize__new_item
     set push, 0
     set push, x
-    
+
     set push, 0
     set push, TYPE_NONE
     jsr alloc
-    
+
     set [sp + 1], x
-    
+
     set [i], x
-    
+
     sti pc, floppy__item__deserialize__array_loop
 
 :floppy__item__deserialize__finish
@@ -690,7 +707,7 @@
 
     ; initialize file position
     set [floppy__file__position], 0
-    
+
     set [sp], pop
     set pc, pop
 
@@ -708,9 +725,9 @@
 
     ; update mbr
     set [floppy__free__head], pop
-    
+
     set pc, pop
-    
+
 ;----------------------------------------------------------------
 :floppy__word__write
 ;----------------------------------------------------------------
@@ -719,7 +736,7 @@
 
     set push, [floppy__free__head]
     jsr floppy__sector__write
-    
+
     set [floppy__free__head], [FLOPPY__SECTOR__NEXT]
 
     ; read the next sector to memory buffer
@@ -732,7 +749,7 @@
 
     add [floppy__buffer__position], 1
     add [floppy__file__position], 1
-    
+
     set [sp], pop
     set pc, pop
 
