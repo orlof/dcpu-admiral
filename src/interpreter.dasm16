@@ -95,6 +95,9 @@
 :interpreter_loop
     ias 0
 
+    set a, 0
+    hwi [keyboard]
+
     set push, STR_PROMPT
     jsr print
 
