@@ -2820,6 +2820,10 @@ DAT 0
 ;----------------------------------------------------------------
     jsr built_in_params
 
+    ife [floppy], 0xffff
+        jsr recover
+        #doc dir(): M35FD device not present error
+
     jsr floppy__dir__read
 
     set pc, postamble
@@ -2829,6 +2833,10 @@ DAT 0
 :built_in_format
 ;----------------------------------------------------------------
     jsr built_in_params
+
+    ife [floppy], 0xffff
+        jsr recover
+        #doc format(): M35FD device not present error
 
     jsr floppy__format
 
@@ -2840,6 +2848,10 @@ DAT 0, TYPE_STR
 ;----------------------------------------------------------------
     jsr built_in_params
 
+    ife [floppy], 0xffff
+        jsr recover
+        #doc load(): M35FD device not present error
+
     set push, [z-1]
     jsr floppy__file__read
 
@@ -2850,6 +2862,10 @@ DAT 0, TYPE_STR, TYPE_STR + TYPE_BOOL + TYPE_NONE + TYPE_INT + TYPE_FLOAT + TYPE
 :built_in_save
 ;----------------------------------------------------------------
     jsr built_in_params
+
+    ife [floppy], 0xffff
+        jsr recover
+        #doc save(): M35FD device not present error
 
     set push, [z-1]
     set push, [z-2]
@@ -3340,6 +3356,10 @@ DAT 0, TYPE_INT
 ;----------------------------------------------------------------
     jsr built_in_params
 
+    ife [floppy], 0xffff
+        jsr recover
+        #doc read(): M35FD device not present error
+
     set push, [z-1]
     jsr int_to_int16
 
@@ -3353,6 +3373,10 @@ DAT 0, TYPE_INT
 :built_in_write
 ;----------------------------------------------------------------
     jsr built_in_params
+
+    ife [floppy], 0xffff
+        jsr recover
+        #doc write(): M35FD device not present error
 
     set push, [z-1]
     jsr int_to_int16
@@ -3880,6 +3904,10 @@ DAT 0, TYPE_INT, TYPE_INT
 :built_in_show
 ;----------------------------------------------------------------
     jsr built_in_params
+
+    ife [floppy], 0xffff
+        jsr recover
+        #doc show(): M35FD device not present error
 
     ; addr
     set push, [z-1]

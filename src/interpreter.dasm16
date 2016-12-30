@@ -31,6 +31,14 @@
     set [recovery_sp], sp
 
     jsr detect_hardware
+
+    ; mandatory hardware
+    set a, [monitor]
+    and a, [keyboard]
+    and a, [clock]
+    ifn a, 0xffff
+        set pc, halt
+
     jsr screen_select
     jsr screen_clear
 
