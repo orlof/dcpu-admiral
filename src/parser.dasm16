@@ -3816,7 +3816,7 @@ DAT 0, TYPE_INT
         ife x, 0
             set pc, postamble_none
 
-        set i, 19998
+        set i, 18
         :built_in_sleep__sec_loop
             ifn i, 0
                 std pc, built_in_sleep__sec_loop

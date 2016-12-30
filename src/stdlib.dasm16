@@ -975,7 +975,6 @@
     set push, b
     set push, c
 
-    set a, 2
     set b, KEY_ALT
     hwi [keyboard]
 
