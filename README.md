@@ -300,6 +300,8 @@ The Admiral interpreter acts as a simple calculator: you can type 'print' and an
 5
 </pre>
 
+If you accidenttaly enter e.g. infinite loop, execution can be stopped by pressing ALT (only available in generation 2 keyboards). 
+
 The equal sign ('=') is used to assign a value to a variable.
 <pre>
 >width=20
