@@ -2618,8 +2618,12 @@ DAT 0
 DAT 0
 :built_in_exit
 ;----------------------------------------------------------------
-; TODO
-    jsr recover
+    set z, [recovery_fp]
+    set sp, [recovery_sp]
+
+    set [current_scope], [global_scope]
+
+    set pc, interpreter_loop
 
 ;----------------------------------------------------------------
 DAT 0
