@@ -94,12 +94,11 @@
 #define KEY_SHIFT       0x90
 #define KEY_CTRL        0x91
 #define KEY_ALT         0x92
-#define KEY_CTRL_MASK   0x8000
-#define KEY_SHIFT_MASK  0x4000
-#define KEY_CTRL_X      0x8058
-#define KEY_CTRL_Y      0x8059
-#define KEY_CTRL_K      0x804b
-#define KEY_CTRL_C      0x8043
+#define KEY_CTRL_MASK   0xffbf
+#define KEY_CTRL_X      0x0018
+#define KEY_CTRL_Y      0x0019
+#define KEY_CTRL_K      0x000b
+#define KEY_CTRL_C      0x0003
 
 #define SCOPE_MODE_UPDATE   0x0002
 #define SCOPE_MODE_INSERT   0x0004

@@ -1019,8 +1019,9 @@
     set a, 2
     set b, KEY_CTRL
     hwi [keyboard]
-    shl c, 15
-    bor c, pop
+    ifn c, 0
+        and [sp], KEY_CTRL_MASK
+    set c, pop
 
     ifn c, KEY_CTRL_Y
         set pc, pop
