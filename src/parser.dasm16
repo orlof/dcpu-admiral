@@ -7,7 +7,11 @@
     jsr preamble
 
     set y, [lexer_token]
-    set pc, [y + PROTOTYPE_STD]
+    ifn [y + PROTOTYPE_STD], recover
+        set pc, [y + PROTOTYPE_STD]
+
+    jsr [y + PROTOTYPE_STD]
+    #doc Statement cannot start with given token
 
 ;----------------------------------------------------------------
 :parser_simple_stmt

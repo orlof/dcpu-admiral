@@ -44,11 +44,11 @@
 :lexer__get_line
     set push, a
     set push, b
-    
+
     set a, [lexer_string]
     set push, a
-    
-    set b, [lexer_start]    
+
+    set b, [lexer_start]
     jsr lexer__goto_sol
     set push, b
 
@@ -65,10 +65,10 @@
 :lexer__goto_eol
 ;----------------------------------------------------------------
     jsr array__qget
-    
+
     ife x, 0
         set pc, pop
-    
+
     ife [x + lexer_table], lexer_char_newline
         set pc, pop
 
@@ -80,10 +80,10 @@
 ;----------------------------------------------------------------
     ife b, 0
         set pc, pop
-        
+
     sub b, 1
     jsr array__qget
-    
+
     ifn [x + lexer_table], lexer_char_newline
         set pc, lexer__goto_sol
 
@@ -98,7 +98,7 @@
     ifn [lexer_token], pop
         jsr recover
         #doc Unexpected token error
-    
+
     set push, x
     jsr lexer_next
 
@@ -116,10 +116,10 @@
         set pc, lexer_dedent
     ifl [lexer_current_indent], [lexer_target_indent]
         set pc, lexer_indent
-        
+
     set a, [lexer_string]        ; struct handle *
     set b, [lexer_end]
-    
+
     ife [lexer_token], token_str
         add b, 1
 
@@ -130,6 +130,10 @@
     ifg x, 127
         jsr recover
         #doc Illegal symbol (>127) in token stream error
+
+    ife [x + lexer_table], recover
+        jsr recover
+        #doc Illegal character
 
     set pc, [x + lexer_table]
 
@@ -143,7 +147,7 @@
     set c, pop
     set b, pop
     set a, pop
-    
+
     set pc, pop
 
 ;----------------------------------------------------------------
@@ -154,7 +158,7 @@
 :lexer_char_newline_restart
     add b, 1
     set c, 0    ; current indent
-    
+
 :lexer_char_newline_loop
     jsr array__qget
     ifn x, ' '
@@ -290,7 +294,7 @@
 :lexer_char_star_star
     set [lexer_token], token_power
     set pc, lexer_finish_advance
-    
+
 ;----------------------------------------------------------------
 :lexer_char_caret
 ;----------------------------------------------------------------
@@ -345,7 +349,7 @@
     add b, 1
     jsr array__qget
     ife x, '<'
-        set pc, lexer_char_less_less    
+        set pc, lexer_char_less_less
     ifn x, '='
         set pc, lexer_finish
 
@@ -354,12 +358,12 @@
 
 :lexer_char_less_less
     set [lexer_token], token_lshift
-    
+
     add b, 1
     jsr array__qget
     ifn x, '='
         set pc, lexer_finish
-    
+
     set [lexer_token], token_augass_lshift
     set pc, lexer_finish_advance
 
@@ -375,7 +379,7 @@
     add b, 1
     jsr array__qget
     ife x, '>'
-        set pc, lexer_char_greater_greater    
+        set pc, lexer_char_greater_greater
     ifn x, '='
         set pc, lexer_finish
 
@@ -384,12 +388,12 @@
 
 :lexer_char_greater_greater
     set [lexer_token], token_rshift
-    
+
     add b, 1
     jsr array__qget
     ifn x, '='
         set pc, lexer_finish
-    
+
     set [lexer_token], token_augass_rshift
     set pc, lexer_finish_advance
 
@@ -426,7 +430,7 @@
 
     add b, 1
     jsr array__qget
-    
+
     ife x, 'x'
         set pc, lexer_char_hex
 
@@ -488,7 +492,7 @@
         set pc, lexer_name_loop
 
     set [lexer_end], b
-    
+
     set a, [a]
     add a, [lexer_start]
     sub b, [lexer_start]
@@ -504,13 +508,13 @@
 
     set x, [built_in_stmts_by_len + b - 1]
     jsr built_in_matcher
-    
+
     set j, pop
     set i, pop
 
 :lexer_name_loop_finish
     set [lexer_token], c
-    
+
     set pc, lexer__exit
 
 ;----------------------------------------------------------------
@@ -587,14 +591,14 @@
         set pc, lexer_float_finish
     set c, FP_STATE_EXPONENT_SIGN
     set pc, lexer_float_loop
-    
+
 :lexer_float_decimal_point
     ifc c, FP_STATE_START + FP_STATE_SIGN + FP_STATE_DIGIT_WHOLE
         set pc, lexer_float_finish
 
     set c, FP_STATE_DECIMAL_POINT
     set pc, lexer_float_loop
-    
+
 :lexer_float_exponent
     ifc c, FP_STATE_START + FP_STATE_SIGN + FP_STATE_DIGIT_WHOLE + FP_STATE_DIGIT_DECIMAL
         set pc, lexer_float_finish
@@ -608,7 +612,7 @@
         #doc Number format error
 
     sub b, 1
-    set [lexer_end], b            ; lexer.data1    
+    set [lexer_end], b            ; lexer.data1
     set [lexer_token], token_float
 
     set pc, lexer__exit
