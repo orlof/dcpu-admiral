@@ -203,7 +203,8 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
 :STR_NZERO      DAT STR_NZERO+2, TYPE_STR, 4, "-0.0"
 :STR_NAN        DAT STR_NAN+2, TYPE_STR, 3, "nan"
 
-:STR_STARTUP    DAT STR_STARTUP + 2, TYPE_STR, 32, "  ***  DCPU ADMIRAL  0.76  ***  "
+:STR_HELP       DAT STR_HELP + 2, TYPE_STR, 32,    "e.g. if 1==1:print 'Hello World'"
+:STR_STARTUP    DAT STR_STARTUP + 2, TYPE_STR, 32, "  ***  DCPU ADMIRAL  0.77  ***  "
 :STR_STARTUP2   DAT STR_STARTUP2 + 2, TYPE_STR, 16, "64K RAM SYSTEM  "
 :STR_STARTUP3   DAT STR_STARTUP3 + 2, TYPE_STR, 11, " WORDS FREE"
 :STR_PROMPT     DAT STR_PROMPT + 2, TYPE_STR, 1, ">"
@@ -256,6 +257,7 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
 :token_elif         dat recover, recover, recover, 0x0000
 :token_else         dat recover, recover, recover, 0x0000
 :token_pass         dat std_pass, recover, recover, 0x0000
+:token_help         dat std_help, recover, recover, 0x0000
 :token_print        dat std_print, recover, recover, 0x0000
 :token_while        dat std_while, recover, recover, 0x0000
 :token_break        dat std_break, recover, recover, 0x0000
@@ -477,6 +479,7 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 5, "true", token_true
     dat 5, "none", token_none
     dat 5, "pass", token_pass
+    dat 5, "help", token_help
     dat 1, token_name
 :built_in_stmts_5
     dat 6, "false", token_false
