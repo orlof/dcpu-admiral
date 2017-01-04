@@ -210,6 +210,13 @@ b 2
  - Experimental hi-res 64x48 ;) graphics mode: plot(), point(), line() and circle()
    - Bresenham's line algorithm
    - Midpoint circle algorithm optimized for integer-based math
+ - Supported hardware
+   - LEM 1802 - required
+   - Generic Keyboard - required
+   - Generic Timer
+   - M35FD
+   - KaiComm HIC
+   - KaiComm RCI
 
 <h6>Next in development</h6>
 
