@@ -957,9 +957,6 @@
     ife a, 0xb402
         ife b, 0x12d1
             set [timer], i
-    ife a, 0xb402
-        ife b, 0x12d0
-            set [clock], i
     ife a, 0x24c5
         ife b, 0x4fd5
             set [floppy], i
