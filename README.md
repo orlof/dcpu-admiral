@@ -1018,6 +1018,13 @@ return_stmt ::=  "return" [expression]
 
 return may only occur in a function. If an expression is present, it is evaluated, else None is substituted. return leaves the current function call with the expression (or None) as return value.
 
+<h6>exit</h6>
+<pre>
+return_stmt ::=  "exit"
+</pre>
+
+stop everything from executing or evaluating and return to prompt.
+
 <h6>break</h6>
 <pre>
 break_stmt ::=  "break"
