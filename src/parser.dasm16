@@ -337,6 +337,18 @@
 
 
 ;----------------------------------------------------------------
+:std_exit
+;----------------------------------------------------------------
+    jsr lexer_next        ; skip exit
+
+    set z, [recovery_fp]
+    set sp, [recovery_sp]
+
+    set [current_scope], [global_scope]
+
+    set pc, interpreter_loop
+
+;----------------------------------------------------------------
 :std_return
 ;----------------------------------------------------------------
     jsr lexer_next        ; skip return
@@ -2628,17 +2640,6 @@ DAT 0
     jsr uint16_to_int
 
     set pc, postamble
-
-;----------------------------------------------------------------
-DAT 0
-:built_in_exit
-;----------------------------------------------------------------
-    set z, [recovery_fp]
-    set sp, [recovery_sp]
-
-    set [current_scope], [global_scope]
-
-    set pc, interpreter_loop
 
 ;----------------------------------------------------------------
 DAT 0

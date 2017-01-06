@@ -257,6 +257,7 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
 :token_else         dat recover, recover, recover, 0x0000
 :token_pass         dat std_pass, recover, recover, 0x0000
 :token_help         dat std_help, recover, recover, 0x0000
+:token_exit         dat std_exit, recover, recover, 0x0000
 :token_print        dat std_print, recover, recover, 0x0000
 :token_while        dat std_while, recover, recover, 0x0000
 :token_break        dat std_break, recover, recover, 0x0000
@@ -386,7 +387,6 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 5, "wget", built_in_win_get
     dat 5, "wset", built_in_win_set
     dat 5, "edit", built_in_edit
-    dat 5, "exit", built_in_exit
     dat 5, "time", built_in_time
     dat 1, led_lparen_user_defined
 :built_in_functions_5
@@ -478,6 +478,7 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 5, "true", token_true
     dat 5, "none", token_none
     dat 5, "pass", token_pass
+    dat 5, "exit", token_exit
     dat 5, "help", token_help
     dat 1, token_name
 :built_in_stmts_5
