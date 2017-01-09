@@ -216,17 +216,6 @@
 #define SUBSCRIPTION_INDEX  2
 
 #define REFERENCE_OR_SUBSCRIPTION_ROOT  1
-; screen is not stored in heap -> it can be non-standard
-;
-; struct screen {
-;   uint16 *start;
-;   uint16 *end;
-;   uint16 *cursor;
-; }
-#define SIZEOF_SCREEN       3
-#define SCREEN__START       0
-#define SCREEN__END         1
-#define SCREEN__CURSOR      2
 
 ; struct inode {
 ;   struct handle *sector;

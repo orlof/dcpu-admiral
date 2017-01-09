@@ -1066,9 +1066,7 @@
     jsr print
 
 :raw_input_no_prompt
-;    set y, [cursor]
-    set y, [current_screen]
-    set b, [y + SCREEN__CURSOR]
+    set b, [screen_cursor]
 
 :next_char_loop
     ; start of input
@@ -1089,14 +1087,12 @@
         set pc, finish
 
     ife c, KEY_BS
-        ife [y + SCREEN__CURSOR], b
+        ife [screen_cursor], b
             set pc, next_char_loop
 
-    set a, [y + SCREEN__END]
-    sub a, 1
     ifn c, KEY_BS
         ifn c, KEY_NEWLINE
-            ife [y + SCREEN__CURSOR], a
+            ife [screen_cursor], SCREEN_MEM__VIDEO_SIZE - 1
                 sub b, SCREEN_COLS
 
     jsr screen_add_char
@@ -1104,7 +1100,7 @@
     set pc, next_char_loop
 
 :finish
-    set a, [y + SCREEN__CURSOR]
+    set a, [screen_cursor]
     sub a, b
     add a, 1
 
@@ -1115,12 +1111,12 @@
     set j, [x]                    ; struct string *
     add j, [j]                    ; string[last]
     set [j], 10                    ; set newline
-    std i, [y + SCREEN__CURSOR]     ; i = cursor -1
+    std i, [screen_cursor]     ; i = cursor -1
 
 :finish_loop
     ifl i, b
         set pc, postamble
-    set [j], [i]
+    set [j], [video_ram_start + i]
     and [j], 0x007f
 
     std pc, finish_loop

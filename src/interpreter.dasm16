@@ -38,6 +38,7 @@
     ife [keyboard], 0xffff
         set pc, halt
 
+    jsr screen__init
     jsr screen_clear
 
     set push, 10
@@ -135,13 +136,17 @@
     jsr preamble
 
     set [line_editor__buf_index], HISTORY_SIZE
-    set [line_editor__start_addr], [screen_cursor]
-    set [line_editor__current_addr], [screen_cursor]
-    set [line_editor__end_addr], [screen_cursor]
+    set y, [screen_cursor]
+    add y, video_ram_start
+    set [line_editor__start_addr], y
+    set [line_editor__current_addr], y
+    set [line_editor__end_addr], y
     set [line_editor__last_char], 0
 
 :interpreter__line_edit_main_loop
-    set [screen_cursor], [line_editor__current_addr]
+    set y, [line_editor__current_addr]
+    sub y, video_ram_start
+    set [screen_cursor], y
 
     set c, [line_editor__last_char]
 

@@ -13,13 +13,26 @@
 ; I try to minimize register usage here
 
 ;----------------------------------------------------------------
+:screen__init
+;----------------------------------------------------------------
+    set push, 0
+    set push, 0
+    jsr preamble
+
+    set a, 0
+    set b, video_ram_start
+    hwi [monitor]
+
+    set pc, postamble
+
+;----------------------------------------------------------------
 :screen__store
 ;----------------------------------------------------------------
     set push, 0
     set push, 1
     jsr preamble
 
-    set i, video_ram_start + SCREEN_MEM__VIDEO_SIZE - 1
+    set i, video_ram_end - 1
     set push, SCREEN_MEM__VIDEO_SIZE
     set pc, built_in_peek_str_merge
 
@@ -31,7 +44,7 @@
     jsr preamble
 
     set j, video_ram_start
-    set x, [z-1]
+    set x, [z+10]
 
     set pc, built_in_poke_str
 
@@ -52,7 +65,7 @@
 ;----------------------------------------------------------------
     set [screen_cursor], [sp+1]
     mul [screen_cursor], SCREEN_COLS
-    add [screen_cursor], [sp+1]
+    add [screen_cursor], [sp+2]
 
     set [sp], pop    ; remove y
     set [sp], pop    ; remove x
