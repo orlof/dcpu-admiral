@@ -678,7 +678,6 @@
 ; fastcall
 ;     x: new buf start
 ;----------------------------------------------------------------
-:edit_update_pointers
     set x, [x]
     sub x, [buf_start]
 

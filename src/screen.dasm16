@@ -1,50 +1,46 @@
+#define SCREEN_COLS         32
+#define SCREEN_ROWS         12
+#define SCREEN_BLANK_CHAR   0x7020
+#define SCREEN_BLANK_PIX    0xf000
+
+;----------------------------------------------------------------
+; GLOBAL DISPLAY VARIABLES
+;----------------------------------------------------------------
+:screen_blank   dat SCREEN_BLANK_CHAR
+:screen_cursor  dat 0
+
 ; This file represent my first tests to utilize new style of assembler.
 ; I try to minimize register usage here
 
 ;----------------------------------------------------------------
-:screen_prev
-; fastcall
+:screen__store
 ;----------------------------------------------------------------
-    ife [current_screen], screen_first
-        set pc, pop
-    sub [current_screen], SIZEOF_SCREEN
-    set pc, screen_select
-;----------------------------------------------------------------
-:screen_next
-; fastcall
-;----------------------------------------------------------------
-    ife [current_screen], screen_last
-        set pc, pop
-    add [current_screen], SIZEOF_SCREEN
+    set push, 0
+    set push, 1
+    jsr preamble
+
+    set i, video_ram_start + SCREEN_MEM__VIDEO_SIZE - 1
+    set push, SCREEN_MEM__VIDEO_SIZE
+    set pc, built_in_peek_str_merge
 
 ;----------------------------------------------------------------
-:screen_select
-; fastcall
+:screen__restore
 ;----------------------------------------------------------------
-    set push, a
-    set push, b
+    set push, 1
+    set push, 0
+    jsr preamble
 
-    set a, 0
-    set b, [current_screen]
-    set b, [b]
-    hwi [monitor]
+    set j, video_ram_start
+    set x, [z-1]
 
-;    set a, 2
-;    set b, [current_screen]
-;    set b, [b + SCREEN__PALETTE]
-;    hwi [monitor]
-
-    set b, pop
-    set a, pop
-
-    set pc, pop
+    set pc, built_in_poke_str
 
 ;----------------------------------------------------------------
 :screen_toggle_cursor
 ; fastcall
 ;----------------------------------------------------------------
-    set x, [current_screen]                ; struct screen *cur
-    set x, [x + SCREEN__CURSOR]
+    set x, video_ram_start                ; struct screen *cur
+    add x, [screen_cursor]
     xor [x], 0xff80                        ; change colors
     set pc, pop
 
@@ -54,12 +50,9 @@
 ;  x [sp+2]
 ;  y [sp+1]
 ;----------------------------------------------------------------
-    set x, [current_screen]
-    set [x+SCREEN__CURSOR], [x+SCREEN__START]
-
-    mul [sp+1], SCREEN_COLS
-    add [x+SCREEN__CURSOR], [sp+1]
-    add [x+SCREEN__CURSOR], [sp+2]
+    set [screen_cursor], [sp+1]
+    mul [screen_cursor], SCREEN_COLS
+    add [screen_cursor], [sp+1]
 
     set [sp], pop    ; remove y
     set [sp], pop    ; remove x
@@ -108,10 +101,8 @@
     ; reset count
     set c, 0
 
-    set a, [current_screen]
-
     ; destination memory addr
-    set i, [a + SCREEN__START]
+    set i, video_ram_start
 
     ; source memory addr
     set j, y
@@ -174,14 +165,11 @@
 ; void screen__get(int16 x, int16 y)
 ;----------------------------------------------------------------
 :screen__get
-    mul [sp+1], SCREEN_COLS
-    add [sp+1], [sp+2]
-
-    set x, [current_screen]
-    add [sp+1], [x + SCREEN__START]
-
     set x, [sp+1]
-    set x, [x]
+    mul x, SCREEN_COLS
+    add x, [sp+2]
+
+    set x, [video_ram_start + x]
     and x, 0x007f
 
     set [sp], pop
@@ -192,52 +180,17 @@
 ; void screen__set(int16 x, int16 y, uint16 char)
 ;----------------------------------------------------------------
 :screen__set
-    mul [sp+2], SCREEN_COLS
-    add [sp+2], [sp+3]
-
-    set x, [current_screen]
-    add [sp+2], [x + SCREEN__START]
+    set x, [sp+2]
+    mul x, SCREEN_COLS
+    add x, [sp+3]
 
     bor [sp+1], FONT_COLOR
-
-    set x, [sp+2]
-    set [x], [sp+1]        ; set new content
+    set [video_ram_start + x], [sp+1]
 
     set [sp], pop
     set [sp], pop
     set [sp], pop
     set pc, pop
-
-;----------------------------------------------------------------
-; void screen__set(int16 x, int16 y, uint16 color0, uint16 color1)
-;----------------------------------------------------------------
-;:screen__color
-;    mul [sp+3], SCREEN_COLS
-;    add [sp+3], [sp+4]
-;
-;    set x, [current_screen]
-;    add [sp+3], [x + SCREEN__START]
-;
-;    ; combine colors to bg and fg bits
-;    shl [sp+2], 12
-;    shl [sp+1], 8
-;    bor [sp+1], [sp+2]
-;
-;    ; combine with current pixels
-;    set x, [sp+3]
-;    set x, [x]
-;    and x, 0x00ff
-;    bor [sp+1], x
-;
-;    ; update video memory
-;    set x, [sp+3]
-;    set [x], [sp+1]        ; set new content
-;
-;    ; cleanup
-;    set [sp+4], [sp]
-;    add sp, 4
-;
-;    set pc, pop
 
 ;----------------------------------------------------------------
 ; struct handle *screen__get_cursor()
@@ -247,29 +200,24 @@
     set push, 1
     jsr preamble
 
-    set b, [current_screen]
-    set a, [b + SCREEN__CURSOR]
-    sub a, [b + SCREEN__START]
-
     set push, 2
     set push, TYPE_TUPLE
     jsr array_create
     set [z-1], x
-    set b, [x]
 
-    set c, a
-    mod c, SCREEN_COLS
-
-    set push, c
+    set push, [screen_cursor]
+    mod [sp], SCREEN_COLS
     jsr uint16_to_int
-    set [b+1], x
+    set b, [z-1]
+    set b, [b]
+    set [b + 1], x
 
-    set c, a
-    div c, SCREEN_COLS
-
-    set push, c
+    set push, [screen_cursor]
+    div [sp], SCREEN_COLS
     jsr uint16_to_int
-    set [b+2], x
+    set b, [z-1]
+    set b, [b]
+    set [b + 2], x
 
     set x, [z-1]
     set pc, postamble
@@ -283,12 +231,11 @@
     set push, i
     set push, j
 
-    set a, [current_screen]
+    set [screen_cursor], 0
     set b, [screen_blank]
-    set [a + SCREEN__CURSOR], [a + SCREEN__START]
 
-    set i, [a + SCREEN__START]
-    set a, [a + SCREEN__END]
+    set i, video_ram_start
+    set a, video_ram_end
 
 :screen_clear_loop
     set [i], b
@@ -308,14 +255,12 @@
 ; fastcall
 ; c: character
 ;----------------------------------------------------------------
-    set push, a
     set push, i
     set push, j
 
     ;set x, 0
 
-    set a, [current_screen]
-    set i, [a + SCREEN__CURSOR]
+    set i, [screen_cursor]
 
     ife [c + lexer_table], lexer_char_newline
         set pc, add_char_newline
@@ -323,49 +268,46 @@
     ife c, KEY_BS
         set pc, add_char_backspace
 
-    set [i], c
-    bor [i], FONT_COLOR
+    set [video_ram_start + i], c
+    bor [video_ram_start + i], FONT_COLOR
     sti pc, add_char_scroll
 
 :add_char_newline
-    sub i, [a + SCREEN__START]
     and i, 0xffe0
-    add i, [a + SCREEN__START]
     add i, SCREEN_COLS
 
 :add_char_scroll
-    set [a + SCREEN__CURSOR], i
+    set [screen_cursor], i
 
-    ifl i, [a + SCREEN__END]
+    ifl i, SCREEN_MEM__VIDEO_SIZE
         set pc, add_char_finish
 
     ;set x, SCREEN_COLS
-    sub [a + SCREEN__CURSOR], SCREEN_COLS
+    sub [screen_cursor], SCREEN_COLS
 
-    set i, [a + SCREEN__START]
-    set j, [a + SCREEN__START]
+    set i, video_ram_start
+    set j, i
     add j, SCREEN_COLS
 
 :add_char_copy
     sti [i], [j]
-    ifl j, [a + SCREEN__END]
+    ifl j, video_ram_end
         set pc, add_char_copy
 
 :add_char_clear
     sti [i], [screen_blank]
-    ifl i, [a + SCREEN__END]
+    ifl i, video_ram_end
         set pc, add_char_clear
 
 :add_char_finish
     set j, pop
     set i, pop
-    set a, pop
 
     set pc, pop
 
 :add_char_backspace
-    ifn i, [a + SCREEN__START]
-        std [i-1], [screen_blank]
+    ifn i, 0
+        std [video_ram_start+i-1], [screen_blank]
 
-    set [a + SCREEN__CURSOR], i
+    set [screen_cursor], i
     set pc, add_char_finish

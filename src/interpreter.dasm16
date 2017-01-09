@@ -38,7 +38,6 @@
     ife [keyboard], 0xffff
         set pc, halt
 
-    jsr screen_select
     jsr screen_clear
 
     set push, 10
@@ -135,15 +134,14 @@
     set push, 1
     jsr preamble
 
-    set y, [current_screen]
     set [line_editor__buf_index], HISTORY_SIZE
-    set [line_editor__start_addr], [y + SCREEN__CURSOR]
-    set [line_editor__current_addr], [y + SCREEN__CURSOR]
-    set [line_editor__end_addr], [y + SCREEN__CURSOR]
+    set [line_editor__start_addr], [screen_cursor]
+    set [line_editor__current_addr], [screen_cursor]
+    set [line_editor__end_addr], [screen_cursor]
     set [line_editor__last_char], 0
 
 :interpreter__line_edit_main_loop
-    set [y + SCREEN__CURSOR], [line_editor__current_addr]
+    set [screen_cursor], [line_editor__current_addr]
 
     set c, [line_editor__last_char]
 
@@ -233,7 +231,7 @@
     jsr array__qget
 
     ; move cursor to start location
-    set [y + SCREEN__CURSOR], [line_editor__start_addr]
+    set [screen_cursor], [line_editor__start_addr]
     set [line_editor__current_addr], [line_editor__start_addr]
     set [line_editor__end_addr], [line_editor__start_addr]
 
@@ -380,7 +378,7 @@
     add [line_editor__current_addr], 1
     add [line_editor__end_addr], 1
 
-    ifl [line_editor__end_addr], [y + SCREEN__END]
+    ifl [line_editor__end_addr], video_ram_end
         set pc, pop
 
     set push, 0
@@ -391,8 +389,8 @@
     sub [line_editor__current_addr], SCREEN_COLS
     sub [line_editor__end_addr], SCREEN_COLS
 
-    ifl [line_editor__start_addr], [y + SCREEN__START]
-        set [line_editor__start_addr], [y + SCREEN__START]
+    ifl [line_editor__start_addr], video_ram_start
+        set [line_editor__start_addr], video_ram_start
 
     ifl [line_editor__current_addr], [line_editor__start_addr]
         set [line_editor__current_addr], [line_editor__start_addr]

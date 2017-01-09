@@ -14,21 +14,6 @@
 :try_sp             dat 0
 
 ;----------------------------------------------------------------
-; GLOBAL DISPLAY VARIABLES
-;----------------------------------------------------------------
-:screen_blank   dat SCREEN_BLANK_CHAR
-:current_screen dat screen_first
-
-:screen_first
-    dat video_ram_start
-    dat video_ram_start + SCREEN_MEM__VIDEO_SIZE
-    dat video_ram_start
-:screen_last
-    dat floppy_ram_start
-    dat floppy_ram_start + SCREEN_MEM__VIDEO_SIZE
-    dat floppy_ram_start
-
-;----------------------------------------------------------------
 ; GLOBAL FD VARIABLES
 ;----------------------------------------------------------------
 :floppy__file__position                 dat 0
@@ -64,6 +49,7 @@
 :floppy             DAT 0xffff
 :hic                DAT 0xffff
 :rci                DAT 0xffff
+:imva               DAT 0xffff
 
 ;----------------------------------------------------------------
 ; GLOBAL HEAP MANAGEMENT VARIABLES
@@ -85,26 +71,6 @@
 :lexer_token            dat 0
 :lexer_start            dat 0
 :lexer_end              dat 0
-
-;----------------------------------------------------------------
-; GLOBAL EDITOR VARIABLES
-;----------------------------------------------------------------
-:buf_start  dat 0
-:buf_end    dat 0
-
-:gap_start  dat 0
-:gap_end    dat 0
-
-:win_start  dat 0
-:win_shift  dat 0
-
-:cur_pos    dat 0
-:cur_line   dat 0
-
-:cur_x      dat 0
-:cur_y      dat 0
-
-:cutting    dat 0
 
 ;----------------------------------------------------------------
 ; INTERPRETER LINE EDITOR

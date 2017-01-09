@@ -78,11 +78,6 @@
 #define TRUE                1
 #define FALSE               0
 
-#define SCREEN_COLS         32
-#define SCREEN_ROWS         12
-#define SCREEN_BLANK_CHAR   0x7020
-#define SCREEN_BLANK_PIX    0xf000
-
 #define KEY_BS          0x10
 #define KEY_NEWLINE     0x11
 #define KEY_INSERT      0x12
