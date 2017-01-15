@@ -197,20 +197,34 @@
 ;----------------------------------------------------------------
 :edit_key_left
 ;----------------------------------------------------------------
-    ife [edit__pos_ptr], [edit__gap_end_ptr]
-        set [edit__pos_ptr], [edit__gap_start_ptr]
-    ifg [edit__pos_ptr], [edit__buf_start_ptr]
-        sub [edit__pos_ptr], 1
+    set a, [edit__pos_ptr]
+
+    ife a, [edit__gap_end_ptr]
+        set a, [edit__gap_start_ptr]
+    ifg a, [edit__buf_start_ptr]
+        sub a, 1
+
+    ifn [a], KEY_NEWLINE
+        set [edit__scr_dirty], 1
+
+    set [edit__pos_ptr], a
     set pc, edit__main_loop
 ;----------------------------------------------------------------
 :edit_key_right
 ;----------------------------------------------------------------
-    ife [edit__pos_ptr], [edit__gap_start_ptr]
-        set [edit__pos_ptr], [edit__gap_end_ptr]
-    ifl [edit__pos_ptr], [edit__buf_end_ptr]
-        add [edit__pos_ptr], 1
-    ife [edit__pos_ptr], [edit__gap_start_ptr]
-        set [edit__pos_ptr], [edit__gap_end_ptr]
+    set a, [edit__pos_ptr]
+
+    ifn [a], KEY_NEWLINE
+        set [edit__scr_dirty], 1
+
+    ife a, [edit__gap_start_ptr]
+        set a, [edit__gap_end_ptr]
+    ifl a, [edit__buf_end_ptr]
+        add a, 1
+    ife a, [edit__gap_start_ptr]
+        set a, [edit__gap_end_ptr]
+
+    set [edit__pos_ptr], a
     set pc, edit__main_loop
 ;----------------------------------------------------------------
 :edit_key_del
