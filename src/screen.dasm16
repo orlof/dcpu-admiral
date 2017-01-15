@@ -26,29 +26,6 @@
     set pc, postamble
 
 ;----------------------------------------------------------------
-:screen__store
-;----------------------------------------------------------------
-    set push, 0
-    set push, 1
-    jsr preamble
-
-    set i, video_ram_end - 1
-    set push, SCREEN_MEM__VIDEO_SIZE
-    set pc, built_in_peek_str_merge
-
-;----------------------------------------------------------------
-:screen__restore
-;----------------------------------------------------------------
-    set push, 1
-    set push, 0
-    jsr preamble
-
-    set j, video_ram_start
-    set x, [z+10]
-
-    set pc, built_in_poke_str
-
-;----------------------------------------------------------------
 :screen_toggle_cursor
 ; fastcall
 ;----------------------------------------------------------------

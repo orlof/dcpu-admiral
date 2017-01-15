@@ -13,7 +13,7 @@
 :edit__line_ptr         dat 0
 :edit__pos_ptr          dat 0
 
-:edit__view_start_ptr   dat 0
+:edit__view_start       dat 0
 :edit__view_shift       dat 0
 
 :edit__scr_x            dat 0
@@ -27,14 +27,11 @@
 :edit_main
 ;----------------------------------------------------------------
     set push, 1
-    set push, 3
+    set push, 2
     jsr preamble
 
     ; do nothing for run-stop key
     ias 0
-
-    jsr screen__store
-    set [z-3], x
 
     jsr screen_clear
 
@@ -46,7 +43,7 @@
 
     set [edit__buf_start_ptr], 0
     set [edit__gap_start_ptr], 0
-    set [edit__view_start_ptr], 0
+    set [edit__view_start], 0
     set [edit__line_ptr], 0
 
     set a, EDIT__BUF_SIZE
@@ -125,8 +122,7 @@
     set pc, edit__main_loop
 
 :edit__finish
-    set push, [z-3]
-        jsr screen__restore
+    jsr screen_clear
 
     ; continue handling run-stop key
     ias key_interrupt
@@ -290,8 +286,14 @@
 ;----------------------------------------------------------------
 :edit_key_bs
 ;----------------------------------------------------------------
-    ife [edit__pos_ptr], [edit__gap_end_ptr]
-        set [edit__pos_ptr], [edit__gap_start_ptr]
+    ifn [edit__pos_ptr], [edit__gap_end_ptr]
+        set pc, edit_key_bs_skip
+
+    ife [edit__gap_start_ptr], [edit__buf_start_ptr]
+        set pc, edit__main_loop
+
+    set [edit__pos_ptr], [edit__gap_start_ptr]
+:edit_key_bs_skip
     ife [edit__pos_ptr], [edit__buf_start_ptr]
         set pc, edit__main_loop
     sub [edit__pos_ptr], 1
@@ -310,7 +312,9 @@
 
     set pc, edit__main_loop
 
+;----------------------------------------------------------------
 :edit_key_newline
+;----------------------------------------------------------------
     jsr edit__insert_char
 
     set b, [edit__line_ptr]
@@ -325,8 +329,14 @@
 ;----------------------------------------------------------------
 :edit__draw_screen
 ;----------------------------------------------------------------
-    set i, [edit__view_start_ptr]
     set j, video_ram_start
+
+    set i, [edit__view_start]
+    add i, [edit__buf_start_ptr]
+    ifl i, [edit__gap_start_ptr]
+        set pc, edit__draw_screen__loop
+    sub i, [edit__gap_start_ptr]
+    add i, [edit__gap_end_ptr]
 
 :edit__draw_screen__loop
     jsr edit__draw_line
@@ -477,9 +487,15 @@
 ; return
 ;   a: beginning of line pointer
 ;----------------------------------------------------------------
-    ife a, [edit__gap_end_ptr]
-        set a, [edit__gap_start_ptr]
+    ifn a, [edit__gap_end_ptr]
+        set pc, edit__bol_skip
 
+    ife [edit__gap_start_ptr], [edit__buf_start_ptr]
+        set pc, pop
+
+    set a, [edit__gap_start_ptr]
+
+:edit__bol_skip
     ife a, [edit__buf_start_ptr]
         set pc, pop
 
@@ -506,6 +522,16 @@
 ; return
 ;   a: pointer to next newline or edit__buf_end_ptr
 ;----------------------------------------------------------------
+;    ifn a, [edit__gap_start_ptr]
+;        set pc, edit__eol_skip
+;
+;    ife [edit__gap_end_ptr], [edit__buf_end_ptr]
+;        set pc, pop
+;
+;    set a, [edit__gap_end_ptr]
+;
+;:edit__eol_skip
+;
     ife a, [edit__gap_start_ptr]
         set a, [edit__gap_end_ptr]
 
@@ -642,11 +668,26 @@
     ;    return x;
     ; }
 
-
-
+:edit__view_focus__only_line
+    set a, [edit__pos_ptr]
+    jsr edit__bol
+    set [edit__line_ptr], a
+    set pc, edit__view_focus__calc_scr_x__line_only
 
 :edit__view_focus
+    ife [edit__scr_dirty], 1
+        set pc, edit__view_focus__only_line
+
     ; cur_line = bol (cur_pos);
+    set b, [edit__view_start]
+    add b, [edit__buf_start_ptr]
+    ifl b, [edit__gap_start_ptr]
+        set pc, edit__view_focus__start
+
+    sub b, [edit__gap_start_ptr]
+    add b, [edit__gap_end_ptr]
+
+:edit__view_focus__start
     set a, [edit__pos_ptr]
     jsr edit__bol
     set [edit__line_ptr], a
@@ -654,14 +695,14 @@
     ; while (cur_line < bow_line)
     ;    bow_line = prevline (bow_line);
 :edit__view_focus__up_to_cur_line
-    ife [edit__line_ptr], [edit__view_start_ptr]
+    ife [edit__line_ptr], b
         set pc, edit__view_focus__calc_scr_y
-    ifg [edit__line_ptr], [edit__view_start_ptr]
+    ifg [edit__line_ptr], b
         set pc, edit__view_focus__calc_scr_y
 
-    set a, [edit__view_start_ptr]
+    set a, b
     jsr edit__prevline
-    set [edit__view_start_ptr], a
+    set b, a
     set [edit__scr_dirty], 2
 
     set pc, edit__view_focus__up_to_cur_line
@@ -673,7 +714,7 @@
     ; for (i = bow_line; i < cur_line; i = nextline (i))
     ;    cur_y++;
 
-    set a, [edit__view_start_ptr]                ; i = bow_line
+    set a, b                ; i = bow_line
 :edit__view_focus__calc_scr_y__loop
     ife a, [edit__line_ptr]                ; i < cur_line
         set pc, edit__view_focus__down_to_cur_line
@@ -686,7 +727,7 @@
 
     ; for (; cur_y >= LINES; cur_y--)
 :edit__view_focus__down_to_cur_line
-    set a, [edit__view_start_ptr]
+    set a, b
 
 :edit__view_focus__down_to_cur_line__loop
     ifl [edit__scr_y], SCREEN_ROWS                ; cur_y >= LINES
@@ -700,8 +741,16 @@
     set pc, edit__view_focus__down_to_cur_line__loop
 
 :edit__view_focus__calc_scr_x
-    set [edit__view_start_ptr], a
+    ifl a, [edit__gap_start_ptr]
+        set pc, edit__view_focus__calc_scr_x__skip
+    sub a, [edit__gap_end_ptr]
+    add a, [edit__gap_start_ptr]
+
+:edit__view_focus__calc_scr_x__skip
+    sub a, [edit__buf_start_ptr]
+    set [edit__view_start], a
 ;---
+:edit__view_focus__calc_scr_x__line_only
     set a, [edit__line_ptr]
     set b, [edit__pos_ptr]
     jsr edit__calc_col
@@ -738,7 +787,6 @@
 
     add [edit__buf_start_ptr], x
     add [edit__gap_start_ptr], x
-    add [edit__view_start_ptr], x
     add [edit__line_ptr], x
 
     add [edit__pos_ptr], x
