@@ -36,14 +36,17 @@
     jsr screen_clear
 
     ; initialize cursor to top left corner
-    ; these are screen coordinates (not column or line in text) as
-    ; screen scrolls in both axis
+    ; these are screen coordinates (not column or line in text)
     set [edit__scr_x], 0
     set [edit__scr_y], 0
 
+    set [edit__view_start], 0
+    set [edit__view_shift], 0
+    set [edit__clipboard_cut], FALSE
+
+    ; set initial values for variables that are pointers to editing buffer
     set [edit__buf_start_ptr], 0
     set [edit__gap_start_ptr], 0
-    set [edit__view_start], 0
     set [edit__line_ptr], 0
 
     set a, EDIT__BUF_SIZE
@@ -51,10 +54,7 @@
     set [edit__buf_end_ptr], a
     set [edit__gap_end_ptr], a
 
-    set [edit__view_shift], 0
-    set [edit__clipboard_cut], FALSE
-
-    ; reserve space for editing text as string
+    ; reserve space for editing buffer
     ; this is allowed to violate string immutable property
     set push, a
     set push, TYPE_STR
@@ -138,6 +138,11 @@
     sub [sp], [edit__gap_end_ptr]
     set push, TYPE_STR
         jsr array_create
+    set push, x
+
+    set x, [z-1]
+    jsr edit__update_pointers
+    set x, pop
 
     sti j, [x]
     set i, [edit__buf_start_ptr]
@@ -793,6 +798,8 @@
 
 ;----------------------------------------------------------------
 :edit__update_pointers
+; This subroutine must be called after every operation that
+; may execute garbage collector
 ; fastcall
 ;     x: new buf start
 ;----------------------------------------------------------------
