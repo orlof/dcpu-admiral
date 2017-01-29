@@ -1176,3 +1176,31 @@
 :halt
 ;----------------------------------------------------------------
     set pc, halt
+
+;----------------------------------------------------------------
+:load_registers
+; fastcall
+;----------------------------------------------------------------
+    set a, [REGISTER_A]
+    set b, [REGISTER_B]
+    set c, [REGISTER_C]
+    set x, [REGISTER_X]
+    set y, [REGISTER_Y]
+    set z, [REGISTER_Z]
+    set i, [REGISTER_I]
+    set j, [REGISTER_J]
+    set pc, pop
+
+;----------------------------------------------------------------
+:save_registers
+; fastcall
+;----------------------------------------------------------------
+    set [REGISTER_A], a
+    set [REGISTER_B], b
+    set [REGISTER_C], c
+    set [REGISTER_X], x
+    set [REGISTER_Y], y
+    set [REGISTER_Z], z
+    set [REGISTER_I], i
+    set [REGISTER_J], j
+    set pc, pop

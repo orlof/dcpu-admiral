@@ -1,12 +1,12 @@
 :interpreter_main
-    set sp, 0
+    set sp, MEM_STACK_END & 0xffff
     set c, 0
     set i, MEM_CODE_END
-    set j, 0xffff
+    set j, MEM_STACK_END - 1
     jsr mem_clear
 
     set z, 0
-    set sp, 0xfff8                   ; room for registers a-j
+    set sp, MEM_STACK_END - 8  ; room for registers a-j
     set [history], 0
     set [clipboard_state], 0
     set [try_fp], 0

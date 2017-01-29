@@ -104,6 +104,9 @@
     ; calculate required heap space
     set a, [sp + 3]                        ; allocation size
     add a, SIZEOF_HANDLE                ; + handle size = max space required
+    ifn ex, 0
+        jsr recover
+        #doc Out of memory error
 
     set x, [heap_handle_start]            ; end of free heap space
     sub x, [heap_free_start]            ; - start of free heap space = available heap space
@@ -200,7 +203,7 @@
     ifl j, i                    ; is it pointing to static data?
 ;        set pc, compact_loop
         jsr recover
-        #doc Internal memory handling error, dynamic reference is pointing to static data
+        #doc Internal memory handling error, dynamic reference is pointing to static data, report bug
 
     set b, i            ; calculate end pointer
     add b, [a + HANDLE_SIZE]
@@ -361,7 +364,7 @@
 ; fill a memory area with a value.
 ;
 ; input
-;  I start address, J end address, C fill word
+;  I start address (incl), J end address (excl), C fill word
 ;
 ; clobbers A, B, Y
 ;

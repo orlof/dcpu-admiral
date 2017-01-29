@@ -216,29 +216,21 @@
 ; void cls(void)
 ;----------------------------------------------------------------
 :screen_clear
-    set push, a
-    set push, b
-    set push, i
-    set push, j
+    set push, 0
+    set push, 0
+    jsr preamble
 
     set [screen_cursor], 0
-    set b, [screen_blank]
+    set c, [screen_blank]
 
     set i, video_ram_start
-    set a, video_ram_end
+    set j, video_ram_end
 
-:screen_clear_loop
-    set [i], b
-    ifl i, a
-        sti pc, screen_clear_loop
+    iaq TRUE
+    jsr mem_clear
+    iaq FALSE
 
-:screen_clear_finish
-    set j, pop
-    set i, pop
-    set b, pop
-    set a, pop
-
-    set pc, pop
+    set pc, postamble
 
 ;----------------------------------------------------------------
 :screen_add_char

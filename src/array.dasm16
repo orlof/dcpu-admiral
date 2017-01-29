@@ -5,14 +5,18 @@
 :array_create
     set push, [sp + 2]        ; size
     add [sp], 1
+    ifn ex, 0
+        jsr recover
+        #doc Out of memory error
+
     set push, [sp + 2]        ; type
     jsr alloc
-    
+
     set push, x
-    
+
     set x, [x]
     set [x], [sp + 3]
-    
+
     ; restore stack
     set x, pop
     set [sp], pop
@@ -28,11 +32,11 @@
 ; return x: uint16 at specified index or 0
 ;----------------------------------------------------------------
     jsr array__get_memory_addr
-    
+
     ifn x, 0
         set x, [x]
-    
-    set pc, pop    
+
+    set pc, pop
 
 ;----------------------------------------------------------------
 :array__qget
@@ -52,7 +56,7 @@
 :array__qget__in_range
     add x, b
     set x, [x+1]
-    
+
     set pc, pop
 
 ;----------------------------------------------------------------
@@ -63,14 +67,14 @@
 ; c: item (struct handle * or char)
 ;----------------------------------------------------------------
     jsr array__get_memory_addr
-    
+
     ife x, 0
         jsr recover
         #doc Cannot set value, array index is out of bounds
-    
+
     set [x], c
 
-    set pc, pop    
+    set pc, pop
 
 ;----------------------------------------------------------------
 :array__del
@@ -79,7 +83,7 @@
 ; b: index
 ;----------------------------------------------------------------
     jsr array__get_memory_addr
-    
+
     ife x, 0
         jsr recover
         #doc Cannot delete value, array index is out of bounds
@@ -90,7 +94,7 @@
     set i, x
     set j, x
     add j, 1
-    
+
     set x, [a]
     sub [x], 1
     add x, [x]
@@ -98,10 +102,10 @@
 :array__del__loop
     ifg i, x
         set pc, array__del__finish
-        
+
     set [i], [j]
     sti pc, array__del__loop
-    
+
 :array__del__finish
     set j, pop
     set i, pop
@@ -115,7 +119,7 @@
 ; return x: memory location or 0 for out of bounds
 ;----------------------------------------------------------------
     set push, a
-    
+
     set a, [a]            ; struct array *
 
     set x, b
@@ -130,7 +134,7 @@
         set pc, array__get_memory_addr__out_of_bounds
 
     add x, a
-    
+
     set a, pop
     set pc, pop
 
@@ -176,10 +180,10 @@
 :array__insert__loop
     ife j, b
         set pc, array__insert__finish
-        
+
     set [i], [j]
     std pc, array__insert__loop
-    
+
 :array__insert__finish
     set [i], [z+10]
     set pc, postamble
@@ -204,7 +208,7 @@
 
     set a, pop
     set x, [sp + 2]
-    
+
     set [sp], pop
     set [sp], pop
     set pc, pop
@@ -233,7 +237,7 @@
         set pc, array__append_array__finish
 
     jsr array__get
-    
+
     set push, [sp + 5]
     set push, x
     jsr array__append
@@ -254,10 +258,10 @@
 :array__increment_length
 ; fastcall
 ; a: struct handle *array
-;----------------------------------------------------------------    
+;----------------------------------------------------------------
     set x, [a]
     add [x], 1
-    
+
     ifl [x], [a + HANDLE_SIZE]                ; if len < capacity+1
         set pc, pop
 
@@ -268,7 +272,7 @@
     jsr realloc
 
     set pc, pop
-    
+
 ;----------------------------------------------------------------
 ; extern struct handle *array_split(struct handle *orig, uint start, uint end)
 ;----------------------------------------------------------------
@@ -296,7 +300,7 @@
 
     ifa c, [b]
         set c, [b]
-        
+
     ifa j, c
         set j, c
 
@@ -311,10 +315,10 @@
     set b, [a]
     add j, b
     add c, b
-    
+
     set i, [x]
     set [i], y
-    
+
 :array_split_loop
     ife j, c
         set pc, postamble
@@ -331,12 +335,12 @@
 
     set a, [z+11]
     set b, [z+10]
-    
+
     set c, [a]
     set c, [c]
     set x, [b]
     add c, [x]
-    
+
     set push, c
     set push, [a + HANDLE_TYPE]
     jsr array_create
@@ -345,16 +349,16 @@
     set i, [a]
     set c, [a]
     add c, [c]
-    
+
     sti j, [x]
 
 :array_merge__left_loop
     ifg i, c
         set pc, array_merge__right
-        
+
     sti [j], [i]
     set pc, array_merge__left_loop
-    
+
 :array_merge__right
     set i, [b]
     add i, 1
@@ -365,10 +369,10 @@
 :array_merge__right_loop
     ifg i, c
         set pc, postamble
-        
+
     sti [j], [i]
     set pc, array_merge__right_loop
-        
+
 ;----------------------------------------------------------------
 ; uint array_cmp(struct handle *array, struct handle *array, func *comparator)
 ;----------------------------------------------------------------
@@ -383,7 +387,7 @@
 
     set a, i
     add a, [a]      ; *left[len]
-    
+
     set j, [sp+6]    ; struct handle *right
     set j, [j]      ; struct list *right
 
@@ -433,7 +437,7 @@
     set push, 2
     set push, 0
     jsr preamble
-    
+
     set push, [z+10]        ; struct handle *int
     jsr int_to_int16
 
@@ -461,7 +465,7 @@
         set pc, postamble
     ife i, [a]
         add i, [i]
-    std [j], [i]    
+    std [j], [i]
     set pc, array_repeat_loop
 
 ;----------------------------------------------------------------
@@ -471,7 +475,7 @@
 :array_sort
     set push, 2
     set push, 0
-    jsr preamble    
+    jsr preamble
 
     set a, [z+11]
     set b, [z+10]
@@ -491,7 +495,7 @@
 
     set y, a    ; struct handle **min
 
-    sti j, a    ; 
+    sti j, a    ;
 
 :array_sort_inner
     ifg j, c
@@ -506,14 +510,14 @@
 
     set y, j
     sti pc, array_sort_inner
-    
+
 :array_finish_inner
     set x, [y]
     set [y], [a]
     set [a], x
 
     sti pc, array_sort_outer
-    
+
 ;----------------------------------------------------------------
 ; struct handle *array_clone(struct handle *original)
 ;----------------------------------------------------------------
@@ -536,15 +540,15 @@
     jsr array_create
 
     set j, [x]
-    
+
     sti i, [a]
     set a, [a]
     add a, [a]
-    
+
 :array_clone_loop
     ifg i, a
         set pc, array_clone_finish
-        
+
     set [j], [i]
     sti pc, array_clone_loop
 
@@ -571,7 +575,7 @@
 
     set b, a
     add a, [a]
-    
+
 :array_map__loop
     add b, 1
     ifg b, a
@@ -579,7 +583,7 @@
 
     set push, [b]
     jsr [sp + 4]
-    
+
     set pc, array_map__loop
 
 :array_map__finish
@@ -596,13 +600,13 @@
     set push, 2
     set push, 0
     jsr preamble
-    
+
     set a, [z + 11]                ; struct handle *array
     set b, [z + 10]                ; item
 
     set y, [a]                    ; struct array *
     sti j, y                    ; ptr to current item
-    
+
     add y, [y]                    ; ptr to last item
 
     set i, 0                    ; index
@@ -615,7 +619,7 @@
     set push, [j]
     set push, b
     jsr val_cmp
-    
+
     ifn x, 0
         sti pc, array_find__loop
 

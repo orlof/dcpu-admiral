@@ -15,14 +15,14 @@
 #define MEM_VIDEO_START         video_ram_start
 #define MEM_VIDEO_END           video_ram_end
 
-#define REGISTER_A              0xfffa
-#define REGISTER_B              0xfffb
-#define REGISTER_C              0xfffc
-#define REGISTER_X              0xfffd
-#define REGISTER_Y              0xfffe
-#define REGISTER_Z              0xffff
-#define REGISTER_I              0xfff8
-#define REGISTER_J              0xfff9
+#define REGISTER_A              MEM_STACK_END - 6
+#define REGISTER_B              MEM_STACK_END - 5
+#define REGISTER_C              MEM_STACK_END - 4
+#define REGISTER_X              MEM_STACK_END - 3
+#define REGISTER_Y              MEM_STACK_END - 2
+#define REGISTER_Z              MEM_STACK_END - 1
+#define REGISTER_I              MEM_STACK_END - 8
+#define REGISTER_J              MEM_STACK_END - 7
 
 ;----------------------------------------------------------------
 ; DATA TYPES
@@ -98,11 +98,11 @@
 #define SCOPE_MODE_UPDATE   0x0002
 #define SCOPE_MODE_INSERT   0x0004
 
-#define FLOPPY__MBR__SECTOR                0x00
-#define FLOPPY__MBR__FREE_HEAD            MEM_FLOPPY_START
-#define FLOPPY__MBR__FREE_TAIL            MEM_FLOPPY_START + 1
-#define FLOPPY__MBR__DIR_HEAD            MEM_FLOPPY_START + 2
-#define FLOPPY__MBR__DIR_TAIL            MEM_FLOPPY_START + 3
+#define FLOPPY__MBR__SECTOR             0x00
+#define FLOPPY__MBR__FREE_HEAD          MEM_FLOPPY_START
+#define FLOPPY__MBR__FREE_TAIL          MEM_FLOPPY_START + 1
+#define FLOPPY__MBR__DIR_HEAD           MEM_FLOPPY_START + 2
+#define FLOPPY__MBR__DIR_TAIL           MEM_FLOPPY_START + 3
 
 ; video memory definitions
 #define SCREEN_MEM__VIDEO_SIZE          384
@@ -111,10 +111,10 @@
 #define FLOPPY__SECTOR__NEXT            MEM_FLOPPY_START
 #define FLOPPY__SECTOR__DATA            MEM_FLOPPY_START + 1
 
-#define FLOPPY__STATE__NO_MEDIA                0x00
-#define FLOPPY__STATE__READY                0x01
-#define FLOPPY__STATE__READY_WP                0x02
-#define FLOPPY__STATE__BUSY                    0x03
+#define FLOPPY__STATE__NO_MEDIA         0x00
+#define FLOPPY__STATE__READY            0x01
+#define FLOPPY__STATE__READY_WP         0x02
+#define FLOPPY__STATE__BUSY             0x03
 
 #define FLOAT_TYPE_NAN   0x8000
 #define FLOAT_TYPE_PINF  -3
