@@ -81,7 +81,7 @@
 :edit__main_loop
     jsr edit__view_focus
 
-    ife [edit__scr_dirty], 2
+    ifb [edit__scr_dirty], 2
         jsr edit__draw_screen
     ife [edit__scr_dirty], 1
         jsr edit__draw_current_line
@@ -210,7 +210,7 @@
         sub a, 1
 
     ifn [a], KEY_NEWLINE
-        set [edit__scr_dirty], 1
+        bor [edit__scr_dirty], 1
 
     set [edit__pos_ptr], a
     set pc, edit__main_loop
@@ -220,7 +220,7 @@
     set a, [edit__pos_ptr]
 
     ifn [a], KEY_NEWLINE
-        set [edit__scr_dirty], 1
+        bor [edit__scr_dirty], 1
 
     ife a, [edit__gap_start_ptr]
         set a, [edit__gap_end_ptr]
@@ -471,9 +471,9 @@
     set a, [edit__gap_start_ptr]
     set [a], c
 
-    set [edit__scr_dirty], 1
+    bor [edit__scr_dirty], 1
     ife c, KEY_NEWLINE
-        set [edit__scr_dirty], 2
+        bor [edit__scr_dirty], 2
 
     add [edit__gap_start_ptr], 1
     set pc, pop
@@ -492,9 +492,9 @@
     set x, [edit__pos_ptr]
     set x, [x]
 
-    set [edit__scr_dirty], 1
+    bor [edit__scr_dirty], 1
     ife x, KEY_NEWLINE
-        set [edit__scr_dirty], 2
+        bor [edit__scr_dirty], 2
 
     add [edit__gap_end_ptr], 1
     add [edit__pos_ptr], 1
@@ -722,7 +722,7 @@
     set a, b
     jsr edit__prevline
     set b, a
-    set [edit__scr_dirty], 2
+    bor [edit__scr_dirty], 2
 
     set pc, edit__view_focus__up_to_cur_line
 
@@ -754,7 +754,7 @@
 
     ; bow_line = nextline (bow_line);
     jsr edit__nextline
-    set [edit__scr_dirty], 2
+    bor [edit__scr_dirty], 2
 
     sub [edit__scr_y], 1                    ; cur_y--
     set pc, edit__view_focus__down_to_cur_line__loop
@@ -782,7 +782,7 @@
 
     add [edit__scr_x], 8
     sub [edit__view_shift], 8
-    set [edit__scr_dirty], 2
+    bor [edit__scr_dirty], 2
 
     set pc, edit__view_focus__left_to_cur_pos
 
@@ -792,7 +792,7 @@
 
     sub [edit__scr_x], 8
     add [edit__view_shift], 8
-    set [edit__scr_dirty], 2
+    bor [edit__scr_dirty], 2
 
     set pc, edit__view_focus__right_to_cur_pos
 
