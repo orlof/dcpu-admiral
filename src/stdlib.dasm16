@@ -949,7 +949,7 @@
     sub i, 1
     hwq i
     ife a, 0xf615
-        ife b, 0x7349
+        ife b, 0x734d
             set [monitor], i
     ife a, 0x7406
         ife b, 0x30cf
