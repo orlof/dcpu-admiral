@@ -235,6 +235,11 @@ Following sources were proven to be invaluable sources for information:
  - The Art of Assembly Language Programming, by Randall Hyde: http://cs.smith.edu/~thiebaut/ArtOfAssembly/artofasm.html
  - Data Structures and Algorithms with Object-Oriented Design Patterns in Java, by Bruno R. Preiss: http://www.brpreiss.com/books/opus5/html/book.html
 
+The following subroutines are contributed or copied from public sources to Admiral:
+
+ - Hummingbird-2 Encryption Algorithm by HyperVerse Systems / ColErr
+ - "Linear feedback shift register" pseudo random number generator by kirinyaga (via 0x10c - Forum)
+
 --
 
 <h5 id="1.4">Other in-game DCPU projects</h5>
