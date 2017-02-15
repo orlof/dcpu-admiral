@@ -704,22 +704,10 @@ DAT 0xffff
 
 :built_in_key_1
     set a, [z-1]
-    ifb [a + HANDLE_TYPE], TYPE_INT
-        set pc, built_in_key_1_int
-
-    ifc [a + HANDLE_TYPE], TYPE_STR
+    ifc [a + HANDLE_TYPE], TYPE_INT
         jsr recover
-        #doc Wrong argument type for key(a)
+        #doc key(): Argument must be of type int
 
-    set a, [a]
-    ifn [a], 1
-        jsr recover
-        #doc key(a) argument is string, not a char error
-
-    set b, [a + 1]
-    set pc, built_in_key_1_key
-
-:built_in_key_1_int
     set push, a
     jsr int_to_int16
     set b, x
@@ -1438,9 +1426,12 @@ DAT 0, TYPE_INT
     set push, [z-1]
         jsr int_to_int16
 
+    jsr built_in_sleep__loop
+    set pc, postamble_none
+
     :built_in_sleep__loop
         ife x, 0
-            set pc, postamble_none
+            set pc, pop
 
         set i, 18
         :built_in_sleep__sec_loop
@@ -1449,8 +1440,6 @@ DAT 0, TYPE_INT
 
         sub x, 1
         set pc, built_in_sleep__loop
-
-    set pc, postamble_none
 
 ;----------------------------------------------------------------
 DAT 0
@@ -1527,6 +1516,10 @@ DAT 0, TYPE_BOOL
 ;----------------------------------------------------------------
     jsr built_in_params
 
+    ife [pixie], 0xffff
+        jsr recover
+        #doc hires(): No graphics mode support in monitor
+
     ife [z-1], BOOL_TRUE
         jsr hires__init
     ife [z-1], BOOL_FALSE
@@ -1535,45 +1528,81 @@ DAT 0, TYPE_BOOL
     set pc, postamble_none
 
 ;----------------------------------------------------------------
-DAT 0, TYPE_INT, TYPE_INT
-:built_in_show
+DAT 0xffff
+:built_in_sound
 ;----------------------------------------------------------------
     jsr built_in_params
 
-    ife [floppy], 0xffff
+    ife [speaker], 0xffff
         jsr recover
-        #doc show(): M35FD device not present error
+        #doc sound(): Speaker device not present error
 
-    ; addr
-    set push, [z-1]
-    ; sector
-    set push, [z-2]
+    ifl i, 2
+        ifg i, 3
+            jsr recover
+            #doc sound(): Wrong number of arguments error
 
-    jsr hires__load_lem_from_sector
+    set x, [z-1]
+    ifc [x + HANDLE_TYPE], TYPE_INT
+        jsr recover
+        #doc sound(): Illegal argument type error
 
-    set pc, postamble_none
+    set push, x
+    jsr int_to_int16
+    set a, x
+
+    set x, [z-2]
+    ifc [x + HANDLE_TYPE], TYPE_INT
+        jsr recover
+        #doc sound(): Illegal argument type error
+
+    set push, x
+    jsr int_to_int16
+    set b, x
+
+    hwi [speaker]
+
+    ife i, 2
+        set pc, postamble_none
+
+    set x, [z-3]
+    ifc [x + HANDLE_TYPE], TYPE_INT
+        jsr recover
+        #doc sound(): Illegal argument type error
+
+    set push, x
+    jsr int_to_int16
+
+    ife x, 0
+        set pc, postamble_none
+
+    jsr built_in_sleep__loop
+
+    set b, 0
+    hwi [speaker]
+
+    set pc, postamble
 
 ;----------------------------------------------------------------
-DAT 0, TYPE_INT, TYPE_INT, TYPE_BOOL
+DAT 0, TYPE_INT, TYPE_INT, TYPE_INT
 :built_in_plot
 ;----------------------------------------------------------------
     jsr built_in_params
 
-    set push, [z-1]
-    jsr int_to_int16
-    ifg x, 63
-        set pc, postamble_none
-    set push, x
-
     set push, [z-2]
     jsr int_to_int16
-    ifg x, 47
+    ifg x, 95
         set pc, postamble_none
-    set push, x
+    set y, x
 
-    set push, 0x0
-    ife BOOL_TRUE, [z-3]
-        set [sp], 0xf
+    set push, [z-3]
+    jsr int_to_int16
+    set c, x
+
+    set push, [z-1]
+    jsr int_to_int16
+    ifg x, 127
+        set pc, postamble_none
 
     jsr hires__point
 
@@ -1585,120 +1614,97 @@ DAT 0, TYPE_INT, TYPE_INT
 ;----------------------------------------------------------------
     jsr built_in_params
 
-    set push, [z-1]
-    jsr int_to_int16
-    ifg x, 63
-        set pc, BOOL_FALSE
-    set push, x
-
     set push, [z-2]
     jsr int_to_int16
-    ifg x, 47
+    ifg x, 95
         set pc, BOOL_FALSE
-    set push, x
+    set y, x
+
+    set push, [z-1]
+    jsr int_to_int16
+    ifg x, 127
+        set pc, BOOL_FALSE
 
     jsr hires__get_point
+    ife x, 0
+        set pc, postamble_false
+
+    set x, BOOL_TRUE
     set pc, postamble
 
-:built_in_point_false
-    set x, BOOL_FALSE
+:postamble_false
+    set x, BOOL_TRUE
     set pc, postamble
 
 ;----------------------------------------------------------------
-DAT 0, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_BOOL
+DAT 0, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT
 :built_in_circle
 ;----------------------------------------------------------------
     jsr built_in_params
 
     set push, [z-1]
     jsr int_to_int16
-    ifg x, 63
+    ifg x, 127
         set pc, postamble_none
     set push, x
 
     set push, [z-2]
     jsr int_to_int16
-    ifg x, 47
+    ifg x, 95
         set pc, postamble_none
     set push, x
 
     set push, [z-3]
     jsr int_to_int16
-    ifg x, 63
+    ifg x, 127
         set pc, postamble_none
     set push, x
 
-    set push, 0x0
-    ife BOOL_TRUE, [z-4]
-        set [sp], 0xf
+    set push, [z-4]
+    jsr int_to_int16
+    set push, x
 
     jsr hires__circle
 
     set pc, postamble_none
 
 ;----------------------------------------------------------------
-DAT 0, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_BOOL
+DAT 0, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT
 :built_in_line
 ;----------------------------------------------------------------
     jsr built_in_params
 
     set push, [z-1]
     jsr int_to_int16
-    ifg x, 63
+    ifg x, 127
         set pc, postamble_none
     set push, x
 
     set push, [z-2]
     jsr int_to_int16
-    ifg x, 47
+    ifg x, 95
         set pc, postamble_none
     set push, x
 
     set push, [z-3]
     jsr int_to_int16
-    ifg x, 63
+    ifg x, 127
         set pc, postamble_none
     set push, x
 
     set push, [z-4]
     jsr int_to_int16
-    ifg x, 47
+    ifg x, 95
         set pc, postamble_none
     set push, x
 
-    set push, 0x0
-    ife BOOL_TRUE, [z-5]
-        set [sp], 0xf
+    set push, [z-5]
+    jsr int_to_int16
+    set push, x
 
     jsr hires__line
 
     set pc, postamble_none
-
-;;----------------------------------------------------------------
-;DAT 0, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT
-;:built_in_color
-;;----------------------------------------------------------------
-;    jsr built_in_params
-;
-;    set push, [z-1]
-;    jsr int_to_int16
-;    set push, x
-;
-;    set push, [z-2]
-;    jsr int_to_int16
-;    set push, x
-;
-;    set push, [z-3]
-;    jsr int_to_int16
-;    set push, x
-;
-;    set push, [z-4]
-;    jsr int_to_int16
-;    set push, x
-;
-;    jsr screen__color
-;
-;    set pc, postamble_none
 
 ;----------------------------------------------------------------
 :built_in_params

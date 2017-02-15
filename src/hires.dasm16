@@ -1,99 +1,117 @@
 ;----------------------------------------------------------------
 :hires__init
 ;----------------------------------------------------------------
-    set [screen_blank], SCREEN_BLANK_PIX
-    set b, hires_font_ram
-    set pc, hires__mode
+    set [screen_mode], hires__clear
+    jsr hires__clear
+
+    set a, 0x10
+    set b, 1
+    hwi [pixie]
+
+    set pc, pop
 
 ;----------------------------------------------------------------
 :hires__finish
 ; WARNING this trash registers
 ;----------------------------------------------------------------
-    set [screen_blank], SCREEN_BLANK_CHAR
-    set b, 0
-
-:hires__mode
-    set a, 1
-    hwi [monitor]
-
-    set a, 2
-    set b, 0
-    hwi [monitor]
-
+    set [screen_mode], screen_clear
     jsr screen_clear
+
+    set a, 0x10
+    set b, 0
+    hwi [pixie]
 
     set pc, pop
 
 ;----------------------------------------------------------------
-:hires__circle
-; (x, y, r, color)
-; all param values are verified < 64, cannot bug mem mgmt
+:hires__clear
 ;----------------------------------------------------------------
-    set push, 4
+    set push, 0
     set push, 0
     jsr preamble
 
+    set c, 0
+
+    set i, video_ram_start
+    set j, video_ram_start + 768
+
+    iaq TRUE
+    jsr mem_clear
+    iaq FALSE
+
+    set pc, postamble
+
+;----------------------------------------------------------------
+:hires__circle
+; (x, y, r, mode)
+; all param values are verified < 64, cannot bug mem mgmt
+;----------------------------------------------------------------
+    set push, 3
+    set push, 0
+    jsr preamble
+
+    set c, [z+10]           ; mode
     set a, [z+11]           ; x
     set b, 0                ; y
-    set c, 0                ; err
+    set i, 0                ; err
 
 :hires__circle__loop
     ifg b, a
         set pc, postamble
 
     ; (x0 + x, y0 + y);1
-    set i, [z+13]
-    add i, a
+    set X, [z+13]
+    add X, a
 
-    set j, [z+12]
-    add j, b
+    set Y, [z+12]
+    add Y, b
     jsr hires__circle__plot
 
     ; (x0 + x, y0 - y);2
-    set j, [z+12]
-    sub j, b
+    set Y, [z+12]
+    sub Y, b
     jsr hires__circle__plot
 
     ; (x0 - x, y0 - y);3
-    set i, [z+13]
-    sub i, a
+    set X, [z+13]
+    sub X, a
     jsr hires__circle__plot
 
     ; (x0 - x, y0 + y);4
-    set j, [z+12]
-    add j, b
+    set Y, [z+12]
+    add Y, b
     jsr hires__circle__plot
 
     ; (x0 + y, y0 + x);5
-    set i, [z+13]
-    add i, b
+    set X, [z+13]
+    add X, b
 
-    set j, [z+12]
-    add j, a
+    set Y, [z+12]
+    add Y, a
     jsr hires__circle__plot
 
     ; (x0 + y, y0 - x);6
-    set j, [z+12]
-    sub j, a
+    set Y, [z+12]
+    sub Y, a
     jsr hires__circle__plot
 
     ; (x0 - y, y0 - x);7
-    set i, [z+13]
-    sub i, b
+    set X, [z+13]
+    sub X, b
     jsr hires__circle__plot
 
     ; (x0 - y, y0 + x);8
-    set j, [z+12]
-    add j, a
+    set Y, [z+12]
+    add Y, a
     jsr hires__circle__plot
 
     add b, 1
     set push, b
     mli [sp], 2
     add [sp], 1
-    add c, pop
+    add i, pop
 
-    set push, c
+    set push, i
     sub [sp], a
     mli [sp], 2
 
@@ -105,30 +123,30 @@
     set push, a
     mli [sp], 2
     sub [sp], pop
-    add c, pop
+    add i, pop
 
     set pc, hires__circle__loop
 
 :hires__circle__plot
-    ifg i, 63
+    ifg X, 127
         set pc, pop
 
-    ifg j, 47
+    ifg Y, 95
         set pc, pop
 
-    set push, i
-    set push, j
-    set push, [z+10]
     jsr hires__point
 
     set pc, pop
 
 ;----------------------------------------------------------------
 :hires__line
-; (x0, y0, x1, y1, color)
-; all param values are verified < 64, cannot bug mem mgmt
+; (x0, y0, x1, y1, mode)
+; all params must be veried to be in screen boundaries
+; x = x0, y = y0, a = dx, b = dy, i = err, j = e2
+; sx
+; sy  <- SP
 ;----------------------------------------------------------------
-    set push, 5
+    set push, 4
     set push, 0
     jsr preamble
 
@@ -145,55 +163,52 @@
     ifb b, 0x8000
         mul b, -1
 
-    set i, -1               ; sx
+    set c, [z+10]
+
+    set push, -1            ; sx = i [sp+2]
     ifl x, [z+12]
-        set i, 1
+        set [sp], 1
 
-    set j, -1               ; sy
+    set push, -1            ; sy = j = [sp+1]
     ifl y, [z+11]
-        set j, 1
+        set [sp], 1
 
-    set c, b                ; err
-    mul c, -1
+    set i, b                ; err
+    mul i, -1
     ifg a, b
-        set c, a
+        set i, a
 
-    asr c, 1
+    asr i, 1
 
-    set push, 0             ; e2
+    set j, 0             ; e2 = j
 
 :hires__line__loop
-    set push, x
-    set push, x
-    set push, y
-    set push, [z+10]
     jsr hires__point
-    set x, pop
 
     ife x, [z+12]
         ife y, [z+11]
             set pc, postamble
 
-    set [sp], c
+    set j, i
 
     mul a, -1
-    ifa [sp], a
+    ifa j, a
         jsr hires__line__update_x
     mul a, -1
 
-    ifu [sp], b
+    ifu j, b
         jsr hires__line__update_y
 
     set pc, hires__line__loop
 
 :hires__line__update_x
-    sub c, b
-    add x, i
+    sub i, b
+    add x, [sp + 2]
     set pc, pop
 
 :hires__line__update_y
-    add c, a
-    add y, j
+    add i, a
+    add y, [sp + 1]
     set pc, pop
 
 ; void line(int x0, int y0, int x1, int y1) {
@@ -216,175 +231,64 @@
 ; (x, y)
 ; all param values are verified < 64, cannot bug mem mgmt
 ;----------------------------------------------------------------
-    set push, 2
-    set push, 0
-    jsr preamble
+    set push, x
 
-    set x, [z + 11]
-    set y, [z + 10]
-    jsr hires__pixel_addr
+    ; bit
+    set push, 0x8000
 
-    set x, [z + 11]
-    set y, [z + 10]
-    jsr hires__pixel_bit
+    set push, x
+    and [sp], 0xf
+    shr [sp], pop
+    xor [sp], 0xffff
 
-    set x, BOOL_FALSE
-    ifb [a], 0x0f00
-        set x, BOOL_TRUE
+    ; word
+    shr x, 4
+    set push, y
+    shl [sp], 3
+    bor x, pop
+    add x, video_ram_start
 
-    ife b, 0x80
-        set pc, postamble
+    set x, [x]
+    and x, pop
 
-    ifc [a], b
-        set pc, postamble
-
-    set c, x
-    set x, BOOL_FALSE
-    ife c, BOOL_FALSE
-        set x, BOOL_TRUE
-    set pc, postamble
+    set pc, pop
 
 ;----------------------------------------------------------------
 :hires__point
-; (x, y, color)
+; fastcall (x, y, c)
+; preserves all registers
 ; all param values are verified < 64, cannot bug mem mgmt
 ;----------------------------------------------------------------
-    set push, 3
-    set push, 0
-    jsr preamble
+    set push, x
 
-    and [z + 10], 0x000f
+    ; bit
+    set push, 0x8000
 
-    set x, [z + 12]
-    set y, [z + 11]
-    jsr hires__pixel_addr
+    set push, x
+    and [sp], 0xf
+    shr [sp], pop
 
-    set x, [z + 12]
-    set y, [z + 11]
-    jsr hires__pixel_bit
+    ; word
+    shr x, 4
+    set push, y
+    shl [sp], 3
+    bor x, pop
+    add x, video_ram_start
 
-    set c, [a]
-    shr c, 8
-    and c, 0x000f
+    ife c, 0
+        set pc, hires__point__clear
 
-    ife b, 0x80
-        set pc, hires__set_pixel__8
+    ife c, 1
+        bor [x], pop
+    ife c, 0xffff
+        xor [x], pop
 
-    ifn c, [z + 10]
-        ; if not bg -> set bit
-        set pc, hires__set_pixel__set
-
-    ; clear pixel
-    xor b, 0xffff
-    and [a], b
-
-    set pc, postamble
-
-:hires__set_pixel__set
-    ; set pixel
-    bor [a], b
-
-    set pc, postamble
-
-:hires__set_pixel__8
-    ife c, [z + 10]
-        ; if bg -> noop
-        set pc, postamble
-
-    set c, [a]
-    and c, 0x00ff
-    xor c, 0x007f
-
-    set b, [a]
-    and b, 0xf000
-    shr b, 4
-    bor c, b
-
-    set b, [a]
-    and b, 0x0f00
-    shl b, 4
-    bor c, b
-
-    set [a], c
-
-    set pc, postamble
-
-;----------------------------------------------------------------
-:hires__pixel_bit
-; fastcall: x, y -> b
-;----------------------------------------------------------------
-    set b, 0x80
-
-    and x, 1
-    shl x, 2
-    shr b, x
-
-    and y, 3
-    shr b, y
-
+    set x, pop
     set pc, pop
 
-;----------------------------------------------------------------
-:hires__pixel_addr
-; fastcall: x, y -> a
-;----------------------------------------------------------------
-    set a, video_ram_start
+:hires__point__clear
+    xor [sp], 0xffff
+    and [x], pop
 
-    shr y, 2
-    shl y, 5
-    add a, y
-
-    shr x, 1
-    add a, x
-
+    set x, pop
     set pc, pop
-
-;----------------------------------------------------------------
-:hires__load_lem_from_sector
-; sector
-;----------------------------------------------------------------
-    set push, 2
-    set push, 0
-    jsr preamble
-
-    ; MEM_MAP_FONT
-    set [screen_blank], SCREEN_BLANK_PIX
-
-    set a, 1
-    set b, hires_font_ram
-    hwi [monitor]
-
-    ; load buffer
-
-    ; addr
-    set push, [z+11]
-    jsr int_to_int16
-    set y, x
-
-    ; sector
-    set push, [z+10]
-    jsr int_to_int16
-    mod x, 1440
-
-    set a, 2
-    hwi [floppy]
-
-    set a, 0
-    :hires__load_lem_from_sector__loop
-    hwi [floppy]
-    ifn b, 1
-        set pc, hires__load_lem_from_sector__loop
-
-    ; MEM_MAP_SCREEN
-
-    set b, y
-    add b, 16
-    hwi [monitor]
-
-    ; MEM_MAP_PALETTE
-
-    set a, 2
-    set b, y
-    hwi [monitor]
-
-    set pc, postamble

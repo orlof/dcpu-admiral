@@ -1,12 +1,10 @@
 #define SCREEN_COLS         32
 #define SCREEN_ROWS         12
 #define SCREEN_BLANK_CHAR   0x7020
-#define SCREEN_BLANK_PIX    0xf000
 
 ;----------------------------------------------------------------
 ; GLOBAL DISPLAY VARIABLES
 ;----------------------------------------------------------------
-:screen_blank   dat SCREEN_BLANK_CHAR
 :screen_cursor  dat 0
 
 ; This file represent my first tests to utilize new style of assembler.
@@ -118,7 +116,7 @@
     ; j: current source memory location (unsigned)
 
     ; clear or copy
-    set a, [screen_blank]
+    set a, SCREEN_BLANK_CHAR
     ifa x, -1
         ifu x, SCREEN_COLS
             ifa y, -1
@@ -221,7 +219,7 @@
     jsr preamble
 
     set [screen_cursor], 0
-    set c, [screen_blank]
+    set c, SCREEN_BLANK_CHAR
 
     set i, video_ram_start
     set j, video_ram_end
@@ -277,7 +275,7 @@
         set pc, add_char_copy
 
 :add_char_clear
-    sti [i], [screen_blank]
+    sti [i], SCREEN_BLANK_CHAR
     ifl i, video_ram_end
         set pc, add_char_clear
 
@@ -289,7 +287,7 @@
 
 :add_char_backspace
     ifn i, 0
-        std [video_ram_start+i-1], [screen_blank]
+        std [video_ram_start+i-1], SCREEN_BLANK_CHAR
 
     set [screen_cursor], i
     set pc, add_char_finish

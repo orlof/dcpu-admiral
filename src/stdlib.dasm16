@@ -106,7 +106,7 @@
 :recover
 ; fastcall
 ;----------------------------------------------------------------
-    ife [screen_blank], SCREEN_BLANK_PIX
+    ife [screen_mode], hires__clear
         jsr hires__finish
 
     set a, pop
@@ -948,9 +948,14 @@
        set pc, pop
     sub i, 1
     hwq i
+    ; LEM as a monitor
     ife a, 0xf615
         ife b, 0x734d
-            set [monitor], i
+            jsr detect_hardware__monitor
+    ; PIXIE as a monitor
+    ife a, 0xf615
+        ife b, 0x774d
+            jsr detect_hardware__monitor
     ife a, 0x7406
         ife b, 0x30C1
             set [keyboard], i
@@ -966,9 +971,21 @@
     ife a, 0x90a5
         ife b, 0xd005
             set [rci], i
+    ife a, 0x0001
+        ife b, 0xC0F0
+            set [speaker], i
     set pc, detect_hardware__loop
 
+:detect_hardware__monitor
+    set [monitor], i
+    ife y, 0x8361
+        ife x, 0x0EC5
+            set [pixie], i
+    set pc, pop
+
+;----------------------------------------------------------------
 :key_interrupt
+;----------------------------------------------------------------
     set push, b
     set push, c
 

@@ -408,7 +408,7 @@
     add c, SCREEN_COLS
 
 :edit__draw_line__chars__loop
-    set [j], [screen_blank]
+    set [j], SCREEN_BLANK_CHAR
     ife i, [edit__buf_end_ptr]
         set pc, edit__draw_line__chars__loop1
     ife [i], KEY_NEWLINE

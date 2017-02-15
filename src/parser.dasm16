@@ -67,7 +67,7 @@
 ;----------------------------------------------------------------
     jsr lexer_next        ; skip 'cls'
 
-    jsr screen_clear
+    jsr [screen_mode]
 
     set x, VOID
     set pc, postamble

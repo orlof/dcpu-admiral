@@ -207,16 +207,17 @@ b 2
  - Functions: poke(), peek() and call() for low level memory access
  - Functions: hwn(), hwq() and hwi() for low level hardware access
  - Functions: HIC select, status, read and transmit functions for TechCompliant HIC hardware
- - Experimental hi-res 64x48 ;) graphics mode: plot(), point(), line() and circle()
+ - Experimental hi-res 128x96 ;) graphics mode with PIXIE: plot(), point(), line() and circle()
    - Bresenham's line algorithm
    - Midpoint circle algorithm optimized for integer-based math
  - Supported hardware
-   - LEM 1802 - required
+   - LEM 1802 or PIXIE - required
    - Generic Keyboard - required
    - Generic Timer
    - M35FD
    - KaiComm HIC
    - KaiComm RCI
+   - Speaker
 
 <h6>Next in development</h6>
 
@@ -528,7 +529,7 @@ Admiral does not support storing or restoring images without using poke and peek
 # Draw image and store it in string
 hires(true)
 circle(32,24,20,true)
-img=peek(peek(0xfff4), 384)
+img=peek(peek(0xfff4), 768)
 hires(false)
 
 print "Press any key"
@@ -541,7 +542,8 @@ getc()
 hires(false)
 </pre>
 
-NOTE During startup, Admiral initializes 0xfff4 memory location to point to start of video memory and the size of LEM 1802 video memory buffer is 384 words.
+NOTE During startup, Admiral initializes 0xfff4 memory location to point to start of video memory. LEM 1802 video memory buffer is 384 words and
+two color PIXIE graphics mode is 768 words.
 
 This way images can also be saved to floppy with normal string serialization methods.
 
@@ -1223,6 +1225,7 @@ e.g., range(3) returns the list [0, 1, 2].
       <li><a href="#wset">wset()</a></li>
       <li><a href="#cursor">cursor()</a></li>
       <li><a href="#scroll">scroll()</a></li>
+      <li><a href="#sound">sound()</a></li>
     </ul>
   </li>
   <li>Memory functions
@@ -1287,7 +1290,6 @@ e.g., range(3) returns the list [0, 1, 2].
       <li><a href="#point">point()</a></li>
       <li><a href="#line">line()</a></li>
       <li><a href="#circle">circle()</a></li>
-      <li><a href="#show">show()</a></li>
     </ul>
   </li>
 </ul>
@@ -1413,6 +1415,7 @@ e.g., range(3) returns the list [0, 1, 2].
   <dd>
     <p>
       Without argument return immediately the next key typed from keyboard buffer, or 0 if the buffer is empty. If int is specified return true if the specified key is down or false otherwise.
+      Note that ASCII keyboard supports only modifier keys to be tested separately: Shift (0x90), Control (0x91) and Alt (0x92).
     </p>
   </dd>
 </dl>
@@ -1487,6 +1490,15 @@ e.g., range(3) returns the list [0, 1, 2].
   <dd>
     <p>
       Scroll screen dx, dy characters. Areas that scroll in are filled with zero and appear empty on screen.
+    </p>
+  </dd>
+</dl>
+
+<dl>
+  <dt id="sound">sound(int channel, int frequency[, int duration])</dt>
+  <dd>
+    <p>
+      Create a sound with DCPU speaker hardware. Channel number is 0 or 1. Frequence 0 silences the sound. Duration is in milliseconds.
     </p>
   </dd>
 </dl>
