@@ -231,15 +231,12 @@
 ; (x, y)
 ; all param values are verified < 64, cannot bug mem mgmt
 ;----------------------------------------------------------------
-    set push, x
-
     ; bit
     set push, 0x8000
 
     set push, x
     and [sp], 0xf
     shr [sp], pop
-    xor [sp], 0xffff
 
     ; word
     shr x, 4

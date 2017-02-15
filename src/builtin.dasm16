@@ -1633,7 +1633,7 @@ DAT 0, TYPE_INT, TYPE_INT
     set pc, postamble
 
 :postamble_false
-    set x, BOOL_TRUE
+    set x, BOOL_FALSE
     set pc, postamble
 
 ;----------------------------------------------------------------
