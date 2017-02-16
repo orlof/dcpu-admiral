@@ -1,6 +1,6 @@
 #define SCREEN_COLS         32
 #define SCREEN_ROWS         12
-#define SCREEN_BLANK_CHAR   0x7020
+#define SCREEN_BLANK_CHAR   0x7f20
 
 ;----------------------------------------------------------------
 ; GLOBAL DISPLAY VARIABLES
@@ -21,6 +21,14 @@
     set b, video_ram_start
     hwi [monitor]
 
+    set a, 2
+    set b, palette_ram
+    hwi [monitor]
+
+    set a, 3
+    set b, 0x7
+    hwi [monitor]
+
     set pc, postamble
 
 ;----------------------------------------------------------------
@@ -29,7 +37,7 @@
 ;----------------------------------------------------------------
     set x, video_ram_start                ; struct screen *cur
     add x, [screen_cursor]
-    xor [x], 0xff80                        ; change colors
+    xor [x], 0x8880                       ; change colors
     set pc, pop
 
 ;----------------------------------------------------------------

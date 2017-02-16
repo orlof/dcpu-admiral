@@ -383,6 +383,7 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 1, led_lparen_user_defined
 :built_in_functions_7
     dat 8, "globals", built_in_globals
+;    dat 8, "palette", built_in_palette
     dat 1, led_lparen_user_defined
 
 :built_in__list_methods

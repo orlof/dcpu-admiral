@@ -856,6 +856,32 @@ DAT 0, TYPE_INT, TYPE_INT, TYPE_STR
 
     set pc, postamble_none
 
+;;----------------------------------------------------------------
+;;DAT 0, TYPE_INT, TYPE_INT
+;:built_in_palette
+;;----------------------------------------------------------------
+;    jsr built_in_params
+;
+;    ifn i, 2
+;        jsr recover
+;        #doc palette(): Wrong number of arguments error
+;
+;    ; rgb
+;    set push, [z-2]
+;    jsr int_to_int16
+;    and x, 0xfff
+;    set push, x
+;
+;    ; color index
+;    set push, [z-1]
+;    jsr int_to_int16
+;    and x, 0xf
+;    add x, palette_ram
+;
+;    set [x], pop
+;
+;    set pc, postamble
+;
 ;----------------------------------------------------------------
 DAT 0, TYPE_INT
 :built_in_call

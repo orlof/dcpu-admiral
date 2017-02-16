@@ -217,7 +217,7 @@
     :interpreter__line_edit__key_up__loop1
         ife i, a
             set pc, interpreter__line_edit__key_up__break1
-        set [i], 0
+        set [i], SCREEN_BLANK_CHAR
         sti pc, interpreter__line_edit__key_up__loop1
     :interpreter__line_edit__key_up__break1
 
@@ -283,7 +283,7 @@
 
 :interpreter__line_edit__del_char__break
     set i, [line_editor__end_addr]
-    set [i], 0
+    set [i], SCREEN_BLANK_CHAR
     sub [line_editor__end_addr], 1
 
     set pc, interpreter__line_edit_main_loop
