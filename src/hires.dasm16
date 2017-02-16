@@ -4,6 +4,10 @@
     set [screen_mode], hires__clear
     jsr hires__clear
 
+    set a, 3
+    set b, 0x0
+    hwi [pixie]
+
     set a, 0x10
     set b, 1
     hwi [pixie]
@@ -15,6 +19,11 @@
 ; WARNING this trash registers
 ;----------------------------------------------------------------
     set [screen_mode], screen_clear
+
+    set a, 3
+    set b, 0x7
+    hwi [pixie]
+
     jsr screen_clear
 
     set a, 0x10

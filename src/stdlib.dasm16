@@ -109,6 +109,20 @@
     ife [screen_mode], hires__clear
         jsr hires__finish
 
+    ife [speaker], 0xffff
+        set pc, recover__no_beep
+
+    set a, 0
+    set b, 512
+    hwi [speaker]
+
+    set x, 500
+    jsr built_in_sleep__loop
+
+    set b, 0
+    hwi [speaker]
+
+:recover__no_beep
     set a, pop
     set z, [recovery_fp]
     set sp, [recovery_sp]
