@@ -155,32 +155,30 @@
 ; sx
 ; sy  <- SP
 ;----------------------------------------------------------------
-    set push, 4
+    set push, 5
     set push, 0
     jsr preamble
 
     set x, [z+14]           ; x0
     set y, [z+13]           ; y0
 
+    set push, 1             ; sx = i [sp+2]
+
     set a, [z+12]           ; dx
     sub a, x
     ifb a, 0x8000
-        mul a, -1
+        set [sp], -1
+    mul a, [sp]
+
+    set push, 1             ; sy = j = [sp+1]
 
     set b, [z+11]           ; dy
     sub b, y
     ifb b, 0x8000
-        mul b, -1
+        set [sp], -1
+    mul b, [sp]
 
     set c, [z+10]
-
-    set push, -1            ; sx = i [sp+2]
-    ifl x, [z+12]
-        set [sp], 1
-
-    set push, -1            ; sy = j = [sp+1]
-    ifl y, [z+11]
-        set [sp], 1
 
     set i, b                ; err
     mul i, -1
@@ -189,7 +187,7 @@
 
     asr i, 1
 
-    set j, 0             ; e2 = j
+    mul a, -1
 
 :hires__line__loop
     jsr hires__point
@@ -200,10 +198,8 @@
 
     set j, i
 
-    mul a, -1
     ifa j, a
         jsr hires__line__update_x
-    mul a, -1
 
     ifu j, b
         jsr hires__line__update_y
@@ -216,7 +212,7 @@
     set pc, pop
 
 :hires__line__update_y
-    add i, a
+    sub i, a
     add y, [sp + 1]
     set pc, pop
 

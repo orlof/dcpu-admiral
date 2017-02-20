@@ -218,9 +218,19 @@
 
 
 ;----------------------------------------------------------------
+:std_out
+; return struct handle *none
+;----------------------------------------------------------------
+    set a, FALSE
+    set pc, std_print_merge
+
+;----------------------------------------------------------------
 :std_print
 ; return struct handle *none
 ;----------------------------------------------------------------
+    set a, TRUE
+
+:std_print_merge
     jsr lexer_next        ; skip 'print'
 
 :std_print_loop
@@ -275,7 +285,8 @@
 
 :std_print_break_eof
     set c, 10
-    jsr screen_add_char
+    ife a, TRUE
+        jsr screen_add_char
 
     set x, VOID
     set pc, postamble

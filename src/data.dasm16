@@ -172,7 +172,7 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
 :STR_NAN        DAT STR_NAN+2, TYPE_STR, 3, "nan"
 
 :STR_HELP       DAT STR_HELP + 2, TYPE_STR, 32, "e.g. if 1==1:print 'Hello World'"
-:STR_STARTUP    DAT STR_STARTUP + 2, TYPE_STR, 32, "  ***  DCPU ADMIRAL  0.95  ***  "
+:STR_STARTUP    DAT STR_STARTUP + 2, TYPE_STR, 32, "  ***  DCPU ADMIRAL  0.96  ***  "
 :STR_STARTUP2   DAT STR_STARTUP2 + 2, TYPE_STR, 16, "64K RAM SYSTEM  "
 :STR_STARTUP3   DAT STR_STARTUP3 + 2, TYPE_STR, 11, " WORDS FREE"
 :STR_PROMPT     DAT STR_PROMPT + 2, TYPE_STR, 1, ">"
@@ -220,6 +220,7 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
 :token_cls          dat std_cls, recover, recover, 0x0000
 :token_del          dat std_del, recover, recover, 0x0000
 :token_for          dat std_for, recover, recover, 0x0000
+:token_out          dat std_out, recover, recover, 0x0000
 :token_run          dat std_run, recover, recover, 0x0000
 :token_try          dat std_try, recover, recover, 0x0000
 :token_elif         dat recover, recover, recover, 0x0000
@@ -435,6 +436,7 @@ dat 0xa769, 0x12c5, 0x348f, 0xdeb0
     dat 4, "and", token_and
     dat 4, "not", token_not
     dat 4, "for", token_for
+    dat 4, "out", token_out
     dat 4, "cls", token_cls
     dat 4, "del", token_del
     dat 4, "inf", token_float
