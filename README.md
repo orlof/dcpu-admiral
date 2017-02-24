@@ -1867,10 +1867,15 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
 </dl>
 
 <dl>
-  <dt id="plot">plot(int x, int y, boolean fg)</dt>
+  <dt id="plot">plot(int x, int y, int mode)</dt>
   <dd>
     <p>
-      Draws a pixel with foreground or background color.
+      Depending on the mode parameter the pixel in coordinates x, y is either:
+      <pre>
+      0: Clear - Pixel is set to color 0
+      1: Set   - Pixel is set to color 1
+     -1: Xor   - Pixel color is changed
+      </pre>
     </p>
   </dd>
 </dl>
@@ -1885,19 +1890,19 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
 </dl>
 
 <dl>
-  <dt id="line">line(int x0, int y0, int x1, int y1, boolean fg)</dt>
+  <dt id="line">line(int x0, int y0, int x1, int y1, int mode)</dt>
   <dd>
     <p>
-      Draws a line with foreground or background color.
+      Draws a line with specified drawing mode (see plot for available modes).
     </p>
   </dd>
 </dl>
 
 <dl>
-  <dt id="circle">circle(int x, int y, int radius, boolean fg)</dt>
+  <dt id="circle">circle(int x, int y, int radius, int mode)</dt>
   <dd>
     <p>
-      Draws a circle centered to x, y and given radius with foreground or background color.
+      Draws a circle centered to x, y and given radius with specified drawing mode (see plot for available modes).
     </p>
   </dd>
 </dl>
