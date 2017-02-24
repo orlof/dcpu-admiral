@@ -55,7 +55,7 @@
 ; (x, y, r, mode)
 ; all param values are verified < 64, cannot bug mem mgmt
 ;----------------------------------------------------------------
-    set push, 3
+    set push, 4
     set push, 0
     jsr preamble
 
