@@ -1907,33 +1907,6 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
   </dd>
 </dl>
 
-<dl>
-  <dt id="show">show(int video_addr, int sector)</dt>
-  <dd>
-    <p>
-      This is unsupported "easter-egg" command. Shows LEM graphics image from specified floppy sector.
-      Good locations for video_addr are e.g. floppy buffer in peek(0xfff5) and stack start in peek(0xfff7).
-      Use hires(false) to recover from show()
-      <pre>
-      show(peek(0xfff5, 0)
-      </pre>
-      For double buffered movie playback, you could try
-      <pre>
-      sector = 0
-      buf = [peek(0xfff5), peek(0xfff7)]
-      while sector<1440:
-       show(buf[sector & 1], sector))
-       sector += 1
-      hires(false)
-      </pre>
-      (Similar code is available in util_disc.bin with file name "mov_play")
-
-      Full double buffering is not possible as LEM does not support changing video- and palette- ram simultaneously.
-    </p>
-  </dd>
-</dl>
-
-
 
 <h4 id="7">Appendixes</h4>
 
