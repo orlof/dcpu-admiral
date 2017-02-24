@@ -305,8 +305,8 @@ Those are pretty sophisticated and field proven tools, but will lack proper rele
 When Admiral starts, it will show the Admiral title header in LEM screen. Header shows Admiral's version number and the amount of available heap memory. After the header Admiral shows an interactive prompt '>' and waits for user input.
 
 <pre>
-  ***  DCPU ADMIRAL  0.6c  ***
-64K RAM SYSTEM  43360 WORDS free
+  ***  DCPU ADMIRAL  0.96  ***
+64K RAM SYSTEM  45657 WORDS FREE
 >
 </pre>
 
@@ -339,7 +339,7 @@ The Admiral interpreter acts as a simple calculator: you can type 'print' and an
 5
 </pre>
 
-If you accidenttaly enter e.g. infinite loop, execution can be stopped by pressing ALT (only available in generation 2 keyboards).
+If you accidenttaly enter e.g. infinite loop, execution can be stopped by pressing ALT+c (only available in generation 2 keyboards).
 
 The equal sign ('=') is used to assign a value to a variable.
 <pre>
@@ -359,17 +359,16 @@ Admiral assignment is also an expression that returns the assigned value. It all
 
 Variables must be “defined” (assigned a value) before they can be used, or an error will occur:
 <pre>
->n  # try to access an undefined variable
-ERROR:2846
-n
- ^
+>print n  # try to access an undefined variable
+ERROR:21AD
+print n
 </pre>
 
 Error codes change in every Admiral release and they are documented in admiral.txt.
 
-<h5 id="3.2">Clipboard</h4>
+<h5 id="3.2">Clipboard</h5>
 
-Admiral has system clipboard that can transfer data between applications. Copying data to clipboard can be done in any Admiral software by manipulating "_cb_" value in global scope.
+Admiral has system clipboard that can transfer data between applications. Copying data to clipboard can be done in any Admiral software by manipulating the value of "_cb_"-variable in global scope.
 
 <pre>
 >globals()['_cb_']="Hello World"
@@ -377,7 +376,7 @@ Admiral has system clipboard that can transfer data between applications. Copyin
 
 CTRL-y pastes clipboard to any application by writing the clipboard to key buffer.
 
-<h5 id="3.3">Exception Handling</h4>
+<h5 id="3.3">Exception Handling</h5>
 
 Admiral has an exception handling mechanism for user level exceptions. These exceptions have nothing to do with system level errors that always exit the currently active code and return back to interpreter with four number hexadecimal error code.
 
@@ -397,9 +396,19 @@ except e:
 
 Except statement always catch all exceptions. If you want to pass-through some exceptions, you must explicitly re-raise the exception in except block.
 
-<h5 id="3.4">Text Editor</h4>
+<h5 id="3.4">Text Editor</h5>
 
-Admiral also has a built-in text editor to facilitate software development in deep space colonies. It is started by calling edit(). Editor returns the edited text as string that can be assigned to a variable.
+Admiral has a built-in text editor to facilitate software development in deep space colonies. It is started by calling edit(). This function returns the edited text as string that should be assigned to a variable.
+
+<pre>
+>result=edit()
+</pre>
+
+If you need to edit an existing text, you can give a string argument for edit():
+
+<pre>
+>result=edit(result)
+</pre>
 
 Editor has following special key commands:
 
@@ -413,25 +422,13 @@ Editor has following special key commands:
 
 CTRL-x means to hold down CTRL and then press x (CTRL-x).
 
-To store the results of your editing, you should always assign edit() function return value to some variable:
-
-<pre>
->result=edit()
-</pre>
-
-If you need to edit an existing text, you can give a string argument for edit():
-
-<pre>
->result=edit(result)
-</pre>
-
-<h5 id="3.5">Functions</h4>
+<h5 id="3.5">Functions</h5>
 
 Since Admiral is pure interpreter all strings are callable (i.e. can be used as functions):
 
 <pre>
->'print msg'(msg='Hello World again!')
-Hello World again!
+>'print msg'(msg='Hello World')
+Hello World
 </pre>
 
 Function calls can have positional and keyword arguments in any order.
@@ -480,7 +477,7 @@ Example: class user function
 Hello
 </pre>
 
-<h5 id="3.6">Prototypes</h4>
+<h5 id="3.6">Prototypes</h5>
 
 Dict.create() can be used to create new dicts that are based on the prototype:
 
@@ -502,7 +499,7 @@ me.spd+=me.acceleration  # function modifies object field
 
 Dict created with dict.create() inherits its properties from prototype. Prototype dict is used to read values if property is not defined in dict itself. Prototype values are not copied at creation time, and changes in prototype values are reflected to the created dict unless it defines the same value itself. However, writing values to created dict never modifies the prototype dict.
 
-<h5 id="3.7">Graphics</h4>
+<h5 id="3.7">Graphics</h5>
 
 Admiral has 64x48 pixel monochrome graphics mode and a comprehensive set of graphics plotting commands. These commands enable you to set and get individual pixel states, and draw lines and circles without ever having to access memory locations.
 
