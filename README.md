@@ -69,6 +69,7 @@ But we have enlisted to the Verge Station, not because it is easy, but because i
 <h5 id="1.1">Summary</h5>
 
 <h6>Design Philosophy</h6>
+
  - DCPU must provide a self sufficient environment for developing and running software
  - Capability is more important than capacity
  - Users shouldn't be bothered with details that the machine can handle
@@ -78,7 +79,8 @@ But we have enlisted to the Verge Station, not because it is easy, but because i
    of collections (other than the total memory available)
 
 <h6>Implementation Principles</h6>
- - "First have fun. Then make it work. Then make it right. Then make it fast."
+
+- "First have fun. Then make it work. Then make it right. Then make it fast."
  - Memory allocation targets:
    - 70% for heap
    - 5% for stack
