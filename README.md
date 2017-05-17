@@ -80,7 +80,8 @@ But we have enlisted to the Verge Station, not because it is easy, but because i
 
 <h6>Implementation Principles</h6>
 
-- "First have fun. Then make it work. Then make it right. Then make it fast."
+ - "First have fun. Then make it work. Then make it right. Then make it fast."
+ - Everything written in pure assembler
  - Memory allocation targets:
    - 70% for heap
    - 5% for stack
