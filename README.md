@@ -2022,21 +2022,22 @@ will yield error, as unknown IDENT (foobar) cannot be evaluated for addition ope
 
 PYTHON FEATURES MISSING (INCOMPLETE LIST)
 
- - 'def' function definitions
-  - use strings as functions instead
- - 'class' class definitions
-  - use prototype objects instead
- - 'lambda' functions
- - generators
-  - this would be useful, but would grow the interpreter size while only optimizing some special cases
- - list comprehension e.g.  [x**2 for x in range(10)]
-  - these would be reasonable, but code size just adds up...
- - args and kwargs
-  - makes no sense as functions are not declared
- - % string operator
-  - I would love this, but just too much code
- - 'yield'
-  - No thanks
- - 'try' - 'except' exception handling
-  - Admiral has this, but only for exceptions explicitly raised by user code
- - lot of built-in functions
+  - 'def' function definitions
+    - use strings as functions instead
+  - 'class' class definitions
+    - use prototype objects instead
+  - 'lambda' functions
+    - only one stack, please
+  - generators
+    - this would be useful, but would grow the interpreter size while only optimizing some special cases
+  - list comprehension e.g.  [x**2 for x in range(10)]
+    - these would be reasonable, but code size just adds up...
+  - args and kwargs
+    - makes no sense as functions are not declared
+  - % string operator
+    - I would love this, but just too much code
+  - 'yield'
+    - only one stack, please
+  - 'try' - 'except' exception handling
+    - Admiral has this, but only for exceptions explicitly raised by user code
+  - lot of built-in functions
