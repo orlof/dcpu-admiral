@@ -244,7 +244,7 @@ The following subroutines are contributed or copied from public sources to Admir
  - Hummingbird-2 Encryption Algorithm by HyperVerse Systems / ColErr
  - "Linear feedback shift register" pseudo random number generator by kirinyaga (via 0x10c - Forum)
 
---
+---
 
 <h5 id="1.4">Other in-game DCPU projects</h5>
 
@@ -262,7 +262,7 @@ language *inside* DCPU.
  - Vendan's Forth https://github.com/andyleap/Forth
    - Another Forth, but in active development
 
---
+---
 
 <h4 id="2">Getting started</h4>
 
@@ -299,7 +299,7 @@ Today I use my self-made assembler and debugger:
 
 Those are pretty sophisticated and field proven tools, but will lack proper releases and packaging until someone other than me starts using them ;)
 
---
+---
 
 <h4 id="3">Usage</h4>
 
