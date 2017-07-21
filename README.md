@@ -1306,7 +1306,6 @@ e.g., range(3) returns the list [0, 1, 2].
   <dd>
     <p>
       Compare the two objects x and y and return an integer according to the outcome. The return value is negative if x < y, zero if x == y and strictly positive if x > y.
-
       <ul>
         <li>Numbers are compared arithmetically</li>
         <li>Strings are compared lexicographically using the numeric equivalents (the result of the built-in function ord()) of their characters.</li>
