@@ -1965,19 +1965,19 @@ ADMIRAL MEMORY MAP
 Admiral stores values of important memory addresses in defined memory locations:
 
 <table cellpadding="1">
-<tr><th>Location</th><th>Address of</th><th>Description</th></tr>
-<tr><td>0xffff</td><td>Register Z</td><td></td></tr>
-<tr><td>0xfffe</td><td>Register Y</td><td></td></tr>
-<tr><td>0xfffd</td><td>Register X</td><td></td></tr>
-<tr><td>0xfffc</td><td>Register C</td><td></td></tr>
-<tr><td>0xfffb</td><td>Register B</td><td></td></tr>
-<tr><td>0xfffa</td><td>Register A</td><td></td></tr>
-<tr><td>0xfff9</td><td>Register J</td><td></td></tr>
-<tr><td>0xfff8</td><td>Register I</td><td></td></tr>
-<tr><td>0xfff7</td><td>Stack memory start</td><td></td></tr>
-<tr><td>0xfff6</td><td>Heap memory start</td><td></td></tr>
-<tr><td>0xfff5</td><td>Floppy buffer start</td><td></td></tr>
-<tr><td>0xfff4</td><td>Video memory start</td><td></td></tr>
+<tr><th>Location</th><th>Address of</th><th>RD/RW</th><th>Description</th></tr>
+<tr><td>0xffff</td><td>Register Z</td><td>*/*</td>td>call() and hwi() use these memory locations to load registers before execution and store register values after execution.</td></tr>
+<tr><td>0xfffe</td><td>Register Y</td><td>*/*</td><td></td></tr>
+<tr><td>0xfffd</td><td>Register X</td><td>*/*</td><td></td></tr>
+<tr><td>0xfffc</td><td>Register C</td><td>*/*</td><td></td></tr>
+<tr><td>0xfffb</td><td>Register B</td><td>*/*</td><td></td></tr>
+<tr><td>0xfffa</td><td>Register A</td><td>*/*</td><td></td></tr>
+<tr><td>0xfff9</td><td>Register J</td><td>*/*</td><td></td></tr>
+<tr><td>0xfff8</td><td>Register I</td><td>*/*</td><td></td></tr>
+<tr><td>0xfff7</td><td>Stack memory start</td><td>*/-</td><td>Admiral startup sequence initializes this memory location with the address of the lowest address available for stack. (Changing the value has no effect)</td></tr>
+<tr><td>0xfff6</td><td>Heap memory start</td><td>*/-</td><td>Admiral startup sequence initializes this memory location with the address of the lowest address used by heap. Admiral utilizes whole heap space, thus heap area must not be used for any other purposes. (Changing the value has no effect)</td></tr>
+<tr><td>0xfff5</td><td>Floppy buffer start</td><td>*/-</td><td>Admiral startup sequence initializes this memory location with the floppy buffer start address. (Changing the value has no effect)</tr>
+<tr><td>0xfff4</td><td>Video memory start</td><td>*/-</td><td>Admiral startup sequence initializes this memory location with the video memory start address. (Changing the value has no effect)</tr>
 </table>
 
 The exact location and size of each segment depends on the Admiral build.
