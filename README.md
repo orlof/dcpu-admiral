@@ -1966,7 +1966,7 @@ Admiral stores values of important memory addresses in defined memory locations:
 
 <table cellpadding="1">
 <tr><th>Location</th><th>Address of</th><th>RD/RW</th><th>Description</th></tr>
-<tr><td>0xffff</td><td>Register Z</td><td>*/*</td>td>call() and hwi() use these memory locations to load registers before execution and store register values after execution.</td></tr>
+<tr><td>0xffff</td><td>Register Z</td><td>*/*</td><td>call() and hwi() use these memory locations to load registers before execution and store register values after execution.</td></tr>
 <tr><td>0xfffe</td><td>Register Y</td><td>*/*</td><td></td></tr>
 <tr><td>0xfffd</td><td>Register X</td><td>*/*</td><td></td></tr>
 <tr><td>0xfffc</td><td>Register C</td><td>*/*</td><td></td></tr>
