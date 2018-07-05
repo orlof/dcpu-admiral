@@ -609,7 +609,9 @@ HelpA
 *HelpAHelpAHelpAHelpAHelpA*
 </pre>
 
-Strings can be subscripted (indexed); like in C, the first character of a string has subscript (index) 0. There is no separate character type; a character is simply a string of size one. Like in Python, substrings can be specified with the slice notation: two indices separated by a colon.
+Strings can be subscripted (indexed); like in C, the first character of a string has subscript (index) 0. There is no separate character type; a character is simply a string of size one
+
+Like in Python, substrings can be specified with the slice notation: two indices separated by a colon.
 
 <pre>
 >print word[4]
@@ -756,17 +758,18 @@ Current strings do not support escape characters or output formatting. That will
           ['1','','2'])
       </pre>
 
-      The sep argument may consist of multiple characters
+The sep argument may consist of multiple characters
 
       <pre>
           >'1<>2<>3'.split('<>')
           ['1','2','3']).
       </pre>
 
-      Splitting an empty string with a specified separator returns [''].
+Splitting an empty string with a specified separator returns [''].
+
     </p>
     <p>
-      If sep is not specified, a different splitting algorithm is applied: runs of consecutive whitespace are regarded as a single separator, and the result will contain no empty strings at the start or end if the string has leading or trailing whitespace. Consequently, splitting an empty string or a string consisting of just whitespace with a None separator returns [].
+If sep is not specified, a different splitting algorithm is applied: runs of consecutive whitespace are regarded as a single separator, and the result will contain no empty strings at the start or end if the string has leading or trailing whitespace. Consequently, splitting an empty string or a string consisting of just whitespace with no separator returns [].
 
       <pre>
           >' 1  2   3  '.split()
