@@ -752,26 +752,20 @@ Current strings do not support escape characters or output formatting. That will
   <dd>
 Return a list of the words in the string, using sep as the delimiter string. Consecutive delimiters are not grouped together and are deemed to delimit empty strings:
 
-      <pre>
-          >'1,,2'.split(',')
-          ['1','','2'])
-      </pre>
+    >'1,,2'.split(',')
+    ['1','','2'])
 
 The sep argument may consist of multiple characters
 
-      <pre>
-          >'1<>2<>3'.split('<>')
-          ['1','2','3']).
-      </pre>
+    >'1<>2<>3'.split('<>')
+    ['1','2','3']).
 
 Splitting an empty string with a specified separator returns [''].
 
 If sep is not specified, a different splitting algorithm is applied: runs of consecutive whitespace are regarded as a single separator, and the result will contain no empty strings at the start or end if the string has leading or trailing whitespace. Consequently, splitting an empty string or a string consisting of just whitespace with no separator returns [].
 
-      <pre>
-          >' 1  2   3  '.split()
-          ['1','2','3']
-      </pre>
+    >' 1  2   3  '.split()
+    ['1','2','3']
 
   </dd>
 </dl>
