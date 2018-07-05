@@ -750,8 +750,7 @@ Current strings do not support escape characters or output formatting. That will
 <dl>
   <dt>str.split([sep])</dt>
   <dd>
-    <p>
-      Return a list of the words in the string, using sep as the delimiter string. Consecutive delimiters are not grouped together and are deemed to delimit empty strings:
+Return a list of the words in the string, using sep as the delimiter string. Consecutive delimiters are not grouped together and are deemed to delimit empty strings:
 
       <pre>
           >'1,,2'.split(',')
@@ -767,8 +766,6 @@ The sep argument may consist of multiple characters
 
 Splitting an empty string with a specified separator returns [''].
 
-    </p>
-    <p>
 If sep is not specified, a different splitting algorithm is applied: runs of consecutive whitespace are regarded as a single separator, and the result will contain no empty strings at the start or end if the string has leading or trailing whitespace. Consequently, splitting an empty string or a string consisting of just whitespace with no separator returns [].
 
       <pre>
@@ -776,7 +773,6 @@ If sep is not specified, a different splitting algorithm is applied: runs of con
           ['1','2','3']
       </pre>
 
-    </p>
   </dd>
 </dl>
 
