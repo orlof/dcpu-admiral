@@ -1516,7 +1516,8 @@ e.g., range(3) returns the list [0, 1, 2].
   <dd>
     <p>
       Runs the garbage collector and returns the amount of free heap space in words.
-
+    </p>
+    <p>
       Calling the gc method makes Admiral expend effort to recycling unused objects in order to make the memory they currently occupy available for quick reuse. When control returns from the method call, the Admiral has made a best effort to reclaim space from all discarded objects.
     </p>
   </dd>
