@@ -1735,9 +1735,11 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
     <p>
       If or when the routine at the specified address returns control to Admiral (via an RTS instruction), Admiral immediately saves the contents of the registers back into the storage addresses memory range: This can be used
       to transfer results from the machine language routine to Admiral for further processing.
-
+    </p>
+    <p>
       Storage addresses:
-      <pre>
+    </p>
+    <pre>
       a: [0xfffa]
       b: [0xfffb]
       c: [0xfffc]
@@ -1746,8 +1748,8 @@ RCI is a half-duplex datagram-based radiofrequency communications device.
       z: [0xffff]
       i: [0xfff8]
       j: [0xfff9]
-      </pre>
-
+    </pre>
+    <p>
       Subroutine can pollute registers a-j, but must restore stack and return with rts (set pc, pop).
     </p>
   </dd>
