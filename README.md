@@ -1520,6 +1520,9 @@ e.g., range(3) returns the list [0, 1, 2].
     <p>
       Calling the gc method makes Admiral expend effort to recycling unused objects in order to make the memory they currently occupy available for quick reuse. When control returns from the method call, the Admiral has made a best effort to reclaim space from all discarded objects.
     </p>
+    <p>
+      Admiral has fully automatic garbage collecting and calling this function is not required to trigger garbage collecting.
+    </p>
   </dd>
 </dl>
 
