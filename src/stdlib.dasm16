@@ -962,7 +962,11 @@
        set pc, pop
     sub i, 1
     hwq i
-    ; LEM as a monitor
+    ; LEM-1801 as a monitor
+    ife a, 0xf615
+        ife b, 0x7349
+            jsr detect_hardware__monitor
+    ; LEM-1802 as a monitor
     ife a, 0xf615
         ife b, 0x734d
             jsr detect_hardware__monitor
