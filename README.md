@@ -215,7 +215,7 @@ b 2
    - Midpoint circle algorithm optimized for integer-based math
  - Supported hardware
    - LEM 1802 or PIXIE - required
-   - Generic Keyboard - required
+   - Generic Keyboard Version 1 or 2 - required
    - Generic Timer
    - M35FD
    - KaiComm HIC
