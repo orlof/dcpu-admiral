@@ -970,8 +970,13 @@
     ife a, 0xf615
         ife b, 0x774d
             jsr detect_hardware__monitor
+    ; Generic Keyboard Version 2
     ife a, 0x7406
         ife b, 0x30C1
+            set [keyboard], i
+    ; Generic Keyboard Version 1
+    ife a, 0x7406
+        ife b, 0x30CF
             set [keyboard], i
     ife a, 0xb402
         ife b, 0x12d1
