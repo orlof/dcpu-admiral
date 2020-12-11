@@ -214,7 +214,7 @@ b 2
    - Bresenham's line algorithm
    - Midpoint circle algorithm optimized for integer-based math
  - Supported hardware
-   - LEM 1802 or PIXIE - required
+   - LEM 1802 or PIXIE (or refurbished LEM-1802 with erranous LEM-1801 HW-ID) - required
    - Generic Keyboard Version 1 or 2 - required
    - Generic Timer
    - M35FD
