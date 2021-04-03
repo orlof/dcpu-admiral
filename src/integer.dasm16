@@ -620,6 +620,8 @@
     set push, 1
     jsr preamble
 
+    set b, 1
+
 :int_negate_or_complement
     set i, [z+10]    ; struct handle *
     set i, [i]    ; struct int *
@@ -636,7 +638,6 @@
     set j, a    ; j: new lsw
     add j, [a]
 
-    set b, 1
 :xor_loop
     set [j], [i]
     xor [j], 0xffff
